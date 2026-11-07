@@ -1035,7 +1035,7 @@
 
 <script>
     const storeId = "{{ .Store.ID }}";
-    const streamUrl = "{{ .StreamURL }}";
+    let streamUrl = "{{ .StreamURL }}";
 
     let audioPlayer = document.getElementById('live-audio-player');
     let isPlaying = false;
@@ -1242,6 +1242,36 @@
         }
     }
 
+    // =========================================================================
+    // RENOVAÇÃO DO TOKEN DE STREAMING (Anti-Leech / Proteção de Link)
+    // =========================================================================
+    function renewStreamToken(callback) {
+        if (!storeId) {
+            if (typeof callback === 'function') callback(streamUrl);
+            return;
+        }
+        fetch('/api/player/' + storeId + '/stream-token')
+            .then(res => {
+                if (!res.ok) throw new Error('Falha HTTP ao renovar token');
+                return res.json();
+            })
+            .then(data => {
+                if (data && data.stream_url) {
+                    streamUrl = data.stream_url;
+                }
+                if (typeof callback === 'function') callback(streamUrl);
+            })
+            .catch(err => {
+                console.warn("[StreamAuth] Aviso ao obter token atualizado:", err);
+                if (typeof callback === 'function') callback(streamUrl);
+            });
+    }
+
+    // Renova o token a cada 15 minutos para manter a sessão válida sem interrupção
+    setInterval(function() {
+        renewStreamToken();
+    }, 15 * 60 * 1000);
+
     function reconnectLiveStream() {
         if (!userIntentPlay || !audioPlayer || !navigator.onLine) return;
         const now = Date.now();
@@ -1255,24 +1285,28 @@
             console.log("[Audio] Reconectando ao stream ao vivo...");
             setPlayerConnectingUI();
             stopAudioStream();
-            const liveUrl = streamUrl + (streamUrl.includes('?') ? '&' : '?') + 'r=' + Date.now();
-            audioPlayer.src = liveUrl;
-            audioPlayer.load();
-            const p = audioPlayer.play();
-            if (p !== undefined) {
-                p.then(function() {
-                    setPlayerPlayingUI();
-                }).catch(function(err) {
-                    console.warn("[Audio] Falha ao reconectar:", err);
-                    if (err.name === 'NotAllowedError') {
-                        userIntentPlay = false;
-                        stopAudioStream();
-                        setPlayerPausedUI();
-                    } else if (userIntentPlay && navigator.onLine) {
-                        setTimeout(reconnectLiveStream, 3500);
-                    }
-                });
-            }
+
+            renewStreamToken(function(activeUrl) {
+                if (!userIntentPlay) return;
+                const liveUrl = activeUrl + (activeUrl.includes('?') ? '&' : '?') + 'r=' + Date.now();
+                audioPlayer.src = liveUrl;
+                audioPlayer.load();
+                const p = audioPlayer.play();
+                if (p !== undefined) {
+                    p.then(function() {
+                        setPlayerPlayingUI();
+                    }).catch(function(err) {
+                        console.warn("[Audio] Falha ao reconectar:", err);
+                        if (err.name === 'NotAllowedError') {
+                            userIntentPlay = false;
+                            stopAudioStream();
+                            setPlayerPausedUI();
+                        } else if (userIntentPlay && navigator.onLine) {
+                            setTimeout(reconnectLiveStream, 3500);
+                        }
+                    });
+                }
+            });
         }, 300);
     }
 

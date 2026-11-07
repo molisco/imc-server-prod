@@ -517,8 +517,9 @@ func HandleCustomerPlayerPage(w http.ResponseWriter, r *http.Request) {
 		isStreaming = false
 	}
 
-	// URL relativa para funcionar em qualquer porta externa (ex: 20080, 1080, 8080, 80, duckdns)
-	streamURL := fmt.Sprintf("/stream/%s", store.ID.String())
+	// URL assinada com token temporário criptográfico (validade inicial: 30 minutos)
+	token, exp := GenerateStreamToken(store.ID, 30*time.Minute)
+	streamURL := fmt.Sprintf("/stream/%s?token=%s&exp=%d", store.ID.String(), token, exp)
 
 	theme := map[string]string{
 		"LogoURL":              "/static/img/logo-imc.png",
@@ -751,7 +752,7 @@ func HandlePlayerNowPlayingAPI(w http.ResponseWriter, r *http.Request) {
 		isStreaming = false
 	}
 
-	streamURL := mount
+	streamURL := fmt.Sprintf("/stream/%s", store.ID.String())
 
 	resp := NowPlayingResponse{
 		ManualOverride:     manualOverride,
@@ -1156,7 +1157,36 @@ func HandlePlayerRedistributeAPI(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-// HandleStoreStreamProxy faz o proxy transparente do áudio Icecast diretamente pelo ID da loja
+// HandlePlayerStreamTokenAPI retorna um token assinado e atualizado para a sessão do player
+func HandlePlayerStreamTokenAPI(w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "id")
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	store, _, err := findStoreAndTenant(ctx, idParam)
+	if err != nil || store == nil {
+		sendJSONError(w, "store not found", http.StatusNotFound)
+		return
+	}
+
+	session, _ := GetAndRenewSession(w, r)
+	if errAccess := checkStoreAccess(session, store); errAccess != nil {
+		sendJSONError(w, errAccess.Error(), http.StatusForbidden)
+		return
+	}
+
+	token, exp := GenerateStreamToken(store.ID, 30*time.Minute)
+	streamURL := fmt.Sprintf("/stream/%s?token=%s&exp=%d", store.ID.String(), token, exp)
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"stream_url": streamURL,
+		"token":      token,
+		"expires_at": exp,
+	})
+}
+
+// HandleStoreStreamProxy faz o proxy transparente do áudio Icecast diretamente pelo ID da loja com validação de segurança
 func HandleStoreStreamProxy(w http.ResponseWriter, r *http.Request) {
 	idParam := chi.URLParam(r, "id")
 	ctx, cancel := context.WithCancel(r.Context())
@@ -1173,26 +1203,57 @@ func HandleStoreStreamProxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 1. Validação Criptográfica de Sessão ou Token HMAC
+	if errAuth := CheckStreamAccess(r, store); errAuth != nil {
+		http.Error(w, fmt.Sprintf("Acesso Negado ao Streaming: %s", errAuth.Error()), http.StatusForbidden)
+		return
+	}
+
+	// 2. Trava de Conexões Simultâneas por Loja (Anti-Sharing)
+	releaseSlot, errSlot := AcquireStreamSlot(store.ID)
+	if errSlot != nil {
+		http.Error(w, errSlot.Error(), http.StatusTooManyRequests)
+		return
+	}
+	defer releaseSlot()
+
 	mount := GetStoreMountPoint(*store)
 	proxyIcecastStream(w, r, mount)
 }
 
-// HandleMountStreamProxy faz o proxy de qualquer rota de mount point (/m0001_l1, /mcf4f_l001, /loja_ce275c7f, etc.)
+// HandleMountStreamProxy faz o proxy de qualquer rota de mount point (/m0001_l1, /mcf4f_l001, /loja_ce275c7f, etc.) com validação
 func HandleMountStreamProxy(w http.ResponseWriter, r *http.Request) {
 	mount := r.URL.Path
-	if strings.HasPrefix(mount, "/loja_") {
-		prefix := strings.TrimPrefix(mount, "/loja_")
-		var store models.Store
-		err := database.Pool.QueryRow(r.Context(), "SELECT id, tenant_id, COALESCE(store_number, ''), is_active FROM stores WHERE id::text LIKE $1 LIMIT 1", prefix+"%").Scan(&store.ID, &store.TenantID, &store.StoreNumber, &store.IsActive)
-		if err == nil {
-			if !store.IsActive {
-				http.Error(w, "Radio temporariamente suspensa", http.StatusForbidden)
-				return
-			}
-			mount = GetStoreMountPoint(store)
-		}
+	ctx, cancel := context.WithCancel(r.Context())
+	defer cancel()
+
+	store, tenant, err := FindStoreByMount(ctx, mount)
+	if err != nil || store == nil {
+		http.Error(w, "Ponto de montagem não autorizado ou não encontrado", http.StatusForbidden)
+		return
 	}
-	proxyIcecastStream(w, r, mount)
+
+	if !store.IsActive || (tenant != nil && !tenant.IsActive) {
+		http.Error(w, "Radio temporariamente suspensa", http.StatusForbidden)
+		return
+	}
+
+	// Validação Criptográfica de Sessão ou Token HMAC
+	if errAuth := CheckStreamAccess(r, store); errAuth != nil {
+		http.Error(w, fmt.Sprintf("Acesso Negado ao Ponto de Montagem: %s", errAuth.Error()), http.StatusForbidden)
+		return
+	}
+
+	// Trava de Conexões Simultâneas por Loja
+	releaseSlot, errSlot := AcquireStreamSlot(store.ID)
+	if errSlot != nil {
+		http.Error(w, errSlot.Error(), http.StatusTooManyRequests)
+		return
+	}
+	defer releaseSlot()
+
+	mountPoint := GetStoreMountPoint(*store)
+	proxyIcecastStream(w, r, mountPoint)
 }
 
 func proxyIcecastStream(w http.ResponseWriter, r *http.Request, mount string) {

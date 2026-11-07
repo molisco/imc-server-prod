@@ -11,10 +11,10 @@ indoormedia.com.br, www.indoormedia.com.br, app.indoormedia.com.br, player.indoo
     reverse_proxy 200.141.23.44:8080
 }
 
-# 2. Subdomínio dedicado de Streaming Contínuo (Icecast + Proxy Go)
+# 2. Subdomínio dedicado de Streaming Contínuo (Icecast + Proxy Go Protegido)
 stream.indoormedia.com.br {
     @icecast {
-        path /status* /admin* /server* /m* /loja* /*.ogg /*.mp3 /*.aac /*.pls /*.m3u
+        path /status* /admin* /server* /*.pls /*.m3u
     }
     reverse_proxy @icecast imc-icecast:8000
     reverse_proxy 200.141.23.44:8080
