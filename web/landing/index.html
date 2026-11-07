@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMC - Indoor Media Control | Em Construção • Lançamento em Dezembro</title>
+    <meta name="description" content="IMC (Indoor Media Control) - Plataforma corporativa de Rádio Indoor, TV Corporativa, Locuções IA e Gestão Multi-Loja para Varejo e Redes. Entrada no ar em Dezembro.">
+    <link rel="icon" type="image/png" href="assets/img/favicon.png">
+
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5.3 CSS & Font Awesome 6 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+    <!-- Estilos Customizados IMC -->
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+    <!-- Grid e Glow Ambiental -->
+    <div class="bg-ambient-grid"></div>
+
+    <!-- TOPO / NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark imc-navbar sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <img src="assets/img/logo-imc-dark.png" alt="IMC - Indoor Media Control" class="navbar-logo">
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#imcNavbarNav" aria-controls="imcNavbarNav" aria-expanded="false" aria-label="Alternar navegação">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="imcNavbarNav">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-1">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-imc active" href="#inicio">Em Construção</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-imc" href="#ecossistema">Tecnologia IMC</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-imc" href="#planos">Planos (Preview)</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-imc" href="#acesso-antecipado">Lista VIP • Dezembro</a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a href="https://app.indoormedia.com.br/login" class="btn-imc-outline py-2 px-3" style="font-size: 0.85rem;">
+                        <i class="fa-solid fa-right-to-bracket"></i> Painel IMC
+                    </a>
+                    <a href="#acesso-antecipado" class="btn-imc-primary py-2 px-3" style="font-size: 0.88rem;">
+                        <i class="fa-solid fa-bell"></i> Avise-me no Lançamento
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION: EM CONSTRUÇÃO + CONTADOR PROGRESSIVO -->
+    <header id="inicio" class="hero-section text-center">
+        <div class="container">
+
+            <!-- Badge de Status -->
+            <div class="mb-4">
+                <span class="status-badge">
+                    <span class="pulse-dot"></span>
+                    Em Construção • Entrada no Ar em Dezembro
+                </span>
+            </div>
+
+            <!-- Showcase do Logotipo Oficial IMC -->
+            <div>
+                <div id="heroLogoContainer" class="hero-logo-showcase">
+                    <button type="button" id="heroLogoToggleBtn" class="hero-logo-mode-btn" onclick="toggleHeroLogoBg()" title="Alternar contraste do card do logotipo">
+                        <i class="fa-solid fa-sun me-1"></i>Fundo Claro
+                    </button>
+                    <img id="heroLogoImg" src="assets/img/logo-imc-dark.png" alt="Logotipo Oficial IMC - Indoor Media Control">
+                </div>
+            </div>
+
+            <!-- Título Principal -->
+            <h1 class="hero-title">
+                O Novo Padrão em <span class="text-gradient-imc">Rádio Indoor &amp; Mídia Corporativa</span><br class="d-none d-md-inline">
+                Chega em Dezembro
+            </h1>
+
+            <p class="hero-subtitle">
+                Estamos finalizando a plataforma definitiva de <strong>Indoor Media Control</strong>: sonorização inteligente multi-loja, curadoria musical por IA, locuções instantâneas e programação visual centralizada para redes de varejo, supermercados, clínicas e franquias.
+            </p>
+
+            <!-- PAINEL DO CONTADOR PROGRESSIVO & CRONÔMETRO -->
+            <div class="counter-panel text-start">
+                <!-- Linha Superior: Progresso Percentual Progressivo -->
+                <div class="progressive-header">
+                    <div>
+                        <span class="text-uppercase fw-bold" style="font-size: 0.75rem; letter-spacing: 1.8px; color: #38bdf8;">
+                            <i class="fa-solid fa-microchip me-1"></i> Evolução da Construção da Plataforma
+                        </span>
+                        <div class="text-light small mt-1" id="remainingDaysBadge">
+                            <i class="fa-regular fa-calendar-check me-1"></i> Estreia oficial programada para <strong>Dezembro de 2026</strong>
+                        </div>
+                    </div>
+                    <div class="text-md-end">
+                        <div class="small text-secondary text-uppercase" style="font-size: 0.7rem; letter-spacing: 1.2px;">Progresso Atual</div>
+                        <div id="liveProgressPercent" class="progressive-percentage-display">88,4210%</div>
+                    </div>
+                </div>
+
+                <!-- Barra Progressiva Animada -->
+                <div class="progress-track-imc">
+                    <div id="liveProgressBar" class="progress-fill-imc" style="width: 88.42%;"></div>
+                </div>
+
+                <!-- Seletor de Visualização do Contador (Progressivo vs Contagem até Dezembro) -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+                    <span id="timerModeCaption" class="small" style="color: #94a3b8;">
+                        Contador Progressivo de Construção em Tempo Real (avançando rumo ao Go-Live em Dezembro)
+                    </span>
+                    <div class="timer-mode-tabs">
+                        <button type="button" id="btnModeProgressive" class="timer-tab-btn active" onclick="setTimerMode('progressive')">
+                            <i class="fa-solid fa-arrow-trend-up me-1"></i> Contador Progressivo
+                        </button>
+                        <button type="button" id="btnModeCountdown" class="timer-tab-btn" onclick="setTimerMode('countdown')">
+                            <i class="fa-solid fa-hourglass-half me-1"></i> Faltam p/ Dezembro
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 Blocos de Dígitos em Tempo Real -->
+                <div class="time-grid">
+                    <div class="time-box">
+                        <span id="timerVal1" class="time-value">189</span>
+                        <span id="timerLbl1" class="time-label">Dias de Avanço</span>
+                    </div>
+                    <div class="time-box">
+                        <span id="timerVal2" class="time-value">13</span>
+                        <span id="timerLbl2" class="time-label">Horas Ativas</span>
+                    </div>
+                    <div class="time-box">
+                        <span id="timerVal3" class="time-value">05</span>
+                        <span id="timerLbl3" class="time-label">Minutos</span>
+                    </div>
+                    <div class="time-box">
+                        <span id="timerVal4" class="time-value">23</span>
+                        <span id="timerLbl4" class="time-label">Segundos (+)</span>
+                    </div>
+                </div>
+
+                <!-- Marcos de Engenharia (Roadmap rumo a Dezembro) -->
+                <div class="milestone-grid">
+                    <div class="milestone-item">
+                        <div class="milestone-icon done"><i class="fa-solid fa-check"></i></div>
+                        <div>
+                            <div class="fw-semibold text-white" style="font-size: 0.85rem;">IMC-Server &amp; Playout</div>
+                            <div style="font-size: 0.76rem; color: #94a3b8;">Motor Liquidsoap 2.4 &amp; Gestão Hierárquica</div>
+                        </div>
+                    </div>
+                    <div class="milestone-item">
+                        <div class="milestone-icon done"><i class="fa-solid fa-check"></i></div>
+                        <div>
+                            <div class="fw-semibold text-white" style="font-size: 0.85rem;">IMC Music Studio</div>
+                            <div style="font-size: 0.76rem; color: #94a3b8;">Curadoria MIR, BPM &amp; Normalização -14 LUFS</div>
+                        </div>
+                    </div>
+                    <div class="milestone-item">
+                        <div class="milestone-icon done"><i class="fa-solid fa-check"></i></div>
+                        <div>
+                            <div class="fw-semibold text-white" style="font-size: 0.85rem;">Player Web &amp; Local (.imc)</div>
+                            <div style="font-size: 0.76rem; color: #94a3b8;">Operação 24/7 com Criptografia &amp; Watchdog</div>
+                        </div>
+                    </div>
+                    <div class="milestone-item">
+                        <div class="milestone-icon active"><i class="fa-solid fa-spinner fa-spin"></i></div>
+                        <div>
+                            <div class="fw-semibold" style="font-size: 0.85rem; color: #38bdf8;">Portal Comercial &amp; Go-Live</div>
+                            <div style="font-size: 0.76rem; color: #94a3b8;">Abertura Pública em Dezembro/2026</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTAs Rápidos -->
+            <div class="d-flex flex-wrap justify-content-center gap-3 mt-4 pt-2">
+                <a href="#planos" class="btn-imc-primary">
+                    <i class="fa-solid fa-layer-group"></i> Conhecer Prévia dos Planos
+                </a>
+                <a href="#ecossistema" class="btn-imc-outline">
+                    <i class="fa-solid fa-broadcast-tower"></i> Ver Recursos da Plataforma
+                </a>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- SEÇÃO ECOSSISTEMA / DIFERENCIAIS IMC -->
+    <section id="ecossistema" class="section-padding">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="section-tag">Arquitetura de Ponta</span>
+                <h2 class="fw-bold display-6 text-white">Por que o IMC transforma o ambiente da sua loja?</h2>
+                <p class="text-secondary mx-auto mt-2" style="max-width: 680px;">
+                    Desenvolvido para operações reais de varejo que exigem estabilidade ininterrupta, controle por Matriz/Regional/Filial e inteligência musical.
+                </p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon-box">
+                            <i class="fa-solid fa-sliders"></i>
+                        </div>
+                        <h4 class="h5 fw-bold text-white mb-2">Curadoria Musical Multidimensional</h4>
+                        <p class="small text-secondary mb-0">
+                            Classificação avançada por energia, BPM, humor e perfil vocal (Instrumental Puro ou Vocal), garantindo a trilha certa para manhã, horário de pico e noite (<em>Dayparting Rítmico</em>).
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon-box">
+                            <i class="fa-solid fa-bullhorn"></i>
+                        </div>
+                        <h4 class="h5 fw-bold text-white mb-2">Comerciais &amp; Avisos Instantâneos</h4>
+                        <p class="small text-secondary mb-0">
+                            Distribuição diária homogênea de ofertas e disparo imediato de avisos de loja ou chamadas de placas de veículos com atenuação suave (<em>ducking</em> automático) da música de fundo.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon-box">
+                            <i class="fa-solid fa-sitemap"></i>
+                        </div>
+                        <h4 class="h5 fw-bold text-white mb-2">Hierarquia Matriz, Regional &amp; Filial</h4>
+                        <p class="small text-secondary mb-0">
+                            Gerencie 1 ou 500 lojas em um único painel central (<strong>IMC-Server</strong>). Direcione campanhas globais pela matriz ou permita ofertas específicas por regional e filial.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon-box">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <h4 class="h5 fw-bold text-white mb-2">Operação Híbrida &amp; Offline (.imc)</h4>
+                        <p class="small text-secondary mb-0">
+                            Web Player ultra-resiliente com consumo de banda reduzido em 60% (OGG Mono 64k) ou Player Local Windows/Linux com acervo criptografado que nunca para mesmo sem internet.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon-box">
+                            <i class="fa-solid fa-tv"></i>
+                        </div>
+                        <h4 class="h5 fw-bold text-white mb-2">Indoor Video &amp; TV Corporativa</h4>
+                        <p class="small text-secondary mb-0">
+                            Grades de vídeo sincronizadas para telas de autoatendimento, vitrines digitais e corredores, integrando identidade visual e áudio em uma única central.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon-box">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <h4 class="h5 fw-bold text-white mb-2">Auditoria de Execução em Tempo Real</h4>
+                        <p class="small text-secondary mb-0">
+                            Monitoramento ao vivo do status de cada rádio/loja, histórico completo de comprovação de veiculação de comerciais e controle rigoroso de acessos (RBAC).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEÇÃO PREVIEW DE PLANOS (ESTRUTURA PRONTA PARA EXPANSÃO) -->
+    <section id="planos" class="section-padding" style="background: rgba(15, 17, 26, 0.65); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="section-tag">Planos &amp; Licenciamento • Dezembro/2026</span>
+                <h2 class="fw-bold display-6 text-white">Planos desenhados para o tamanho da sua operação</h2>
+                <p class="text-secondary mx-auto mt-2" style="max-width: 700px;">
+                    Confira a prévia da estrutura comercial que entrará no ar em Dezembro. Cadastre-se na lista VIP para garantir condições exclusivas de fundadores.
+                </p>
+            </div>
+
+            <div class="row g-4 align-items-stretch">
+                <!-- Plano 1: Essential / Ponto Único -->
+                <div class="col-lg-4">
+                    <div class="plan-card">
+                        <div>
+                            <span class="badge rounded-pill text-bg-dark border border-secondary mb-2">Lojas Individuais</span>
+                            <h3 class="h4 fw-bold text-white">IMC Start</h3>
+                            <p class="small text-secondary">Ideal para lojas independentes, clínicas, cafeterias e academias.</p>
+                        </div>
+                        <div class="my-3 pb-3 border-bottom border-secondary border-opacity-25">
+                            <div class="text-info fw-bold" style="font-size: 1.35rem;">Lançamento em Dezembro</div>
+                            <div class="small text-secondary">Condição especial de pré-venda por ponto</div>
+                        </div>
+                        <ul class="plan-feature-list">
+                            <li><i class="fa-solid fa-check"></i> <span>Web Player Resiliente 24/7 (Zero travamentos)</span></li>
+                            <li><i class="fa-solid fa-check"></i> <span>Grades Musicais Curadas por Segmento &amp; Horário</span></li>
+                            <li><i class="fa-solid fa-check"></i> <span>Disparo de Avisos Instantâneos &amp; Placas de Veículos</span></li>
+                            <li><i class="fa-solid fa-check"></i> <span>Acervo Musical Normalizado a -14 LUFS</span></li>
+                            <li><i class="fa-solid fa-check"></i> <span>Suporte Técnico Padrão</span></li>
+                        </ul>
+                        <button type="button" class="btn-imc-outline w-100 justify-content-center" onclick="selectPlanInterest('IMC Start (Loja Individual)')">
+                            Quero Condição de Pré-Lançamento
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Plano 2: Pro / Redes & Varejo (Destaque) -->
+                <div class="col-lg-4">
+                    <div class="plan-card featured">
+                        <div class="plan-popular-ribbon">Mais Procurado • Varejo &amp; Redes</div>
+                        <div>
+                            <span class="badge rounded-pill mb-2" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35);">Multi-Filiais &amp; Supermercados</span>
+                            <h3 class="h4 fw-bold text-white">IMC Business Pro</h3>
+                            <p class="small text-secondary">Controle completo de comerciais, locuções e programação musical da rede.</p>
+                        </div>
+                        <div class="my-3 pb-3 border-bottom border-secondary border-opacity-25">
+                            <div class="fw-bold" style="font-size: 1.35rem; color: #38bdf8;">Condição VIP • Dezembro</div>
+                            <div class="small text-secondary">Pacotes escaláveis por número de filiais</div>
+                        </div>
+                        <ul class="plan-feature-list">
+                            <li><i class="fa-solid fa-check"></i> <span><strong>Tudo do IMC Start</strong> + Gestão Multi-Lojas</span></li>
+                            <li><i class="fa-solid fa-check"></i> <span>Programação Inteligente de Comerciais &amp; Ofertas</span></li>
+                            <li><i class="fa-solid fa-check"></i> <span>Modo Híbrido (Acervo Local Criptografado + Streaming)</span></li>
+                            <li><i class="fa-solid fa-check"></i> <span>Pacotes de Voz &amp; Locuções Rápidas para Varejo</span></li>
+                            <li><i class="fa-solid fa-check"></i> <span>Relatórios de Auditoria de Veiculação &amp; Status Ao Vivo</span></li>
+                        </ul>
+                        <button type="button" class="btn-imc-primary w-100 justify-content-center" onclick="selectPlanInterest('IMC Business Pro (Redes e Varejo)')">
+                            Reservar Vaga de Lançamento
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Plano 3: Enterprise / Franquias & Grandes Redes -->
+                <div class="col-lg-4">
+                    <div class="plan-card">
+                        <div>
+                            <span class="badge rounded-pill text-bg-dark border border-secondary mb-2">Grandes Redes &amp; Franquias</span>
+                            <h3 class="h4 fw-bold text-white">IMC Enterprise</h3>
+                            <p class="small text-secondary">Infraestrutura dedicada com hierarquia Matriz / Regional / Filial e TV Indoor.</p>
+                        </div>
+                        <div class="my-3 pb-3 border-bottom border-secondary border-opacity-25">
+                            <div class="text-info fw-bold" style="font-size: 1.35rem;">Sob Consulta • Dezembro</div>
+                            <div class="small text-secondary">Projeto customizado para grandes operações</div>
+                        </div>
+                        <ul class="plan-feature-list">
+                            <li><i class="fa-solid fa-check"></i> <span>Hierarquia Completa: Matriz, Regionais e Filiais</span></li>
+                            <li><i class="fa-solid fa-check"></i> <span>Grades de Áudio + Grades de Vídeo (Indoor TV)</span></li>
+                            <li><i class="fa-solid fa-check"></i> <span>Identidade Sonora Exclusiva (Brand Soundscape)</span></li>
+                            <li><i class="fa-solid fa-check"></i> <span>Player Dedicado em Hardware PDV / Linux / Windows</span></li>
+                            <li><i class="fa-solid fa-check"></i> <span>SLA Prioritário &amp; Gerente de Conta Dedicado</span></li>
+                        </ul>
+                        <button type="button" class="btn-imc-outline w-100 justify-content-center" onclick="selectPlanInterest('IMC Enterprise (Grandes Redes / Franquias)')">
+                            Falar com Especialista
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEÇÃO LISTA VIP / PRÉ-CADASTRO DE LANÇAMENTO -->
+    <section id="acesso-antecipado" class="section-padding">
+        <div class="container">
+            <div class="notify-card mx-auto" style="max-width: 860px;">
+                <div class="row align-items-center g-4">
+                    <div class="col-lg-5">
+                        <span class="section-tag">Estreia em Dezembro</span>
+                        <h3 class="h3 fw-bold text-white mb-3">Seja avisado assim que entrarmos no ar</h3>
+                        <p class="small text-secondary mb-3">
+                            Cadastre seu contato para receber em primeira mão a apresentação comercial completa, demonstração da plataforma e condições especiais de lançamento em Dezembro.
+                        </p>
+                        <div class="d-flex align-items-center gap-2 small text-info">
+                            <i class="fa-solid fa-lock"></i>
+                            <span>Seus dados estão protegidos e livres de spam.</span>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-7">
+                        <div id="leadSuccessBanner" class="alert alert-info border-0 mb-3 small" style="display: none; background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4) !important;"></div>
+
+                        <form id="preLaunchForm" class="row g-3">
+                            <div class="col-sm-6">
+                                <label for="leadName" class="form-label small text-light">Seu Nome</label>
+                                <input type="text" id="leadName" class="form-control form-control-imc" placeholder="Ex: Paulo Assis" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="leadCompany" class="form-label small text-light">Empresa / Rede</label>
+                                <input type="text" id="leadCompany" class="form-control form-control-imc" placeholder="Nome da sua empresa" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="leadEmail" class="form-label small text-light">E-mail ou WhatsApp</label>
+                                <input type="text" id="leadEmail" class="form-control form-control-imc" placeholder="contato@empresa.com.br" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="leadPlanSelect" class="form-label small text-light">Perfil de Interesse</label>
+                                <select id="leadPlanSelect" class="form-select form-control-imc">
+                                    <option value="IMC Business Pro (Redes e Varejo)">IMC Business Pro (Redes e Varejo)</option>
+                                    <option value="IMC Start (Loja Individual)">IMC Start (Loja Individual)</option>
+                                    <option value="IMC Enterprise (Grandes Redes / Franquias)">IMC Enterprise (Grandes Redes / Franquias)</option>
+                                    <option value="Apenas ser avisado no lançamento">Apenas ser avisado no lançamento</option>
+                                </select>
+                            </div>
+                            <div class="col-12 mt-3">
+                                <button type="submit" class="btn-imc-primary w-100 justify-content-center py-3">
+                                    <i class="fa-solid fa-paper-plane"></i> Garantir Acesso Prioritário em Dezembro
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RODAPÉ -->
+    <footer class="imc-footer">
+        <div class="container">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="assets/img/logo-imc-dark.png" alt="IMC - Indoor Media Control" style="height: 36px; width: auto;">
+                    <span class="small text-secondary">
+                        Sistema Inteligente de Sonorização e Mídia Indoor Corporativa
+                    </span>
+                </div>
+                <div class="small text-secondary text-center text-md-end">
+                    &copy; 2026 <strong>IMC — Indoor Media Control</strong>. Todos os direitos reservados.<br>
+                    <span style="font-size: 0.75rem; color: #64748b;">Versão Preliminar de Lançamento • Entrada no ar: Dezembro/2026</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS & Script Principal -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

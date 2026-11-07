@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMC-Server - Status das Rádios & Terminal Docker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- xterm.js Terminal CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+    
+    <style>
+        :root {
+            --primary-color: {{ .Theme.PrimaryColor }};
+            --secondary-color: {{ .Theme.SecondaryColor }};
+            --background-color: {{ .Theme.BackgroundColor }};
+            --font-color: {{ if index .Theme "FontColor" }}{{ index .Theme "FontColor" }}{{ else }}#ffffff{{ end }};
+            --field-background-color: {{ if index .Theme "FieldBackgroundColor" }}{{ index .Theme "FieldBackgroundColor" }}{{ else }}rgba(255, 255, 255, 0.05){{ end }};
+        }
+
+        body { background-color: var(--background-color); color: var(--font-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; }
+        /* Top Navbar Custom Styling */
+        .bg-dark-navbar {
+            background-color: var(--secondary-color) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        .navbar-dark .navbar-nav .nav-link {
+            color: #cbd5e0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.5rem 0.85rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .navbar-dark .navbar-nav .nav-link:hover,
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: var(--primary-color);
+        }
+        .dropdown-menu-dark {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 6px;
+        }
+        .dropdown-menu-dark .dropdown-item {
+            color: #cbd5e0;
+            font-size: 0.88rem;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        .dropdown-menu-dark .dropdown-item:hover,
+        .dropdown-menu-dark .dropdown-item.active {
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+        .card-custom { background-color: var(--secondary-color); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; }
+        .status-badge { font-size: 0.8rem; padding: 0.35em 0.65em; border-radius: 50rem; }
+        
+        .form-control, .form-select { background-color: var(--field-background-color); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--font-color); }
+        .form-control:focus, .form-select:focus { background-color: rgba(255, 255, 255, 0.08); border-color: var(--primary-color); color: var(--font-color); box-shadow: none; }
+        .form-control::placeholder { color: #888888; }
+        label { font-size: 0.85rem; color: #cbd5e0; font-weight: 500; margin-bottom: 4px; }
+        select option { background-color: #161925; color: #ffffff; }
+        
+        /* Terminal Container */
+        #terminal-container { background-color: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155; min-height: 420px; }
+        .terminal { font-family: 'Courier New', Courier, monospace; }
+    </style>
+</head>
+<body>
+
+<!-- TOP NAVBAR PULL-DOWN -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark-navbar sticky-top px-3 py-2">
+    <div class="container-fluid">
+        <!-- BRAND / LOGO -->
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            <img src="{{ .Theme.LogoURL }}" alt="Logo IMC" style="max-height: 36px;">
+            <span class="fw-bold tracking-wide small text-uppercase text-light d-none d-sm-inline">IMC Server</span>
+        </a>
+
+        <!-- MOBILE TOGGLE BUTTON -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavbarNav" aria-controls="topNavbarNav" aria-expanded="false" aria-label="Alternar navegação">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- NAV ITEMS -->
+        <div class="collapse navbar-collapse" id="topNavbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-1">
+                
+                <!-- 1. HIERARQUIA & GESTÃO -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navHierarchy" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🏢 Hierarquia & Gestão
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navHierarchy">
+                        <li><a class="dropdown-item" href="/tenants">🏢 Matrizes / Clientes</a></li>
+                        <li><a class="dropdown-item" href="/regionals">📍 Regionais</a></li>
+                        <li><a class="dropdown-item" href="/stores">🏪 Filiais (Lojas)</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/users">👤 Usuários & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 2. MONITORAMENTO & AUDITORIA -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle active" href="#" id="navMonitoring" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📊 Monitoramento & Auditoria
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMonitoring">
+                        <li><a class="dropdown-item active" href="/radios/status">📻 Status das Rádios</a></li>
+                        <li><a class="dropdown-item" href="/play-history">📊 Relatórios & Histórico</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/reports/access-logs"><i class="fa-solid fa-shield-halved me-1 text-info"></i> Auditoria de Logins & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 3. ACERVO & MÍDIAS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navMedia" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🎵 Acervo & Mídias
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMedia">
+                        <li><a class="dropdown-item" href="/music-styles">🎧 Estilos Musicais</a></li>
+                        <li><a class="dropdown-item" href="/video-styles">📺 Estilos de Vídeo</a></li>
+                        <li><a class="dropdown-item" href="/streamings">📻 Streamings & Rádios Online</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/grids/audio">📅 Grades de Áudio</a></li>
+                        <li><a class="dropdown-item" href="/grids/video">📺 Grades de Vídeo</a></li>
+                    </ul>
+                </li>
+
+                <!-- 4. LOCUÇÃO & AVISOS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navWarnings" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📢 Locução & Avisos
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navWarnings">
+                        <li><a class="dropdown-item" href="/commercials">📣 Comerciais & Eventos</a></li>
+                        <li><a class="dropdown-item" href="/streamings"><i class="fa-solid fa-tower-broadcast me-2"></i> Streamings & Rádios</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/voice-packs">🏷️ Aviso de Placas</a></li>
+                        <li><a class="dropdown-item" href="/chimes">🔔 Sinais Sonoros (Chimes)</a></li>
+                        <li><a class="dropdown-item" href="/pre-formatted-warnings">📢 Avisos Pré-Formatados</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!-- RIGHT USER / LOGOUT AREA -->
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex flex-column text-end d-none d-md-block">
+                    <span class="text-white small fw-bold">{{ .User.Name }}</span>
+                    <span class="badge bg-primary text-uppercase" style="font-size: 0.65rem;">{{ .User.Role }}</span>
+                </div>
+                <a href="/logout" class="btn btn-sm btn-outline-danger px-3 py-1">
+                    Sair
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- CONTEÚDO PRINCIPAL (LARGURA TOTAL) -->
+<main class="container-fluid px-4 py-3">
+
+            <!-- Health Summary Cards -->
+            <div class="row g-4 mt-2 mb-4">
+                <div class="col-md-4">
+                    <div class="card-custom p-4 text-center">
+                        <h2 class="text-primary fw-bold">{{ .TotalRadios }}</h2>
+                        <p class="text-muted m-0">Rádios no Servidor</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card-custom p-4 text-center">
+                        <h2 class="text-success fw-bold">{{ .OnlineRadios }}</h2>
+                        <p class="text-muted m-0">🟢 Transmitindo (Online)</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card-custom p-4 text-center">
+                        <h2 class="text-danger fw-bold">{{ .OfflineRadios }}</h2>
+                        <p class="text-muted m-0">🔴 Desconectadas (Offline)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Radios List Section -->
+            <div class="card-custom p-4 mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="m-0 text-white fw-bold">Lista de Mount Points (Rádios no Servidor)</h5>
+                    <button class="btn btn-sm btn-primary" onclick="window.location.reload()"><i class="bi bi-arrow-clockwise me-1"></i> Atualizar Status</button>
+                </div>
+
+                <!-- Painel de Filtros Avançados -->
+                <div class="row g-3 mb-4 p-3 rounded" style="background-color: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05);">
+                    <div class="col-md-5">
+                        <label class="text-white-50 small mb-1">Pesquisar Rádio (Nome ou Código)</label>
+                        <input type="text" id="filter-search" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Pesquisar por nome ou código..." onkeyup="filterRadiosTable()">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-white-50 small mb-1">Empresa / Matriz</label>
+                        <select id="filter-tenant" class="form-select form-select-sm bg-dark text-white border-secondary" onchange="filterRadiosTable()">
+                            <option value="all">🏢 Todas as Empresas</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="text-white-50 small mb-1">Status Streaming</label>
+                        <select id="filter-status" class="form-select form-select-sm bg-dark text-white border-secondary" onchange="filterRadiosTable()">
+                            <option value="all">✨ Todos os Status</option>
+                            <option value="online">🟢 apenas Online</option>
+                            <option value="offline">🔴 apenas Offline</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle border-secondary m-0">
+                        <thead>
+                            <tr>
+                                <th>Nome da Filial / Código</th>
+                                <th>Matriz (Cliente)</th>
+                                <th>Mount Point</th>
+                                <th>Status Streaming</th>
+                                <th>Música Atual</th>
+                                <th>Ouvintes</th>
+                                <th class="text-end">Ações & Acesso SSH</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{ range .Radios }}
+                            <tr class="radio-row" data-online="{{ .IsOnline }}" data-tenant="{{ .TenantTradeName }}">
+                                <td>
+                                    <strong class="text-white fs-6">{{ .StoreName }}</strong>
+                                    {{ if .StoreNumber }}<br><span class="text-muted small">Cod: {{ .StoreNumber }}</span>{{ end }}
+                                </td>
+                                <td class="td-tenant">{{ .TenantTradeName }}</td>
+                                <td><code>{{ .MountPoint }}</code></td>
+                                <td>
+                                    {{ if .IsOnline }}
+                                        <span class="badge bg-success status-badge">🟢 Online</span>
+                                    {{ else }}
+                                        <span class="badge bg-danger status-badge">🔴 Offline</span>
+                                    {{ end }}
+                                </td>
+                                <td>
+                                    {{ if .IsOnline }}
+                                        <span class="text-info">{{ if .CurrentSong }}{{ .CurrentSong }}{{ else }}Programação Geral{{ end }}</span>
+                                    {{ else }}
+                                        <span class="text-muted small">—</span>
+                                    {{ end }}
+                                </td>
+                                <td>
+                                    {{ if .IsOnline }}
+                                        <span class="badge bg-secondary">{{ .Listeners }}</span>
+                                    {{ else }}
+                                        <span class="text-muted small">—</span>
+                                    {{ end }}
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group">
+                                        <a href="/player/{{ .StoreID }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Abrir Web Player / Now Playing do Cliente">
+                                            <i class="bi bi-box-arrow-up-right me-1"></i> Player Cliente
+                                        </a>
+                                        {{ if .IsOnline }}
+                                            <button onclick="playStream('{{ .MountPoint }}')" class="btn btn-sm btn-outline-success" title="Ouvir transmissão ao vivo">🔊 Ouvir</button>
+                                        {{ else }}
+                                            <button class="btn btn-sm btn-outline-secondary" disabled>🔊 Ouvir</button>
+                                        {{ end }}
+                                        <button onclick="openWebTerminal('docker', '{{ .MountPoint }}', '{{ .StoreName }}')" class="btn btn-sm btn-outline-info" title="Abrir terminal Linux/Docker interativo no navegador">
+                                            <i class="bi bi-terminal-fill me-1"></i> SSH Docker
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {{ else }}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted p-4">Nenhuma rádio configurada como "Servidor" até o momento.</td>
+                            </tr>
+                            {{ end }}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+<!-- Modal Web Terminal Interativo (Docker / SSH) -->
+<div class="modal fade" id="webTerminalModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-info shadow-lg">
+            <div class="modal-header border-secondary py-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-terminal-fill text-info fs-5"></i>
+                    <h6 class="modal-title m-0 fw-bold" id="terminalModalTitle">💻 Web Terminal Linux / Docker</h6>
+                    <span class="badge bg-success" id="terminalStatusBadge">Conectado</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-outline-info" id="btnDockerConnectStore" onclick="connectDockerCurrentStore()" title="Conectar ao Container Docker da Loja"><i class="bi bi-box-seam me-1"></i> 🐳 Conectar Docker da Loja</button>
+                    <button class="btn btn-sm btn-outline-light" onclick="sendTerminalCommand('docker ps\n')" title="Listar Contêineres Docker"><i class="bi bi-list-task me-1"></i> Docker PS</button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="clearTerminal()"><i class="bi bi-eraser me-1"></i> Limpar</button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="closeTerminal()"></button>
+                </div>
+            </div>
+            <div class="modal-body p-2" style="background-color: #090d16;">
+                <div id="terminal-container" style="background-color: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155; min-height: 420px;"></div>
+            </div>
+            <div class="modal-footer border-secondary py-1 d-flex justify-content-between">
+                <small class="text-muted"><i class="bi bi-info-circle me-1"></i> PTY WebSocket Ativo | Use o teclado para interagir diretamente com a linha de comando Linux do Docker.</small>
+                <button type="button" class="btn btn-sm btn-secondary px-3" data-bs-dismiss="modal" onclick="closeTerminal()">Fechar Terminal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Libs -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- xterm.js JavaScript Libs -->
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+
+<script>
+    var term = null;
+    var fitAddon = null;
+    var wsSocket = null;
+    var currentTerminalTarget = '';
+    var currentStoreName = '';
+
+    function openWebTerminal(mode, target, storeName) {
+        currentTerminalTarget = target || '';
+        currentStoreName = storeName || '';
+        var modalEl = document.getElementById('webTerminalModal');
+        var titleEl = document.getElementById('terminalModalTitle');
+        var badgeEl = document.getElementById('terminalStatusBadge');
+
+        if (titleEl) titleEl.innerHTML = '💻 Terminal Docker / SSH — <span class="text-info">' + (storeName || target) + '</span>';
+        if (badgeEl) {
+            badgeEl.className = 'badge bg-warning text-dark';
+            badgeEl.innerText = 'Conectando...';
+        }
+
+        try {
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                var bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                bsModal.show();
+            } else {
+                modalEl.classList.add('show');
+                modalEl.style.display = 'block';
+                document.body.classList.add('modal-open');
+            }
+        } catch(e) {
+            modalEl.classList.add('show');
+            modalEl.style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        initTerminal(mode, target);
+    }
+
+    function connectDockerCurrentStore() {
+        if (currentTerminalTarget) {
+            var clean = currentTerminalTarget.replace(/^\/+/, '');
+            sendTerminalCommand('docker exec -it ' + clean + ' sh\n');
+        } else {
+            sendTerminalCommand('docker ps\n');
+        }
+    }
+
+    function initTerminal(mode, target) {
+        var container = document.getElementById('terminal-container');
+        container.innerHTML = '';
+
+        term = new Terminal({
+            cursorBlink: true,
+            theme: {
+                background: '#0f172a',
+                foreground: '#f8fafc',
+                cursor: '#38bdf8',
+                selectionBackground: '#334155',
+                black: '#0f172a',
+                red: '#ef4444',
+                green: '#22c55e',
+                yellow: '#eab308',
+                blue: '#3b82f6',
+                magenta: '#ec4899',
+                cyan: '#06b6d4',
+                white: '#f8fafc'
+            },
+            fontSize: 14,
+            fontFamily: 'Menlo, Monaco, "Courier New", monospace'
+        });
+
+        fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        term.open(container);
+        fitAddon.fit();
+
+        var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        var cleanTarget = (target || '').replace(/^\/+/, '');
+        var wsUrl = protocol + '//' + window.location.host + '/ws/terminal?mode=' + (mode || 'docker') + '&target=' + encodeURIComponent(cleanTarget);
+
+        wsSocket = new WebSocket(wsUrl);
+
+        wsSocket.onopen = function () {
+            var badgeEl = document.getElementById('terminalStatusBadge');
+            if (badgeEl) {
+                badgeEl.className = 'badge bg-success';
+                badgeEl.innerText = 'Online';
+            }
+            term.writeln('\r\n\x1b[32m✔ Sessão WebSSH / Terminal Docker conectada com sucesso!\x1b[0m\r\n');
+            sendResize();
+        };
+
+        wsSocket.onmessage = function (event) {
+            term.write(event.data);
+        };
+
+        wsSocket.onclose = function () {
+            var badgeEl = document.getElementById('terminalStatusBadge');
+            if (badgeEl) {
+                badgeEl.className = 'badge bg-danger';
+                badgeEl.innerText = 'Desconectado';
+            }
+            term.writeln('\r\n\x1b[31m❌ Conexão com o Terminal encerrada.\x1b[0m');
+        };
+
+        wsSocket.onerror = function (err) {
+            term.writeln('\r\n\x1b[31m❌ Erro na conexão WebSocket com o servidor.\x1b[0m');
+        };
+
+        term.onData(function (data) {
+            if (wsSocket && wsSocket.readyState === WebSocket.OPEN) {
+                wsSocket.send(JSON.stringify({ type: 'input', data: data }));
+            }
+        });
+
+        window.addEventListener('resize', handleResize);
+    }
+
+    function handleResize() {
+        if (fitAddon && term) {
+            fitAddon.fit();
+            sendResize();
+        }
+    }
+
+    function sendResize() {
+        if (wsSocket && wsSocket.readyState === WebSocket.OPEN && term) {
+            wsSocket.send(JSON.stringify({
+                type: 'resize',
+                cols: term.cols,
+                rows: term.rows
+            }));
+        }
+    }
+
+    function sendTerminalCommand(cmdText) {
+        if (wsSocket && wsSocket.readyState === WebSocket.OPEN) {
+            wsSocket.send(JSON.stringify({ type: 'input', data: cmdText }));
+        }
+    }
+
+    function clearTerminal() {
+        if (term) term.clear();
+    }
+
+    function closeTerminal() {
+        if (wsSocket) {
+            wsSocket.close();
+            wsSocket = null;
+        }
+        if (term) {
+            term.dispose();
+            term = null;
+        }
+        window.removeEventListener('resize', handleResize);
+    }
+
+    function playStream(mountPoint) {
+        window.open(mountPoint, '_blank');
+    }
+
+    function filterRadiosTable() {
+        var query = document.getElementById('filter-search').value.toLowerCase();
+        var tenant = document.getElementById('filter-tenant').value.toLowerCase();
+        var status = document.getElementById('filter-status').value;
+        var rows = document.querySelectorAll('.radio-row');
+
+        rows.forEach(function(row) {
+            var text = row.innerText.toLowerCase();
+            var isOnline = row.getAttribute('data-online') === 'true';
+            var rowTenant = row.getAttribute('data-tenant').toLowerCase();
+
+            var matchesQuery = text.includes(query);
+            var matchesTenant = (tenant === 'all' || rowTenant.includes(tenant));
+            var matchesStatus = (status === 'all' || (status === 'online' && isOnline) || (status === 'offline' && !isOnline));
+
+            if (matchesQuery && matchesTenant && matchesStatus) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
+</body>
+</html>

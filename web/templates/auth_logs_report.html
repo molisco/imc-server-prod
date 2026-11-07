@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoria de Logins & Acessos - IMC Server</title>
+    
+    <!-- Bootstrap 5 CSS & Icons & FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #0ea5e9;
+            --secondary-color: #0f172a;
+            --background-color: #090d16;
+            --card-background-color: #131d31;
+            --field-background-color: #1e293b;
+            --font-color: #f8fafc;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--font-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .bg-dark-navbar {
+            background-color: var(--secondary-color) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        .navbar-dark .navbar-nav .nav-link {
+            color: #cbd5e0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.5rem 0.85rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .navbar-dark .navbar-nav .nav-link:hover,
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: var(--primary-color);
+        }
+        .dropdown-menu-dark {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-custom {
+            background-color: var(--card-background-color);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+        }
+
+        .form-control, .form-select {
+            background-color: var(--field-background-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--font-color);
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary-color);
+            color: var(--font-color);
+            box-shadow: none;
+        }
+        label {
+            font-size: 0.85rem;
+            color: #cbd5e0;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        /* Table Integration */
+        .table-dark-custom {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .table-dark-custom th {
+            background-color: rgba(255, 255, 255, 0.03);
+            color: var(--primary-color);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .table-dark-custom td {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+            vertical-align: middle;
+            font-size: 0.9rem;
+        }
+        .table tbody tr:hover td {
+            background-color: rgba(255, 255, 255, 0.075) !important;
+            color: #ffffff !important;
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: #fff !important; color: #000 !important; }
+            .card-custom { border: 1px solid #ccc !important; box-shadow: none !important; }
+            .table-dark-custom { color: #000 !important; }
+            .table-dark-custom th { color: #000 !important; border-bottom: 2px solid #333 !important; }
+            .table-dark-custom td { color: #000 !important; border-bottom: 1px solid #ddd !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark-navbar sticky-top px-3 py-2 no-print">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            <img src="{{ .Theme.LogoURL }}" alt="Logo IMC" style="max-height: 36px;">
+            <span class="fw-bold tracking-wide small text-uppercase text-light d-none d-sm-inline">IMC Server</span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="topNavbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-1">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navHierarchy" role="button" data-bs-toggle="dropdown">
+                        🏢 Hierarquia & Gestão
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow">
+                        <li><a class="dropdown-item" href="/tenants">🏢 Matrizes / Clientes</a></li>
+                        <li><a class="dropdown-item" href="/regionals">📍 Regionais</a></li>
+                        <li><a class="dropdown-item" href="/stores">🏪 Filiais (Lojas)</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/users">👤 Usuários & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle active" href="#" id="navMonitoring" role="button" data-bs-toggle="dropdown">
+                        📊 Monitoramento & Auditoria
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow">
+                        <li><a class="dropdown-item" href="/radios/status">📻 Status das Rádios</a></li>
+                        <li><a class="dropdown-item" href="/play-history">📊 Relatórios & Histórico</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item active" href="/reports/access-logs"><i class="fa-solid fa-shield-halved me-1 text-info"></i> Auditoria de Logins & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navMedia" role="button" data-bs-toggle="dropdown">
+                        🎵 Acervo & Mídias
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow">
+                        <li><a class="dropdown-item" href="/music-styles">🎧 Estilos Musicais</a></li>
+                        <li><a class="dropdown-item" href="/video-styles">📺 Estilos de Vídeo</a></li>
+                        <li><a class="dropdown-item" href="/streamings">📻 Streamings & Rádios Online</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/grids/audio">📅 Grades de Áudio</a></li>
+                        <li><a class="dropdown-item" href="/grids/video">📺 Grades de Vídeo</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navCommercials" role="button" data-bs-toggle="dropdown">
+                        💼 Comercial & Campanhas
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow">
+                        <li><a class="dropdown-item" href="/commercials">📢 Campanhas & Comerciais</a></li>
+                        <li><a class="dropdown-item" href="/voice-packs">🎙️ Pacotes de Voz</a></li>
+                        <li><a class="dropdown-item" href="/chimes">🔔 Chimes & Vinhetas</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-white-50 small"><i class="bi bi-person-circle me-1"></i>{{ .User.UserName }}</span>
+                <a href="/logout" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right me-1"></i>Sair</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- MAIN CONTAINER -->
+<div class="container-fluid px-4 py-4">
+
+    <!-- HEADER TITLE & ACTIONS -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h3 class="fw-bold mb-1 text-white">
+                <i class="fa-solid fa-user-shield text-info me-2"></i>Auditoria de Logins & Acessos
+            </h3>
+            <p class="text-secondary small mb-0">Rastreabilidade completa de autenticação, sessões ativas, IPs e atividades por Matriz e Loja.</p>
+        </div>
+        <div class="d-flex gap-2 no-print">
+            <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+                <i class="fa-solid fa-print me-1"></i>Imprimir
+            </button>
+            <a id="btnExportCSV" href="/reports/access-logs/export?start_date={{ .StartDate }}&end_date={{ .EndDate }}&tenant_id={{ .SelectedTenant }}&store_id={{ .SelectedStore }}&event_type={{ .SelectedEvent }}&search={{ .SearchQuery }}" class="btn btn-success btn-sm">
+                <i class="fa-solid fa-file-excel me-1"></i>Exportar Excel (CSV)
+            </a>
+        </div>
+    </div>
+
+    <!-- SUMMARY KPI CARDS -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-4">
+            <div class="card card-custom p-3 border-start border-4 border-success">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-secondary small text-uppercase fw-semibold">Logins com Sucesso</span>
+                        <h3 class="fw-bold text-success mb-0 mt-1">{{ .TotalLogins }}</h3>
+                    </div>
+                    <div class="p-3 bg-success bg-opacity-10 rounded-circle text-success fs-4">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-4">
+            <div class="card card-custom p-3 border-start border-4 border-info">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-secondary small text-uppercase fw-semibold">Sessões Encerradas (Logouts)</span>
+                        <h3 class="fw-bold text-info mb-0 mt-1">{{ .TotalLogouts }}</h3>
+                    </div>
+                    <div class="p-3 bg-info bg-opacity-10 rounded-circle text-info fs-4">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-4">
+            <div class="card card-custom p-3 border-start border-4 border-danger">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-secondary small text-uppercase fw-semibold">Tentativas Falhas / Bloqueadas</span>
+                        <h3 class="fw-bold text-danger mb-0 mt-1">{{ .TotalFailed }}</h3>
+                    </div>
+                    <div class="p-3 bg-danger bg-opacity-10 rounded-circle text-danger fs-4">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTERS CARD -->
+    <div class="card card-custom mb-4 no-print">
+        <div class="card-body p-3">
+            <form method="GET" action="/reports/access-logs" class="row g-3 align-items-end">
+                <div class="col-12 col-sm-6 col-md-2">
+                    <label for="start_date">Data Inicial</label>
+                    <input type="date" class="form-control form-control-sm" id="start_date" name="start_date" value="{{ .StartDate }}">
+                </div>
+                <div class="col-12 col-sm-6 col-md-2">
+                    <label for="end_date">Data Final</label>
+                    <input type="date" class="form-control form-control-sm" id="end_date" name="end_date" value="{{ .EndDate }}">
+                </div>
+                
+                {{ if eq .User.PermissionLevelID 1 }}
+                <div class="col-12 col-sm-6 col-md-2">
+                    <label for="tenant_id">Matriz / Cliente</label>
+                    <select class="form-select form-select-sm" id="tenant_id" name="tenant_id" onchange="this.form.submit()">
+                        <option value="">-- Todas as Matrizes --</option>
+                        {{ range .Tenants }}
+                        <option value="{{ .ID }}" {{ if eq .ID.String $.SelectedTenant }}selected{{ end }}>
+                            {{ if .TradeName }}{{ .TradeName }}{{ else }}{{ .CompanyName }}{{ end }}
+                        </option>
+                        {{ end }}
+                    </select>
+                </div>
+                {{ end }}
+
+                <div class="col-12 col-sm-6 col-md-2">
+                    <label for="store_id">Filial (Loja)</label>
+                    <select class="form-select form-select-sm" id="store_id" name="store_id">
+                        <option value="">-- Todas as Lojas --</option>
+                        {{ range .Stores }}
+                        <option value="{{ .ID }}" {{ if eq .ID.String $.SelectedStore }}selected{{ end }}>
+                            {{ .StoreName }} {{ if .StoreNumber }}(#{{ .StoreNumber }}){{ end }}
+                        </option>
+                        {{ end }}
+                    </select>
+                </div>
+
+                <div class="col-12 col-sm-6 col-md-2">
+                    <label for="event_type">Tipo de Evento</label>
+                    <select class="form-select form-select-sm" id="event_type" name="event_type">
+                        <option value="">-- Todos os Eventos --</option>
+                        <option value="LOGIN" {{ if eq .SelectedEvent "LOGIN" }}selected{{ end }}>🟢 Apenas Logins</option>
+                        <option value="LOGOUT" {{ if eq .SelectedEvent "LOGOUT" }}selected{{ end }}>🔴 Apenas Logouts</option>
+                        <option value="LOGIN_FAILED" {{ if eq .SelectedEvent "LOGIN_FAILED" }}selected{{ end }}>⚠️ Tentativas Falhas</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-sm-6 col-md-2">
+                    <label for="search">Busca por Usuário/IP</label>
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" id="search" name="search" placeholder="Nome, e-mail ou IP..." value="{{ .SearchQuery }}">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- LOGS TABLE CARD -->
+    <div class="card card-custom">
+        <div class="card-header bg-transparent border-0 pt-3 px-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-white"><i class="bi bi-clock-history me-2 text-primary"></i>Registros de Acessos Recentes</h5>
+            <span class="badge bg-secondary">{{ len .Logs }} registros encontrados</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-dark-custom table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-3" style="width: 170px;">Data e Hora</th>
+                            <th style="width: 140px;">Evento</th>
+                            <th>Usuário</th>
+                            <th>E-mail</th>
+                            <th>Perfil</th>
+                            <th>Matriz (Cliente)</th>
+                            <th>Filial (Loja)</th>
+                            <th style="width: 130px;">Endereço IP</th>
+                            <th class="pe-3" style="max-width: 250px;">Dispositivo / Navegador</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ if .Logs }}
+                            {{ range .Logs }}
+                            <tr>
+                                <td class="ps-3 font-monospace text-white-50 small">{{ .FormatCreatedAt }}</td>
+                                <td>
+                                    {{ if eq .EventType "LOGIN" }}
+                                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50">
+                                            <i class="fa-solid fa-right-to-bracket me-1"></i>Login
+                                        </span>
+                                    {{ else if eq .EventType "LOGOUT" }}
+                                        <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50">
+                                            <i class="fa-solid fa-arrow-right-from-bracket me-1"></i>Logout
+                                        </span>
+                                    {{ else }}
+                                        <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50">
+                                            <i class="fa-solid fa-triangle-exclamation me-1"></i>Falha
+                                        </span>
+                                    {{ end }}
+                                </td>
+                                <td class="fw-bold text-white">{{ .UserName }}</td>
+                                <td class="text-white-50">{{ .UserEmail }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ .UserRole }}</span>
+                                </td>
+                                <td>
+                                    {{ if .TenantName }}
+                                        <span class="badge bg-dark border border-secondary">{{ .TenantName }}</span>
+                                    {{ else }}
+                                        <span class="text-muted">—</span>
+                                    {{ end }}
+                                </td>
+                                <td>
+                                    {{ if .StoreName }}
+                                        <span class="badge bg-dark border border-secondary"><i class="bi bi-shop me-1 text-info"></i>{{ .StoreName }}</span>
+                                    {{ else }}
+                                        <span class="text-muted">—</span>
+                                    {{ end }}
+                                </td>
+                                <td class="font-monospace text-info small">{{ .IPAddress }}</td>
+                                <td class="pe-3 text-secondary small text-truncate" style="max-width: 250px;" title="{{ .UserAgent }}">
+                                    {{ if .UserAgent }}{{ .UserAgent }}{{ else }}—{{ end }}
+                                </td>
+                            </tr>
+                            {{ end }}
+                        {{ else }}
+                            <tr>
+                                <td colspan="9" class="text-center py-5 text-secondary">
+                                    <i class="fa-solid fa-shield-halved fs-2 mb-2 d-block text-secondary"></i>
+                                    Nenhum registro de acesso encontrado para os filtros selecionados.
+                                </td>
+                            </tr>
+                        {{ end }}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

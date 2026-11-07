@@ -1,0 +1,25 @@
+﻿Estrutura do Arquivo Config.ini
+https://gemini.google.com/share/30c226140874
+As respostas abaixo foram geradas em um projeto, de acordo com as instruções personalizadas pelo usuário que o criou. 12 de maio de 2026 às 23:32Publicada em 1 de junho de 2026 às 15:54
+Eu esqueci do arquivo .ini, consegue me mandar a estrutura ?
+Com base no histórico do nosso projeto, o seu arquivo de configuração config.ini deve ter a seguinte estrutura:
+Ini, TOML
+[Settings]
+LiquidsoapPath=C:\caminho\para\liquidsoap.exe
+ScriptPath=C:\caminho\para\seu\script.liq
+LogPath=C:\caminho\para\pasta\de\logs\imcAudio.log
+
+
+Pontos importantes para não dar erro na leitura:
+* Cabeçalho obrigatório: A primeira linha deve ser obrigatoriamente [Settings], pois é lá que a sua classe ConfigReader procura as chaves.
+* Sem aspas: Não coloque aspas (" ") em volta dos caminhos, o código em C# se encarregará de fazer isso na hora de iniciar o Liquidsoap.
+* Sem o caractere @: Como vimos antes, você não deve usar o @ no início dos caminhos no arquivo .ini.
+* Barras normais ou invertidas: Você pode usar as barras normais do Windows (\). Apenas tome cuidado com espaços extras no final da linha.
+Basta criar esse arquivo (certificando-se de que o nome não fique como config.ini.txt) e salvá-lo na mesma pasta onde o seu Player .exe está rodando (geralmente em bin\Debug ou bin\Release).
+Política de Privacidade do Google
+Abre em uma nova janela
+Termos de Serviço do Google
+Abre em uma nova janela
+Sua privacidade e os apps do Gemini
+Abre em uma nova janela
+O Gemini pode apresentar informações imprecisas, inclusive sobre pessoas. Por isso, cheque as respostas.

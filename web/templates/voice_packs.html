@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMC-Server - Aviso de Placas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ .Theme.PrimaryColor }};
+            --secondary-color: {{ .Theme.SecondaryColor }};
+            --background-color: {{ .Theme.BackgroundColor }};
+            --font-color: {{ if index .Theme "FontColor" }}{{ index .Theme "FontColor" }}{{ else }}#ffffff{{ end }};
+            --field-background-color: {{ if index .Theme "FieldBackgroundColor" }}{{ index .Theme "FieldBackgroundColor" }}{{ else }}rgba(255, 255, 255, 0.05){{ end }};
+        }
+        body { background-color: var(--background-color) !important; color: #ffffff !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; }
+        .sidebar { background-color: var(--secondary-color); border-right: 1px solid rgba(255, 255, 255, 0.08); min-height: 100vh; }
+        .nav-link-custom { color: #e2e8f0 !important; padding: 0.8rem 1rem; display: block; text-decoration: none; border-radius: 6px; transition: all 0.2s ease; }
+        .nav-link-custom:hover, .nav-link-custom.active { background-color: var(--primary-color); color: #ffffff !important; }
+        .topbar { background-color: var(--secondary-color); border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 1rem; }
+        
+        /* High Contrast Explicit Text Fixes */
+        p, span, label, td, th, h1, h2, h3, h4, h5, h6, div { color: #ffffff !important; }
+        .text-muted, small, .extra-small { color: #cbd5e1 !important; }
+        code { color: #38bdf8 !important; background-color: #0f172a !important; border: 1px solid #334155; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem; }
+        
+        .badge-sonic { background: linear-gradient(135deg, #00b09b, #96c93d); color: white !important; padding: 5px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+        .desc-box { background-color: #0f172a !important; border-left: 4px solid var(--primary-color); border-radius: 6px; padding: 8px 12px; font-size: 0.9rem; color: #f1f5f9 !important; }
+        .store-chip { background-color: rgba(67, 100, 247, 0.25); border: 1px solid rgba(67, 100, 247, 0.5); color: #7dd3fc !important; font-size: 0.8rem; border-radius: 12px; padding: 2px 8px; }
+        
+        /* Master Table Styling */
+        .table-master { background-color: #1e293b !important; border: 1px solid #334155 !important; border-radius: 10px; overflow: hidden; }
+        .table-master th { background-color: #0f172a !important; color: #94a3b8 !important; border-bottom: 2px solid #334155 !important; padding: 14px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; }
+        .table-master td { background-color: #1e293b !important; color: #ffffff !important; border-bottom: 1px solid #334155 !important; padding: 14px; vertical-align: middle; }
+        .table-master tr.group-row:hover td { background-color: #273549 !important; }
+        
+        /* Sub Table Detail Container */
+        .subtable-container { background-color: #0f172a !important; border: 1px solid #334155 !important; border-radius: 8px; padding: 16px; margin: 10px 0; }
+        .table-responsive-sub { min-height: 250px !important; max-height: 500px !important; overflow-y: auto !important; display: block !important; border: 1px solid #334155; border-radius: 6px; }
+        .table-audio { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .table-audio th { background-color: #1e293b !important; color: #94a3b8 !important; border-bottom: 2px solid #334155 !important; padding: 10px 12px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; position: sticky; top: 0; z-index: 10; }
+        .table-audio td { background-color: #0f172a !important; color: #ffffff !important; border-bottom: 1px solid #1e293b !important; padding: 10px 12px; vertical-align: middle; }
+        .table-audio tr:hover td { background-color: #1e293b !important; }
+        .text-file-name { color: #ffffff !important; font-weight: 600; font-size: 0.9rem; }
+        
+        /* Expand Button [+] / [-] */
+        .btn-expand { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s ease; }
+        .btn-expand:hover { transform: scale(1.1); }
+        /* Top Navbar Custom Styling */
+        .bg-dark-navbar {
+            background-color: var(--secondary-color) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        .navbar-dark .navbar-nav .nav-link {
+            color: #cbd5e0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.5rem 0.85rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .navbar-dark .navbar-nav .nav-link:hover,
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: var(--primary-color);
+        }
+        .dropdown-menu-dark {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 6px;
+        }
+        .dropdown-menu-dark .dropdown-item {
+            color: #cbd5e0;
+            font-size: 0.88rem;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        .dropdown-menu-dark .dropdown-item:hover,
+        .dropdown-menu-dark .dropdown-item.active {
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+        /* Pulse Animation for Sonic Processing Modal */
+        @keyframes sonicPulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .sonic-pulse-icon { animation: sonicPulse 1.5s infinite ease-in-out; color: #00b09b; display: inline-block; }
+    </style>
+</head>
+<body>
+
+<!-- TOP NAVBAR PULL-DOWN -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark-navbar sticky-top px-3 py-2">
+    <div class="container-fluid">
+        <!-- BRAND / LOGO -->
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            <img src="{{ .Theme.LogoURL }}" alt="Logo IMC" style="max-height: 36px;">
+            <span class="fw-bold tracking-wide small text-uppercase text-light d-none d-sm-inline">IMC Server</span>
+        </a>
+
+        <!-- MOBILE TOGGLE BUTTON -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavbarNav" aria-controls="topNavbarNav" aria-expanded="false" aria-label="Alternar navegação">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- NAV ITEMS -->
+        <div class="collapse navbar-collapse" id="topNavbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-1">
+                
+                <!-- 1. HIERARQUIA & GESTÃO -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navHierarchy" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🏢 Hierarquia & Gestão
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navHierarchy">
+                        <li><a class="dropdown-item" href="/tenants">🏢 Matrizes / Clientes</a></li>
+                        <li><a class="dropdown-item" href="/regionals">📍 Regionais</a></li>
+                        <li><a class="dropdown-item" href="/stores">🏪 Filiais (Lojas)</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/users">👤 Usuários & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 2. MONITORAMENTO & AUDITORIA -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navMonitoring" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📊 Monitoramento & Auditoria
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMonitoring">
+                        <li><a class="dropdown-item" href="/radios/status">📻 Status das Rádios</a></li>
+                        <li><a class="dropdown-item" href="/play-history">📊 Relatórios & Histórico</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/reports/access-logs"><i class="fa-solid fa-shield-halved me-1 text-info"></i> Auditoria de Logins & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 3. ACERVO & MÍDIAS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navMedia" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🎵 Acervo & Mídias
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMedia">
+                        <li><a class="dropdown-item" href="/music-styles">🎧 Estilos Musicais</a></li>
+                        <li><a class="dropdown-item" href="/video-styles">📺 Estilos de Vídeo</a></li>
+                        <li><a class="dropdown-item" href="/streamings">📻 Streamings & Rádios Online</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/grids/audio">📅 Grades de Áudio</a></li>
+                        <li><a class="dropdown-item" href="/grids/video">📺 Grades de Vídeo</a></li>
+                    </ul>
+                </li>
+
+                <!-- 4. LOCUÇÃO & AVISOS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle active" href="#" id="navWarnings" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📢 Locução & Avisos
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navWarnings">
+                        <li><a class="dropdown-item" href="/commercials">📣 Comerciais & Eventos</a></li>
+                        <li><a class="dropdown-item" href="/streamings"><i class="fa-solid fa-tower-broadcast me-2"></i> Streamings & Rádios</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item active" href="/voice-packs">🏷️ Aviso de Placas</a></li>
+                        <li><a class="dropdown-item" href="/chimes">🔔 Sinais Sonoros (Chimes)</a></li>
+                        <li><a class="dropdown-item" href="/pre-formatted-warnings">📢 Avisos Pré-Formatados</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!-- RIGHT USER / LOGOUT AREA -->
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex flex-column text-end d-none d-md-block">
+                    <span class="text-white small fw-bold">{{ .User.Name }}</span>
+                    <span class="badge bg-primary text-uppercase" style="font-size: 0.65rem;">{{ .User.Role }}</span>
+                </div>
+                <a href="/logout" class="btn btn-sm btn-outline-danger px-3 py-1">
+                    Sair
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- CONTEÚDO PRINCIPAL (LARGURA TOTAL) -->
+<main class="container-fluid px-4 py-3">
+    <!-- TOP HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h4 class="m-0 text-white fw-bold">📢 Aviso de Placas</h4>
+            <span class="text-muted" style="color: #cbd5e1 !important;">Gerenciamento estruturado de áudios agrupados por trechos com processamento Sonic Pipeline</span>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#recordingGuideModal">
+                <i class="bi bi-info-circle me-1"></i> Guia de Gravação
+            </button>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newVoicePackModal">
+                <i class="bi bi-plus-circle me-1"></i> Novo Conjunto de Placa
+            </button>
+        </div>
+    </div>
+
+            <!-- Tabela Principal de Grupos / Conjuntos (Master-Detail List) -->
+            <div class="table-responsive table-master mb-5">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;" class="text-center">Ver</th>
+                            <th>Conjunto / Diretório</th>
+                            <th>Escopo / Lojas</th>
+                            <th>Descrição / Instruções</th>
+                            <th class="text-center">Arquivos</th>
+                            <th class="text-end" style="width: 280px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ range $pack := .VoicePacks }}
+                        <!-- Linha Principal do Grupo -->
+                        <tr class="group-row" id="group_row_{{ $pack.ID }}">
+                            <td class="text-center align-middle">
+                                <button class="btn btn-outline-primary btn-expand" 
+                                        type="button" 
+                                        id="btn_expand_{{ $pack.ID }}"
+                                        onclick="togglePackGroup('{{ $pack.ID }}')"
+                                        title="Clique para expandir/recolher arquivos deste conjunto">
+                                    <i class="bi bi-plus-lg" id="icon_expand_{{ $pack.ID }}"></i>
+                                </button>
+                            </td>
+                            <td class="align-middle">
+                                <strong class="fs-5 text-white d-block">{{ $pack.Name }}</strong>
+                                <code>{{ $pack.BaseDirectory }}</code>
+                            </td>
+                            <td class="align-middle">
+                                {{ if $pack.IsGlobal }}
+                                    <span class="badge bg-success fs-6"><i class="bi bi-globe me-1"></i> Uso Global</span>
+                                {{ else if $pack.TargetStoreNames }}
+                                    <span class="badge bg-info text-dark fs-6 mb-1 d-inline-block"><i class="bi bi-shop me-1"></i> {{ len $pack.TargetStoreNames }} Loja(s)</span>
+                                    <div class="d-flex flex-wrap gap-1 mt-1">
+                                        {{ range $pack.TargetStoreNames }}
+                                        <span class="store-chip">{{ . }}</span>
+                                        {{ end }}
+                                    </div>
+                                {{ else }}
+                                    <span class="badge bg-primary fs-6"><i class="bi bi-building me-1"></i> Matriz Inteira</span>
+                                {{ end }}
+                            </td>
+                            <td class="align-middle">
+                                {{ if $pack.Description }}
+                                    <div class="desc-box">
+                                        <i class="bi bi-text-paragraph me-1 text-primary"></i> {{ $pack.Description }}
+                                    </div>
+                                {{ else }}
+                                    <span class="text-muted small">Sem descrição</span>
+                                {{ end }}
+                            </td>
+                            <td class="text-center align-middle">
+                                <span class="badge bg-secondary fs-6 px-3 py-2">
+                                    <i class="bi bi-folder-symlink me-1"></i> {{ len $pack.AudioFiles }} trechos
+                                </span>
+                            </td>
+                            <td class="text-end align-middle">
+                                <div class="btn-group">
+                                    <button type="button" 
+                                            class="btn btn-outline-info btn-sm" 
+                                            onclick="triggerSonicProcessing('/voice-packs/reprocess-sonic?id={{ $pack.ID }}', 'Conjunto Completo: {{ $pack.Name }}', {{ len $pack.AudioFiles }})" 
+                                            title="Reprocessar e normalizar todos os áudios no padrão SONIC">
+                                        <i class="bi bi-soundwave me-1"></i> Sonic
+                                    </button>
+                                    <button class="btn btn-outline-warning btn-sm" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editPackModal_{{ $pack.ID }}" 
+                                            title="Editar informações e adicionar novos trechos">
+                                        <i class="bi bi-pencil-square me-1"></i> Editar
+                                    </button>
+                                    <a href="/voice-packs/delete?id={{ $pack.ID }}" 
+                                       class="btn btn-outline-danger btn-sm" 
+                                       onclick="return confirm('Deseja excluir este conjunto de placa e todos os seus áudios?')">
+                                        <i class="bi bi-trash me-1"></i> Excluir
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Linha Expansível de Detalhes (Sub-tabela dos Áudios) -->
+                        <tr id="detail_row_{{ $pack.ID }}" style="display: none;">
+                            <td colspan="6" class="p-0 border-0">
+                                <div class="subtable-container">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h6 class="text-uppercase tracking-wider text-white fw-bold m-0">
+                                                <i class="bi bi-music-note-list text-primary me-2"></i> Áudios Cadastrados em {{ $pack.Name }} ({{ len $pack.AudioFiles }} trechos)
+                                            </h6>
+                                        </div>
+                                        <span class="badge badge-sonic"><i class="bi bi-soundwave me-1"></i> Sonic Normalizado</span>
+                                    </div>
+
+                                    <!-- Filtro de Pesquisa da Sub-tabela -->
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div class="input-group input-group-sm" style="max-width: 360px;">
+                                            <span class="input-group-text bg-secondary text-white border-secondary"><i class="bi bi-search"></i></span>
+                                            <input type="text" id="input_filter_{{ $pack.ID }}" class="form-control bg-dark text-white border-secondary" placeholder="Filtrar áudio (ex: intro, A, 5)..." onkeyup="filterPackFiles('{{ $pack.ID }}', this.value)">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="clearFilter('{{ $pack.ID }}')"><i class="bi bi-x-circle me-1"></i> Limpar</button>
+                                        </div>
+                                        <span style="color: #38bdf8 !important; font-weight: 600;" class="small"><i class="bi bi-check2-circle me-1"></i> Exibindo todos os {{ len $pack.AudioFiles }} trechos</span>
+                                    </div>
+
+                                    <!-- Tabela de Áudios -->
+                                    <div class="table-responsive-sub">
+                                        <table class="table table-audio mb-0" id="table_pack_{{ $pack.ID }}">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width: 180px;">Trecho / Slot</th>
+                                                    <th>Nome do Arquivo</th>
+                                                    <th>Tamanho</th>
+                                                    <th>Player de Áudio</th>
+                                                    <th class="text-end" style="width: 180px;">Ações</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {{ range $file := $pack.AudioFiles }}
+                                                <tr class="file-row" data-filename="{{ $file.Name }}">
+                                                    <td>
+                                                        {{ if eq $file.Name "intro.mp3" }}
+                                                            <span class="badge bg-primary fs-6"><i class="bi bi-play-circle me-1"></i> 1. Intro</span>
+                                                        {{ else if eq $file.Name "repetindo.mp3" }}
+                                                            <span class="badge bg-warning text-dark fs-6"><i class="bi bi-repeat me-1"></i> 2. Repetindo</span>
+                                                        {{ else if eq $file.Name "outro.mp3" }}
+                                                            <span class="badge bg-success fs-6"><i class="bi bi-stop-circle me-1"></i> 3. Outro</span>
+                                                        {{ else }}
+                                                            <span class="badge bg-secondary fs-6"><i class="bi bi-fonts me-1"></i> Caracter</span>
+                                                        {{ end }}
+                                                    </td>
+                                                    <td><span class="text-file-name"><code>{{ $file.Name }}</code></span></td>
+                                                    <td><span style="color: #cbd5e1 !important;">{{ $file.SizeFormatted }}</span></td>
+                                                    <td>
+                                                        <audio controls src="{{ $file.Path }}" preload="metadata" style="height: 36px; width: 280px;"></audio>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <div class="btn-group">
+                                                            <button type="button" 
+                                                                    class="btn btn-outline-info btn-sm" 
+                                                                    onclick="triggerSonicProcessing('/voice-packs/reprocess-file-sonic?id={{ $pack.ID }}&file={{ $file.Name }}', 'Arquivo {{ $file.Name }}', 1)"
+                                                                    title="Reprocessar este áudio no padrão SONIC">
+                                                                <i class="bi bi-soundwave me-1"></i> Sonic
+                                                            </button>
+                                                            <a href="/voice-packs/delete-file?id={{ $pack.ID }}&file={{ $file.Name }}" 
+                                                               class="btn btn-outline-danger btn-sm" 
+                                                               onclick="return confirm('Deseja excluir este áudio do conjunto?')" 
+                                                               title="Excluir este áudio">
+                                                                <i class="bi bi-trash me-1"></i> Excluir
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {{ else }}
+                                                <tr>
+                                                    <td colspan="5" class="text-center text-muted py-4">Nenhum arquivo enviado ainda.</td>
+                                                </tr>
+                                                {{ end }}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Modal Editar Conjunto de Placa -->
+                        <div class="modal fade" id="editPackModal_{{ $pack.ID }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content bg-dark text-white border-secondary">
+                                    <div class="modal-header border-secondary">
+                                        <h5 class="modal-title"><i class="bi bi-pencil-square text-warning me-2"></i> Editar Conjunto: {{ $pack.Name }}</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form action="/voice-packs/update" method="POST" enctype="multipart/form-data">
+                                        <input type="hidden" name="id" value="{{ $pack.ID }}">
+                                        
+                                        <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+                                            <!-- Dados Básicos -->
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold text-white">Nome do Conjunto / Diretório *</label>
+                                                <input type="text" name="name" class="form-control bg-secondary text-white border-secondary" value="{{ $pack.Name }}" required>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold text-white">Descrição / Instruções de Gravação</label>
+                                                <textarea name="description" class="form-control bg-secondary text-white border-secondary" rows="2">{{ $pack.Description }}</textarea>
+                                            </div>
+
+                                            <!-- Escopo e Atribuição de Lojas -->
+                                            <div class="mb-3 p-3 rounded border border-secondary" style="background-color: rgba(255, 255, 255, 0.03);">
+                                                <label class="form-label fw-bold d-block text-white"><i class="bi bi-building-gear me-1"></i> Escopo de Distribuição</label>
+                                                
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="is_global_edit_{{ $pack.ID }}" name="is_global" value="true" {{ if $pack.IsGlobal }}checked{{ end }} onchange="toggleEditStoreSelection('{{ $pack.ID }}')">
+                                                    <label class="form-check-label fw-semibold text-info" for="is_global_edit_{{ $pack.ID }}">
+                                                        🌐 Uso Global (Disponibilizar automaticamente para TODAS as lojas da rede)
+                                                    </label>
+                                                </div>
+
+                                                <div id="store_selection_container_edit_{{ $pack.ID }}" class="mt-3" {{ if $pack.IsGlobal }}style="display: none;"{{ end }}>
+                                                    <label class="form-label small text-muted">Selecione as lojas específicas da Matriz que receberão esta placa (deixe desmarcado para todas as lojas da matriz):</label>
+                                                    <div class="row g-2" style="max-height: 120px; overflow-y: auto;">
+                                                        {{ range $.Stores }}
+                                                        <div class="col-md-6">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="store_ids" value="{{ .ID }}" id="chk_edit_store_{{ $pack.ID }}_{{ .ID }}">
+                                                                <label class="form-check-label small text-white" for="chk_edit_store_{{ $pack.ID }}_{{ .ID }}">
+                                                                    🏬 {{ .StoreName }} <code>({{ if .StoreNumber }}{{ .StoreNumber }}{{ else }}Sem código{{ end }})</code>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        {{ end }}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <h6 class="text-uppercase tracking-wider text-info border-bottom border-secondary pb-2 mb-3"><i class="bi bi-plus-circle me-1"></i> Enviar / Substituir Trechos de Áudio (Sonic Pipeline)</h6>
+
+                                            <!-- Envio / Substituição de Áudios -->
+                                            <div class="row g-3">
+                                                <div class="col-md-12">
+                                                    <label class="form-label small fw-bold text-white">1. Frase de Introdução (intro.mp3)</label>
+                                                    <input type="file" name="file_intro" class="form-control form-control-sm bg-secondary text-white border-secondary" accept="audio/*">
+                                                </div>
+
+                                                <div class="col-md-12">
+                                                    <label class="form-label small fw-bold text-warning">2. Frase de Repetição (repetindo.mp3)</label>
+                                                    <input type="file" name="file_repetindo" class="form-control form-control-sm bg-secondary text-white border-secondary" accept="audio/*">
+                                                </div>
+
+                                                <div class="col-md-12">
+                                                    <div class="slot-header"><i class="bi bi-fonts me-1"></i> 3. Caracteres Individuais (Letras A a Z)</div>
+                                                    <input type="file" name="files_letters" class="form-control form-control-sm bg-secondary text-white border-secondary" multiple accept="audio/*">
+                                                </div>
+
+                                                <div class="col-md-12">
+                                                    <div class="slot-header"><i class="bi bi-123 me-1"></i> 4. Dígitos Individuais (Números 0 a 9)</div>
+                                                    <input type="file" name="files_numbers" class="form-control form-control-sm bg-secondary text-white border-secondary" multiple accept="audio/*">
+                                                </div>
+
+                                                <div class="col-md-12">
+                                                    <label class="form-label small fw-bold text-white">5. Frase de Encerramento (outro.mp3)</label>
+                                                    <input type="file" name="file_outro" class="form-control form-control-sm bg-secondary text-white border-secondary" accept="audio/*">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-secondary">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-warning"><i class="bi bi-check2-circle me-1"></i> Salvar Alterações</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{ else }}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-5">
+                                <i class="bi bi-card-checklist fs-1 mb-2 text-primary d-block"></i>
+                                <h5 class="text-white">Nenhum Conjunto de Placa Cadastrado</h5>
+                                <p class="small text-muted mb-0">Clique em <strong>"Novo Conjunto de Placa"</strong> para registrar áudios para avisos de veículos.</p>
+                            </td>
+                        </tr>
+                        {{ end }}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+<!-- Modal de Carregamento & Progresso do Sonic Pipeline -->
+<div class="modal fade" id="sonicLoadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-info shadow-lg p-3">
+            <div class="modal-body text-center py-4">
+                <div class="mb-3">
+                    <i class="bi bi-soundwave fs-1 sonic-pulse-icon"></i>
+                </div>
+                <h4 class="fw-bold text-info mb-2" id="sonicModalTitle">⚡ Processando no Padrão SONIC Pipeline</h4>
+                <p class="text-light mb-3" id="sonicModalTarget">Normalizando volume para <strong>-14 LUFS</strong>, equalizando frequências e curva de loudness...</p>
+                
+                <div class="progress bg-secondary mb-3" style="height: 12px;">
+                    <div id="sonicProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" style="width: 100%;"></div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center small px-2">
+                    <span class="text-muted"><i class="bi bi-clock-history me-1"></i> Tempo Estimado:</span>
+                    <strong class="text-warning" id="sonicTimeEstimate">~5 a 10 segundos</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Novo Conjunto de Placa -->
+<div class="modal fade" id="newVoicePackModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-card-heading text-primary me-2"></i> Novo Conjunto de Placa</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/voice-packs/create" method="POST" enctype="multipart/form-data">
+                <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+                    <!-- Dados Básicos -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white">Nome do Conjunto / Diretório *</label>
+                        <input type="text" name="name" class="form-control bg-secondary text-white border-secondary" placeholder="Ex: Aline Mota 01" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white">Descrição / Instruções de Gravação</label>
+                        <textarea name="description" class="form-control bg-secondary text-white border-secondary" rows="2" placeholder="Ex: Aviso Feminino de Estacionamento"></textarea>
+                    </div>
+
+                    <!-- Escopo e Atribuição de Lojas -->
+                    <div class="mb-3 p-3 rounded border border-secondary" style="background-color: rgba(255, 255, 255, 0.03);">
+                        <label class="form-label fw-bold d-block text-white"><i class="bi bi-building-gear me-1"></i> Escopo de Distribuição</label>
+                        
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="is_global" name="is_global" value="true" onchange="toggleStoreSelection()">
+                            <label class="form-check-label fw-semibold text-info" for="is_global">
+                                🌐 Uso Global (Disponibilizar automaticamente para TODAS as lojas da rede)
+                            </label>
+                        </div>
+
+                        <div id="store_selection_container" class="mt-3">
+                            <label class="form-label small text-muted">Selecione as lojas específicas da Matriz que receberão esta placa (deixe desmarcado para todas as lojas da matriz):</label>
+                            <div class="row g-2" style="max-height: 120px; overflow-y: auto;">
+                                {{ range .Stores }}
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="store_ids" value="{{ .ID }}" id="chk_store_{{ .ID }}">
+                                        <label class="form-check-label small text-white" for="chk_store_{{ .ID }}">
+                                            🏬 {{ .StoreName }} <code>({{ if .StoreNumber }}{{ .StoreNumber }}{{ else }}Sem código{{ end }})</code>
+                                        </label>
+                                    </div>
+                                </div>
+                                {{ else }}
+                                <div class="col-12 text-muted small">Nenhuma loja cadastrada.</div>
+                                {{ end }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="text-uppercase tracking-wider text-info border-bottom border-secondary pb-2 mb-3"><i class="bi bi-input-cursor-text me-1"></i> Trechos de Áudio do Conjunto (Sonic Pipeline)</h6>
+
+                    <!-- Campos Estruturados de Áudio -->
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold text-white">1. Frase de Introdução (intro.mp3) *</label>
+                            <input type="file" name="file_intro" class="form-control form-control-sm bg-secondary text-white border-secondary" accept="audio/*">
+                            <small class="text-muted extra-small">Frase inicial do anúncio (ex: <em>"Atenção ao proprietário do veículo placa..."</em>).</small>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold text-warning">2. Frase de Repetição (repetindo.mp3) *</label>
+                            <input type="file" name="file_repetindo" class="form-control form-control-sm bg-secondary text-white border-secondary" accept="audio/*">
+                            <small class="text-muted extra-small">Frase falada antes de repetir a placa (ex: <em>"Repetindo..."</em>). <strong>Obrigatório para a regra do player local.</strong></small>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="slot-header"><i class="bi bi-fonts me-1"></i> 3. Caracteres Individuais (Letras A a Z)</div>
+                            <input type="file" name="files_letters" class="form-control form-control-sm bg-secondary text-white border-secondary" multiple accept="audio/*">
+                            <small class="text-muted extra-small">Selecione todos os arquivos de letras (ex: <code>A.mp3</code>, <code>B.mp3</code>, ..., <code>Z.mp3</code>).</small>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="slot-header"><i class="bi bi-123 me-1"></i> 4. Dígitos Individuais (Números 0 a 9)</div>
+                            <input type="file" name="files_numbers" class="form-control form-control-sm bg-secondary text-white border-secondary" multiple accept="audio/*">
+                            <small class="text-muted extra-small">Selecione todos os arquivos de dígitos (ex: <code>0.mp3</code>, <code>1.mp3</code>, ..., <code>9.mp3</code>).</small>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold text-white">5. Frase de Encerramento (outro.mp3) *</label>
+                            <input type="file" name="file_outro" class="form-control form-control-sm bg-secondary text-white border-secondary" accept="audio/*">
+                            <small class="text-muted extra-small">Frase final do anúncio (ex: <em>"...favor comparecer ao estacionamento principal. Obrigado."</em>).</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-soundwave me-1"></i> Salvar e Processar no Sonic</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Guia de Gravação -->
+<div class="modal fade" id="recordingGuideModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-info-circle text-info me-2"></i> Guia Estrutural de Gravação de Placas</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-muted">Ordem exata de execução executada pelo player local (<code>imc-audio-local</code>):</p>
+                <div class="p-3 mb-3 rounded bg-black text-center font-monospace text-warning border border-secondary fs-6">
+                    intro ➔ [placa] ➔ outro ➔ <strong>repetindo</strong> ➔ intro ➔ [placa] ➔ outro
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded border border-secondary" style="background-color: rgba(255,255,255,0.02);">
+                            <h6><i class="bi bi-1-circle text-primary me-1"></i> Trechos Principais</h6>
+                            <ul class="small text-muted mb-0 ps-3">
+                                <li><code>intro.mp3</code>: Frase inicial (ex: <em>"Atenção ao proprietário do veículo placa..."</em>).</li>
+                                <li><code>outro.mp3</code>: Frase final (ex: <em>"...favor comparecer ao estacionamento."</em>).</li>
+                                <li><code>repetindo.mp3</code>: Frase de transição (ex: <em>"Repetindo..."</em>).</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded border border-secondary" style="background-color: rgba(255,255,255,0.02);">
+                            <h6><i class="bi bi-2-circle text-primary me-1"></i> Caracteres (Letras & Números)</h6>
+                            <ul class="small text-muted mb-0 ps-3">
+                                <li><code>a.mp3</code> a <code>z.mp3</code>: Áudio de cada letra (minúsculo).</li>
+                                <li><code>0.mp3</code> a <code>9.mp3</code>: Áudio de cada dígito.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar Guia</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function triggerSonicProcessing(url, name, count) {
+        if (!confirm('Deseja reprocessar ' + name + ' no padrão SONIC (-14 LUFS)?')) {
+            return;
+        }
+
+        const modalEl = document.getElementById('sonicLoadingModal');
+        const titleEl = document.getElementById('sonicModalTitle');
+        const targetEl = document.getElementById('sonicModalTarget');
+        const timeEl = document.getElementById('sonicTimeEstimate');
+
+        if (count > 1) {
+            if (titleEl) titleEl.innerText = '⚡ Processando ' + count + ' Áudios no Padrão SONIC';
+            if (targetEl) targetEl.innerHTML = 'Normalizando volume para <strong>-14 LUFS</strong> em todos os ' + count + ' trechos do conjunto <em>(' + name + ')</em>...';
+            if (timeEl) timeEl.innerText = '~' + Math.max(3, Math.ceil(count * 0.25)) + ' a ' + Math.max(6, Math.ceil(count * 0.5)) + ' segundos';
+        } else {
+            if (titleEl) titleEl.innerText = '⚡ Processando Áudio no Padrão SONIC';
+            if (targetEl) targetEl.innerHTML = 'Normalizando volume para <strong>-14 LUFS</strong> em <em>' + name + '</em>...';
+            if (timeEl) timeEl.innerText = '~2 a 4 segundos';
+        }
+
+        const bsModal = new bootstrap.Modal(modalEl);
+        bsModal.show();
+
+        setTimeout(() => {
+            window.location.href = url;
+        }, 300);
+    }
+
+    function togglePackGroup(id) {
+        const detailRow = document.getElementById('detail_row_' + id);
+        const icon = document.getElementById('icon_expand_' + id);
+        const btn = document.getElementById('btn_expand_' + id);
+
+        if (detailRow) {
+            if (detailRow.style.display === 'none' || detailRow.style.display === '') {
+                detailRow.style.display = 'table-row';
+                if (icon) {
+                    icon.classList.remove('bi-plus-lg');
+                    icon.classList.add('bi-dash-lg');
+                }
+                if (btn) {
+                    btn.classList.remove('btn-outline-primary');
+                    btn.classList.add('btn-primary');
+                }
+            } else {
+                detailRow.style.display = 'none';
+                if (icon) {
+                    icon.classList.remove('bi-dash-lg');
+                    icon.classList.add('bi-plus-lg');
+                }
+                if (btn) {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-outline-primary');
+                }
+            }
+        }
+    }
+
+    function toggleStoreSelection() {
+        const isGlobal = document.getElementById('is_global').checked;
+        const container = document.getElementById('store_selection_container');
+        if (isGlobal) {
+            container.style.display = 'none';
+        } else {
+            container.style.display = 'block';
+        }
+    }
+
+    function toggleEditStoreSelection(id) {
+        const isGlobal = document.getElementById('is_global_edit_' + id).checked;
+        const container = document.getElementById('store_selection_container_edit_' + id);
+        if (isGlobal) {
+            container.style.display = 'none';
+        } else {
+            container.style.display = 'block';
+        }
+    }
+
+    function filterPackFiles(packId, query) {
+        const table = document.getElementById('table_pack_' + packId);
+        if (!table) return;
+        const rows = table.querySelectorAll('.file-row');
+        const q = query.toLowerCase().trim();
+        rows.forEach(row => {
+            const filename = row.getAttribute('data-filename').toLowerCase();
+            if (filename.includes(q)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    function clearFilter(packId) {
+        const input = document.getElementById('input_filter_' + packId);
+        if (input) {
+            input.value = '';
+            filterPackFiles(packId, '');
+        }
+    }
+</script>
+</body>
+</html>

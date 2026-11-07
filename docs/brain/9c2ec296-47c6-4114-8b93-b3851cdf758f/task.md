@@ -1,0 +1,16 @@
+- [x] Parar o player anterior com deadlock e limpar processos do Liquidsoap
+- [x] Identificar alternativa estável ao `crossfade` para evitar deadlocks de clock no Windows
+- [x] Modificar `player.liq.tmpl` para usar `fade.in` e `fade.out` com `track_sensitive=true`
+- [x] Identificar e corrigir o bug de comerciais pulados após restart (resets de status `QUEUED` para `PENDING`) em `db.go` e `main.go`
+- [x] Compilar o executável `imc-audio-local.exe` usando `go build`
+- [x] Iniciar o novo executável e verificar logs de inicialização e sintaxe do Liquidsoap
+- [x] Monitorar a execução do player, testar transições (skips) e validar que o tempo avança normalmente
+- [x] Estender a verificação de mudanças de configuração (`checkIfConfigChanged`) em `sync.go`
+  - [x] Implementar comparação de metadados das músicas (Cue In, Cue Out, Amplify, Duração)
+  - [x] Implementar comparação de metadados dos comerciais (Cue In, Cue Out, Amplify, Duração)
+- [x] Compilar o player local e reiniciar o executável
+- [x] Validar a sincronização manual alterando cue points e forçando sync
+- [x] Ajustar restrição de porcentagem de blocos para ofertas e institucionais
+  - [x] Implementar filtro de blocos elegíveis na distribuição antecipada (`PreDistributeCommercials` em `scheduler.go`)
+  - [x] Compilar o player local e reiniciar o executável
+  - [x] Validar a distribuição dinâmica de ofertas/institucionais no dashboard de diagnósticos

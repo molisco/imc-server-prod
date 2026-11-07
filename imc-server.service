@@ -1,0 +1,17 @@
+[Unit]
+Description=IMC Server Central Brain Service (Production - indoormedia.com.br)
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=neoroute
+WorkingDirectory=/home/neoroute/imc-server
+Environment=DATABASE_URL=postgres://neoroute:@@Mo1isc00@@@127.0.0.1:5432/imc_server?sslmode=disable
+ExecStart=/home/neoroute/imc-server/imc-server
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

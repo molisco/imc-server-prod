@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual do Administrador e Gestor - IMC-Server</title>
+    <!-- Bootstrap 5 CSS & FontAwesome Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #4364f7;
+            --primary-dark: #1e3a8a;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --bg-dark: #0b0f19;
+            --bg-card: #131b2e;
+            --bg-card-alt: #1a243d;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Top Action Bar */
+        .manual-top-bar {
+            background: rgba(11, 15, 25, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0.75rem 2rem;
+        }
+
+        .btn-pdf {
+            background: linear-gradient(135deg, #e11d48, #be123c);
+            color: #ffffff;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            padding: 0.55rem 1.25rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);
+            transition: all 0.2s ease;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-pdf:hover {
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(225, 29, 72, 0.5);
+            color: #ffffff;
+        }
+
+        .container-manual {
+            max-width: 1140px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Hero Header */
+        .manual-hero {
+            background: linear-gradient(135deg, rgba(67, 100, 247, 0.18) 0%, rgba(139, 92, 246, 0.12) 100%);
+            border: 1px solid rgba(67, 100, 247, 0.3);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .manual-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15), transparent 70%);
+            pointer-events: none;
+        }
+
+        .manual-badge {
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            padding: 0.35rem 0.85rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        /* Table of Contents */
+        .toc-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .toc-list li a {
+            color: var(--text-muted);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .toc-list li a:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(4px);
+        }
+
+        .toc-number {
+            background: rgba(67, 100, 247, 0.2);
+            color: #60a5fa;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        /* Content Sections */
+        .manual-section {
+            margin-bottom: 3.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(67, 100, 247, 0.3);
+        }
+
+        .section-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin: 0;
+            color: #ffffff;
+        }
+
+        /* UI Mockups */
+        .ui-mockup {
+            background: #0f1422;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        }
+
+        .mockup-header {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Callout Boxes */
+        .callout {
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin: 1.25rem 0;
+            border-left: 4px solid;
+        }
+
+        .callout-info {
+            background: rgba(6, 182, 212, 0.08);
+            border-color: var(--accent-cyan);
+            color: #e0f2fe;
+        }
+
+        .callout-tip {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: var(--accent-green);
+            color: #d1fae5;
+        }
+
+        .callout-warning {
+            background: rgba(245, 158, 11, 0.08);
+            border-color: var(--accent-amber);
+            color: #fef3c7;
+        }
+
+        .callout-title {
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Feature Cards Grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.25rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(67, 100, 247, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .feature-card h5 {
+            color: #ffffff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.75rem;
+        }
+
+        /* Tables */
+        .table-manual {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+
+        .table-manual th {
+            background: var(--bg-card-alt);
+            color: #ffffff;
+            padding: 0.85rem 1.25rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table-manual td {
+            background: var(--bg-card);
+            padding: 0.85rem 1.25rem;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table-manual tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Footer */
+        .manual-footer {
+            border-top: 1px solid var(--border-color);
+            padding: 2.5rem 0;
+            margin-top: 4rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* PRINT STYLES FOR PDF EXPORT */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #0f172a !important;
+                font-size: 11pt;
+            }
+
+            .manual-top-bar, .btn-pdf, .btn-print-hide {
+                display: none !important;
+            }
+
+            .container-manual {
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .manual-hero {
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #0f172a !important;
+                page-break-after: avoid;
+            }
+
+            .manual-section {
+                page-break-inside: avoid;
+                margin-bottom: 2rem !important;
+            }
+
+            .section-title {
+                color: #0f172a !important;
+            }
+
+            .toc-card, .feature-card, .ui-mockup {
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #0f172a !important;
+                box-shadow: none !important;
+            }
+
+            .table-manual th {
+                background: #e2e8f0 !important;
+                color: #0f172a !important;
+                border-color: #cbd5e1 !important;
+            }
+
+            .table-manual td {
+                background: #ffffff !important;
+                color: #334155 !important;
+                border-color: #cbd5e1 !important;
+            }
+
+            .callout {
+                background: #f1f5f9 !important;
+                color: #0f172a !important;
+                border-left-width: 4px !important;
+            }
+
+            .callout-info { border-color: #0284c7 !important; }
+            .callout-tip { border-color: #16a34a !important; }
+            .callout-warning { border-color: #d97706 !important; }
+
+            h1, h2, h3, h4, h5 {
+                color: #0f172a !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de Ações Superior -->
+    <header class="manual-top-bar d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+            <span class="badge bg-primary px-3 py-2 fw-bold" style="letter-spacing: 1px;">IMC-SERVER</span>
+            <span class="fw-bold text-white fs-6">Manual do Administrador & Gestor — IMC Central</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn-pdf" onclick="window.print()">
+                <i class="fa-solid fa-file-pdf fs-5"></i> Exportar para PDF / Imprimir
+            </button>
+        </div>
+    </header>
+
+    <div class="container-manual">
+
+        <!-- Hero de Abertura -->
+        <div class="manual-hero">
+            <span class="manual-badge">Documentação Administrativa Master</span>
+            <h1 class="fw-extrabold text-white mb-2" style="font-size: 2.2rem;">Manual do Administrador do IMC-Server</h1>
+            <p class="text-muted fs-5 mb-0" style="max-width: 850px;">
+                Guia completo de governança, parametrização de clientes, filiais, curadoria musical, montagem de grades de áudio 24 horas, veiculação de comerciais e auditoria de transmissão (Proof-of-Play).
+            </p>
+        </div>
+
+        <!-- Índice Rápido -->
+        <div class="toc-card">
+            <h5 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                <i class="fa-solid fa-list-check text-primary"></i> Módulos do Sistema Central
+            </h5>
+            <ul class="toc-list">
+                <li><a href="#sec-1"><span class="toc-number">1</span> Arquitetura Central & Orquestração</a></li>
+                <li><a href="#sec-2"><span class="toc-number">2</span> Clientes & Redes (/tenants)</a></li>
+                <li><a href="#sec-3"><span class="toc-number">3</span> Filiais & Lojas (/stores)</a></li>
+                <li><a href="#sec-4"><span class="toc-number">4</span> Usuários & Permissões (/users)</a></li>
+                <li><a href="#sec-5"><span class="toc-number">5</span> Estilos Musicais & Selo SONIC (/music-styles)</a></li>
+                <li><a href="#sec-6"><span class="toc-number">6</span> Grades de Áudio 24h (/grids/audio)</a></li>
+                <li><a href="#sec-7"><span class="toc-number">7</span> Comerciais, Avisos & Chimes (/commercials)</a></li>
+                <li><a href="#sec-8"><span class="toc-number">8</span> Streamings & Rádios Online (/streamings)</a></li>
+                <li><a href="#sec-9"><span class="toc-number">9</span> Monitoramento & Relatórios (/play-history)</a></li>
+                <li><a href="#sec-10"><span class="toc-number">10</span> Web Terminal & Infraestrutura (/ws/terminal)</a></li>
+            </ul>
+        </div>
+
+        <!-- SEÇÃO 1: ARQUITETURA -->
+        <section id="sec-1" class="manual-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-network-wired"></i></div>
+                <h2 class="section-title">1. Arquitetura Central & Orquestração</h2>
+            </div>
+            <p>
+                O <strong>IMC-Server</strong> funciona como o cérebro centralizador de toda a rede de rádio indoor. Ele gerencia as diretrizes musicais, horários de funcionamento, veiculação de spots e distribui as configurações automaticamente para as instâncias de playout de cada loja.
+            </p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h5><i class="fa-solid fa-cubes text-info"></i> Isolamento por Contêiner Docker</h5>
+                    <p class="text-muted small mb-0">
+                        Cada filial roda uma instância independente de Liquidsoap e SQLite local. Se uma loja sofrer perda de internet, todas as demais continuam operando normalmente sem qualquer impacto cruzado.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <h5><i class="fa-solid fa-clock text-warning"></i> Sincronização por Timezone (TZ)</h5>
+                    <p class="text-muted small mb-0">
+                        O servidor respeita o fuso horário geográfico cadastrado em cada loja (ex: <code>America/Sao_Paulo</code>, <code>America/Manaus</code>), garantindo que os blocos comerciais entrem no horário correto de cada região.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 2: TENANTS -->
+        <section id="sec-2" class="manual-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-building"></i></div>
+                <h2 class="section-title">2. Clientes & Redes (Tenants)</h2>
+            </div>
+            <p>
+                Acessível em <code>/tenants</code>, permite cadastrar as redes de lojas, marcas ou shoppings clientes atendidos pela sua central.
+            </p>
+            <table class="table-manual">
+                <thead>
+                    <tr>
+                        <th>Campo</th>
+                        <th>Tipo</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Razão Social / Nome Fantasia</strong></td>
+                        <td>Texto</td>
+                        <td>Nome oficial da marca ou empresa cliente.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Status (Ativo / Inativo)</strong></td>
+                        <td>Toggle</td>
+                        <td>Controla se as lojas vinculadas à rede estão autorizadas a transmitir.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- SEÇÃO 3: STORES -->
+        <section id="sec-3" class="manual-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-store"></i></div>
+                <h2 class="section-title">3. Filiais & Lojas (Stores)</h2>
+            </div>
+            <p>
+                Acessível em <code>/stores</code>, gerencia as filiais físicas. Ao criar uma loja, o IMC-Server gera automaticamente o link exclusivo do Web Player (<code>/player/{id}</code>) e inicializa a infraestrutura de transmissão da filial.
+            </p>
+
+            <div class="callout callout-info">
+                <div class="callout-title"><i class="fa-solid fa-sliders"></i> Atribuição de Grade de Áudio:</div>
+                No formulário da loja, o campo <strong>"Grade de Áudio Semanal"</strong> define qual planejamento de 24h a loja seguirá em cada dia da semana (Domingo a Sábado + Feriados).
+            </div>
+        </section>
+
+        <!-- SEÇÃO 4: USERS -->
+        <section id="sec-4" class="manual-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-users-gear"></i></div>
+                <h2 class="section-title">4. Usuários & Perfis de Acesso (RBAC)</h2>
+            </div>
+            <p>
+                Acessível em <code>/users</code>, implementa o controle rigoroso de privilégios de acesso:
+            </p>
+
+            <table class="table-manual">
+                <thead>
+                    <tr>
+                        <th>Nível de Permissão</th>
+                        <th>ID</th>
+                        <th>Escopo de Acesso Permitido</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge bg-danger">Administrador</span></td>
+                        <td>1</td>
+                        <td>Acesso total a todos os menus, criação de usuários, infraestrutura Docker e terminal.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge bg-primary">Programador / Gestor</span></td>
+                        <td>2</td>
+                        <td>Gestão de catálogo musical, criação de grades, comerciais e relatórios.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge bg-secondary">Operador de Loja</span></td>
+                        <td>3</td>
+                        <td>Acesso restrito exclusivamente ao Web Player da sua loja (<code>/player/{store_id}</code>).</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- SEÇÃO 5: MUSIC STYLES -->
+        <section id="sec-5" class="manual-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-headphones"></i></div>
+                <h2 class="section-title">5. Estilos Musicais & Selo de Qualidade SONIC</h2>
+            </div>
+            <p>
+                Acessível em <code>/music-styles</code>, organiza o acervo fonográfico da rádio:
+            </p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h5><i class="fa-solid fa-wand-magic-sparkles text-info"></i> Selo SONIC de Alta Fidelidade</h5>
+                    <p class="text-muted small mb-0">
+                        Cada faixa sincronizada passa pela esteira de normalização automática (-14 LUFS) e cálculo de pontos inteligentes de entrada e saída (CUE IN / CUE OUT), eliminando silêncios no início/fim das músicas.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <h5><i class="fa-solid fa-tower-broadcast text-cyan"></i> Suporte a Estilos STREAM</h5>
+                    <p class="text-muted small mb-0">
+                        Permite criar estilos que apontam para URLs de rádios web online (Icecast/Shoutcast), permitindo mesclar estilos locais e streaming na mesma grade semanal.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 6: AUDIO GRIDS -->
+        <section id="sec-6" class="manual-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-calendar-days"></i></div>
+                <h2 class="section-title">6. Grades de Áudio 24 Horas</h2>
+            </div>
+            <p>
+                Acessível em <code>/grids/audio</code>, permite programar a linha do tempo sonora das 00:00 às 23:59:
+            </p>
+            <ul>
+                <li><strong>Blocos Musicais (5m, 15m, 60m):</strong> Selecione um ou mais estilos para rotacionar no período.</li>
+                <li><strong>Blocos Comerciais:</strong> Defina os intervalos de veiculação e limites de duração dos anúncios.</li>
+                <li><strong>Replicação Rápida:</strong> Botões de preenchimento em lote para replicar o mesmo estilo musical ao longo de várias horas.</li>
+            </ul>
+        </section>
+
+        <!-- SEÇÃO 7: COMMERCIALS -->
+        <section id="sec-7" class="manual-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-bullhorn"></i></div>
+                <h2 class="section-title">7. Comerciais, Avisos & Chimes (Din-Don)</h2>
+            </div>
+            <p>
+                Acessível em <code>/commercials</code>, <code>/voice-packs</code> e <code>/chimes</code>:
+            </p>
+            <table class="table-manual">
+                <thead>
+                    <tr>
+                        <th>Tipo de Mídia</th>
+                        <th>Comportamento no Playout</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Spot Comercial / Oferta</strong></td>
+                        <td>Aumenta automaticamente o volume do mixer em +20% para garantir clareza na locução.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Avisos com Pacote de Voz</strong></td>
+                        <td>Executa a chamada de veículos com voz neural realista e vinheta de abertura.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hora Certa & Temperatura</strong></td>
+                        <td>Sintetiza e anuncia a hora e clima local nos blocos programados.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- SEÇÃO 8: STREAMINGS -->
+        <section id="sec-8" class="manual-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-tower-broadcast"></i></div>
+                <h2 class="section-title">8. Streamings & Rádios Online</h2>
+            </div>
+            <p>
+                Acessível em <code>/streamings</code>, oferece um painel central de monitoramento em tempo real:
+            </p>
+            <ul>
+                <li><strong>Teste de Conectividade Automático:</strong> Testa as URLs das emissoras e exibe a badge verde <code>OK (200)</code>.</li>
+                <li><strong>Mapeamento de Lojas no Ar:</strong> Identifica quais filiais estão conectadas a cada estação no minuto atual.</li>
+                <li><strong>Pré-escuta no Painel:</strong> Permite ao gestor ouvir a estação diretamente no navegador antes de colocá-la na grade.</li>
+            </ul>
+        </section>
+
+        <!-- SEÇÃO 9: AUDITORIA -->
+        <section id="sec-9" class="manual-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                <h2 class="section-title">9. Monitoramento & Relatórios (Proof-of-Play)</h2>
+            </div>
+            <p>
+                Acessível em <code>/play-history</code> e <code>/radios/status</code>:
+            </p>
+            <div class="callout callout-tip">
+                <div class="callout-title"><i class="fa-solid fa-file-invoice"></i> Comprovante Oficial de Veiculação:</div>
+                Gere relatórios auditáveis com data, hora, segundo exato e status de cada comercial executado nas lojas para apresentação a anunciantes e patrocinadores.
+            </div>
+        </section>
+
+        <!-- SEÇÃO 10: TERMINAL -->
+        <section id="sec-10" class="manual-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-terminal"></i></div>
+                <h2 class="section-title">10. Web Terminal & Infraestrutura</h2>
+            </div>
+            <p>
+                Acessível em <code>/ws/terminal</code>, permite aos administradores abrir sessões de console PTY direto pelo navegador para inspecionar contêineres Docker, consultar logs do sistema e verificar a saúde dos serviços de transmissão.
+            </p>
+        </section>
+
+        <!-- Rodapé do Manual -->
+        <footer class="manual-footer">
+            <div class="fw-bold text-white mb-1">SISTEMA IMC — CENTRAL DE GESTÃO E ARQUITETURA</div>
+            <div>Versão da Plataforma: <strong>v1.5.0 (SONIC Edition)</strong> • Documento Homologado para Administradores</div>
+        </footer>
+
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

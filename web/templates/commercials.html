@@ -1,0 +1,2965 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMC-Server - Comerciais & Eventos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: {{ .Theme.PrimaryColor }};
+            --secondary-color: {{ .Theme.SecondaryColor }};
+            --background-color: {{ .Theme.BackgroundColor }};
+            --font-color: {{ if index .Theme "FontColor" }}{{ index .Theme "FontColor" }}{{ else }}#ffffff{{ end }};
+            --field-background-color: {{ if index .Theme "FieldBackgroundColor" }}{{ index .Theme "FieldBackgroundColor" }}{{ else }}rgba(255, 255, 255, 0.05){{ end }};
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--font-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Top Navbar Custom Styling */
+        .bg-dark-navbar {
+            background-color: var(--secondary-color) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        .navbar-dark .navbar-nav .nav-link {
+            color: #cbd5e0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.5rem 0.85rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .navbar-dark .navbar-nav .nav-link:hover,
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: var(--primary-color);
+        }
+        .dropdown-menu-dark {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 6px;
+        }
+        .dropdown-menu-dark .dropdown-item {
+            color: #cbd5e0;
+            font-size: 0.88rem;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        .dropdown-menu-dark .dropdown-item:hover,
+        .dropdown-menu-dark .dropdown-item.active {
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+        .card-custom {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .form-control, .form-select {
+            background-color: var(--field-background-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--font-color);
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary-color);
+            color: var(--font-color);
+            box-shadow: none;
+        }
+        .form-control::placeholder {
+            color: #888888;
+        }
+        label {
+            font-size: 0.85rem;
+            color: #cbd5e0;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .table-dark-custom {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .table-dark-custom th {
+            background-color: rgba(255, 255, 255, 0.03);
+            color: var(--primary-color);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+        }
+        .table-dark-custom td {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+            vertical-align: middle;
+        }
+        /* Dynamic table row highlighting on hover */
+        .table tbody tr:hover td {
+            background-color: rgba(255, 255, 255, 0.075) !important;
+            color: #ffffff !important;
+        }
+        .table tbody tr:hover {
+            outline: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+        .pg-hidden {
+            display: none !important;
+        }
+        .text-white-50 {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+        .nav-pills-custom {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .nav-pills-custom::-webkit-scrollbar {
+            height: 4px;
+        }
+        .nav-pills-custom::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        .nav-pills-custom .nav-link {
+            background-color: var(--secondary-color);
+            color: #cbd5e0;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0.5rem 1.2rem;
+            white-space: nowrap;
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-pills-custom .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .nav-pills-custom .nav-link.active {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(67, 100, 247, 0.3);
+        }
+        .border-left {
+            border-left: 2px dashed rgba(255, 255, 255, 0.15) !important;
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP NAVBAR PULL-DOWN -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark-navbar sticky-top px-3 py-2">
+    <div class="container-fluid">
+        <!-- BRAND / LOGO -->
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            <img src="{{ .Theme.LogoURL }}" alt="Logo IMC" style="max-height: 36px;">
+            <span class="fw-bold tracking-wide small text-uppercase text-light d-none d-sm-inline">IMC Server</span>
+        </a>
+
+        <!-- MOBILE TOGGLE BUTTON -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavbarNav" aria-controls="topNavbarNav" aria-expanded="false" aria-label="Alternar navegação">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- NAV ITEMS -->
+        <div class="collapse navbar-collapse" id="topNavbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-1">
+                
+                <!-- 1. HIERARQUIA & GESTÃO -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navHierarchy" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🏢 Hierarquia & Gestão
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navHierarchy">
+                        <li><a class="dropdown-item" href="/tenants">🏢 Matrizes / Clientes</a></li>
+                        <li><a class="dropdown-item" href="/regionals">📍 Regionais</a></li>
+                        <li><a class="dropdown-item" href="/stores">🏪 Filiais (Lojas)</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/users">👤 Usuários & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 2. MONITORAMENTO & AUDITORIA -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navMonitoring" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📊 Monitoramento & Auditoria
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMonitoring">
+                        <li><a class="dropdown-item" href="/radios/status">📻 Status das Rádios</a></li>
+                        <li><a class="dropdown-item" href="/play-history">📊 Relatórios & Histórico</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/reports/access-logs"><i class="fa-solid fa-shield-halved me-1 text-info"></i> Auditoria de Logins & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 3. ACERVO & MÍDIAS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navMedia" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🎵 Acervo & Mídias
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMedia">
+                        <li><a class="dropdown-item" href="/music-styles">🎧 Estilos Musicais</a></li>
+                        <li><a class="dropdown-item" href="/video-styles">📺 Estilos de Vídeo</a></li>
+                        <li><a class="dropdown-item" href="/streamings">📻 Streamings & Rádios Online</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/grids/audio">📅 Grades de Áudio</a></li>
+                        <li><a class="dropdown-item" href="/grids/video">📺 Grades de Vídeo</a></li>
+                    </ul>
+                </li>
+
+                <!-- 4. LOCUÇÃO & AVISOS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle active" href="#" id="navWarnings" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📢 Locução & Avisos
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navWarnings">
+                        <li><a class="dropdown-item active" href="/commercials">📣 Comerciais & Eventos</a></li>
+                        <li><a class="dropdown-item" href="/streamings"><i class="fa-solid fa-tower-broadcast me-2"></i> Streamings & Rádios</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/voice-packs">🏷️ Aviso de Placas</a></li>
+                        <li><a class="dropdown-item" href="/chimes">🔔 Sinais Sonoros (Chimes)</a></li>
+                        <li><a class="dropdown-item" href="/pre-formatted-warnings">📢 Avisos Pré-Formatados</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!-- RIGHT USER / LOGOUT AREA -->
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex flex-column text-end d-none d-md-block">
+                    <span class="text-white small fw-bold">{{ .User.Name }}</span>
+                    <span class="badge bg-primary text-uppercase" style="font-size: 0.65rem;">{{ .User.Role }}</span>
+                </div>
+                <a href="/logout" class="btn btn-sm btn-outline-danger px-3 py-1">
+                    Sair
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- CONTEÚDO PRINCIPAL (LARGURA TOTAL) -->
+<main class="container-fluid px-4 py-3">
+    <!-- ÁREA DO CONTEÚDO -->
+            <div class="p-1">
+                <div class="row g-4">
+                    <!-- SEÇÃO DO FORMULÁRIO (OCULTO POR PADRÃO) -->
+                    <div id="form-view" class="col-lg-10 mx-auto d-none">
+                        <div class="card-custom p-4 shadow-sm">
+                            <h5 class="text-white fw-bold mb-4" id="form-title">📣 Cadastrar Novo Comercial / Evento</h5>
+                            
+                            <form id="commercial-form" onsubmit="handleFormSubmit(event)" enctype="multipart/form-data" data-edit-mode="false" data-edit-id="">
+                                <div class="row g-3">
+                                    {{ if .IsGlobalAdmin }}
+                                    <div class="col-md-6">
+                                        <label class="text-white mb-1">Empresas / Matrizes Pertencentes *</label>
+                                        <div class="dropdown" id="form-tenants-dropdown-wrapper">
+                                            <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start bg-dark text-white border-secondary d-flex justify-content-between align-items-center" type="button" id="formTenantsDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="min-height: 38px;">
+                                                <span id="form-tenants-dropdown-label" class="text-truncate">Selecione as Empresas / Matrizes...</span>
+                                            </button>
+                                            <div class="dropdown-menu dropdown-menu-dark p-2 border-secondary bg-black" aria-labelledby="formTenantsDropdown" style="max-height: 250px; overflow-y: auto; width: 100%;" onclick="event.stopPropagation()">
+                                                <!-- Campo de Pesquisa -->
+                                                <input type="text" id="form-tenants-search" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Pesquisar empresa..." oninput="filterTenantsDropdownList(this, '.form-tenant-item')">
+                                                
+                                                <div class="form-check mb-1 form-tenant-item">
+                                                    <input class="form-check-input form-tenant-cb" type="checkbox" name="tenant_id" value="00000000-0000-0000-0000-000000000000" id="form-tenant-global" onchange="handleTenantCheckboxChange(this)">
+                                                    <label class="form-check-label text-white small" for="form-tenant-global">
+                                                        🌐 Global / Geral
+                                                    </label>
+                                                </div>
+                                                <div class="form-check mb-1 form-tenant-item border-bottom border-secondary pb-1 mb-2" id="form-tenant-select-all-wrapper">
+                                                    <input class="form-check-input" type="checkbox" id="form-tenant-select-all" onchange="toggleSelectAllFormTenants(this)">
+                                                    <label class="form-check-label text-primary small fw-bold" for="form-tenant-select-all">
+                                                        ☑️ Selecionar Todas
+                                                    </label>
+                                                </div>
+                                                {{ range .Tenants }}
+                                                {{ if ne (printf "%s" .ID) "00000000-0000-0000-0000-000000000000" }}
+                                                <div class="form-check mb-1 form-tenant-item" data-search-name="{{ .TradeName }}">
+                                                    <input class="form-check-input form-tenant-cb" type="checkbox" name="tenant_id" value="{{ .ID }}" id="form-tenant-{{ .ID }}" onchange="handleTenantCheckboxChange(this)">
+                                                    <label class="form-check-label text-white small" for="form-tenant-{{ .ID }}">
+                                                        🏢 {{ .TradeName }}
+                                                    </label>
+                                                </div>
+                                                {{ end }}
+                                                {{ end }}
+                                            </div>
+                                        </div>
+                                        <div id="global-warning-alert" class="alert alert-warning mt-2 py-2 px-3 d-none animate-fade-in" style="font-size: 0.8rem; border-left: 4px solid #ffc107;">
+                                            ⚠️ <strong>Atenção:</strong> Ao selecionar <strong>Global / Geral</strong>, este comercial estará disponível para distribuição nacional/geral em todas as filiais de todas as matrizes cadastradas.
+                                        </div>
+                                    </div>
+                                    {{ end }}
+
+                                    <div class="col-md-6">
+                                        <label>Tipo de Mídia / Comercial *</label>
+                                        <select name="commercial_type" id="commercial_type_select" class="form-select bg-dark text-white border-secondary" required onchange="updateFormTypeRules()">
+                                            <option value="COMMERCIAL">Comercial (Patrocínio / Anúncio)</option>
+                                            <option value="OFFER">Oferta</option>
+                                            <option value="INSTITUTIONAL">Institucional</option>
+                                            <option value="BLOCK_OPENING">Abertura de Bloco</option>
+                                            <option value="BLOCK_CLOSING">Fechamento de Bloco</option>
+                                            <option value="EVENT">Evento Especial</option>
+                                            <option value="GENERAL_INFORMATION">Informativo</option>
+                                            <option value="RIGHT_TIME">Hora Certa</option>
+                                            <option value="TEMPERATURE">Temperatura</option>
+                                        </select>
+                                        <div id="type-rule-box" class="alert alert-info mt-2 py-2 px-3 m-0 animate-fade-in" style="font-size: 0.8rem; border-left: 4px solid var(--primary-color); background-color: rgba(67, 100, 247, 0.1);">
+                                            ℹ️ <strong>Regra da Categoria:</strong> <span id="type-rule-text">Comerciais padrões de anúncios e patrocínios. São reproduzidos no meio dos blocos comerciais.</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label id="file-input-label">Selecione um ou mais arquivos (.mp3) *</label>
+                                        <input type="file" name="files" id="files_input" class="form-control" accept="audio/mpeg" required multiple onchange="initLocalAudioPreview(this)">
+                                    </div>
+
+                                    <div class="col-12 mt-2 d-none" id="waveform-preview-section">
+                                        <label class="text-white-50 mb-1">Arquivos Selecionados para Upload</label>
+                                        <div class="border border-secondary rounded p-3 bg-black">
+                                            <ul id="preview-files-list" class="list-unstyled m-0 d-flex flex-column gap-1 text-white-50 small" style="list-style-type: disc; padding-left: 1.5rem;">
+                                                <!-- Simple list of files will be generated via JS -->
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label>Inserções por Dia *</label>
+                                        <input type="number" name="insertions_per_day" class="form-control" min="1" value="10" required>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label>Data Inicial (Campanha)</label>
+                                        <input type="date" name="start_date" class="form-control">
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label>Data Final (Campanha)</label>
+                                        <input type="date" name="end_date" id="end_date_input" class="form-control">
+                                        <div class="form-check mt-1">
+                                            <input class="form-check-input" type="checkbox" name="no_end_date" id="no_end_date_checkbox" onchange="toggleEndDate()">
+                                            <label class="form-check-label text-white small" for="no_end_date_checkbox">
+                                                Sem data de término
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 d-none" id="event_time_container">
+                                        <label>Horário de Execução Exata *</label>
+                                        <input type="time" name="execution_time" id="execution_time_input" class="form-control">
+                                    </div>
+
+                                    <div class="col-md-3 d-none" id="event_mode_container">
+                                        <label>Modo de Interrupção</label>
+                                        <select name="event_interruption_mode" id="event_interruption_mode_select" class="form-select bg-dark text-white border-secondary">
+                                            <option value="SOFT">Suave (ao fim da música)</option>
+                                            <option value="HARD">Imediato (para música atual)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6" id="daily_time_fields_container">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label>Hora Inicial (Diária)</label>
+                                                <input type="time" name="start_time" class="form-control" value="00:00">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label>Hora Final (Diária)</label>
+                                                <input type="time" name="end_time" class="form-control" value="23:59">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 d-flex align-items-end mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="distribute_to_all" id="distribute_to_all" checked onchange="updateInlineDistributionView()">
+                                            <label class="form-check-label text-white" for="distribute_to_all">
+                                                Distribuir para Todas as Lojas automaticamente
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 d-none" id="inline-distribution-section">
+                                        <label class="d-block mb-2 text-white fw-bold">🎯 Distribuição por Filial</label>
+                                        <input type="text" id="inline-store-search" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Pesquisar filial ou empresa..." oninput="filterInlineStoresList(this.value)">
+                                        <div class="border border-secondary rounded p-3 bg-black" style="max-height: 250px; overflow-y: auto;">
+                                            {{ range $tenant := .Tenants }}
+                                            {{ if ne (printf "%s" $tenant.ID) "00000000-0000-0000-0000-000000000000" }}
+                                            <div class="inline-tenant-group mb-2 border border-secondary rounded p-2" data-tenant-id="{{ $tenant.ID }}">
+                                                <div class="form-check d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <input class="form-check-input inline-select-all-tenant-stores" type="checkbox" id="inline-tenant-cb-{{ $tenant.ID }}" onchange="toggleSelectAllInlineTenant('{{ $tenant.ID }}')">
+                                                        <label class="form-check-label fw-bold text-primary" for="inline-tenant-cb-{{ $tenant.ID }}">
+                                                            🏢 {{ $tenant.TradeName }}
+                                                        </label>
+                                                    </div>
+                                                    <button class="btn btn-sm btn-outline-secondary py-0 px-2" type="button" data-bs-toggle="collapse" data-bs-target="#inline-tenant-collapse-{{ $tenant.ID }}" aria-expanded="true" style="font-size: 0.7rem;">
+                                                        ↕️
+                                                    </button>
+                                                </div>
+                                                <div class="collapse show mt-2 ps-3 border-left" id="inline-tenant-collapse-{{ $tenant.ID }}">
+                                                    {{ range $.Stores }}
+                                                    {{ if eq .TenantID $tenant.ID }}
+                                                    <div class="form-check inline-store-checkbox-wrapper mb-1">
+                                                        <input class="form-check-input inline-store-checkbox" type="checkbox" name="store_ids" value="{{ .ID }}" id="inline-store-cb-{{ .ID }}" onchange="updateInlineTenantSelectAllState('{{ $tenant.ID }}')">
+                                                        <label class="form-check-label text-white small" for="inline-store-cb-{{ .ID }}">
+                                                            🏪 {{ .StoreName }} <span class="text-white-50">({{ .City }}/{{ .State }})</span>
+                                                        </label>
+                                                    </div>
+                                                    {{ end }}
+                                                    {{ end }}
+                                                </div>
+                                            </div>
+                                            {{ end }}
+                                            {{ end }}
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 mt-3">
+                                        <label class="d-block mb-2 text-white-50">Dias de Execução da Campanha:</label>
+                                        <div class="d-flex flex-wrap gap-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="run_on_sunday" id="day-0" checked>
+                                                <label class="form-check-label" for="day-0">Dom</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="run_on_monday" id="day-1" checked>
+                                                <label class="form-check-label" for="day-1">Seg</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="run_on_tuesday" id="day-2" checked>
+                                                <label class="form-check-label" for="day-2">Ter</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="run_on_wednesday" id="day-3" checked>
+                                                <label class="form-check-label" for="day-3">Qua</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="run_on_thursday" id="day-4" checked>
+                                                <label class="form-check-label" for="day-4">Qui</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="run_on_friday" id="day-5" checked>
+                                                <label class="form-check-label" for="day-5">Sex</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="run_on_saturday" id="day-6" checked>
+                                                <label class="form-check-label" for="day-6">Sáb</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2 mt-4">
+                                    <button type="submit" class="btn btn-success fw-bold px-5" id="btn-save-commercial">💾 Salvar Comercial</button>
+                                    <button type="button" class="btn btn-outline-warning px-4 d-none" id="btn-cancel-edit" onclick="cancelEditMode()">Cancelar Edição</button>
+                                    <button type="button" class="btn btn-outline-secondary px-4" onclick="toggleForm(false)">Cancelar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO DA LISTA/TABELA (COM ABAS HORIZONTAIS) -->
+                    <div id="list-view" class="col-12">
+                        <!-- Painel de Filtros Avançados -->
+                        <div class="card-custom p-3 mb-3 shadow-sm border-secondary bg-dark text-white">
+                            <div class="d-flex align-items-center gap-2 mb-2 text-primary fw-bold" style="font-size: 0.95rem;">
+                                <span>🔍</span>
+                                <span>Filtrar Comerciais & Eventos</span>
+                            </div>
+                            <div class="row g-3">
+                                <!-- Filtro de Nome do Comercial -->
+                                <div class="col-md-3">
+                                    <label class="text-white-50 small mb-1">Nome do Comercial</label>
+                                    <input type="text" id="filter-name-input" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Pesquisar por nome..." oninput="applyFilters();" style="min-height: 31px; font-size: 0.875rem;">
+                                </div>
+
+                                <!-- Filtro de Empresas (Matrizes) - Múltipla Seleção em Combobox -->
+                                <div class="col-md-3">
+                                    <label class="text-white-50 small mb-1">Empresas (Matrizes)</label>
+                                    <div class="dropdown" id="filter-tenants-dropdown-wrapper">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100 text-start bg-dark text-white border-secondary d-flex justify-content-between align-items-center" type="button" id="filterTenantsDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="min-height: 31px; font-size: 0.875rem;">
+                                            <span id="filter-tenants-dropdown-label" class="text-truncate">Todas as Empresas</span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-dark p-2 border-secondary bg-black" aria-labelledby="filterTenantsDropdown" style="max-height: 250px; overflow-y: auto; width: 100%;" onclick="event.stopPropagation()">
+                                            <!-- Campo de Pesquisa -->
+                                            <input type="text" id="filter-tenants-search" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Pesquisar empresa..." oninput="filterTenantsDropdownList(this, '.filter-tenant-item')">
+                                            
+                                            <div class="form-check mb-1 filter-tenant-item">
+                                                <input class="form-check-input filter-tenant-cb" type="checkbox" value="00000000-0000-0000-0000-000000000000" id="filter-tenant-global" onchange="updateFilterDropdowns(); applyFilters(); updateFilterDropdownText();">
+                                                <label class="form-check-label text-white small" for="filter-tenant-global">
+                                                    🌐 Global / Geral
+                                                </label>
+                                            </div>
+                                            {{ range .Tenants }}
+                                            {{ if ne (printf "%s" .ID) "00000000-0000-0000-0000-000000000000" }}
+                                            <div class="form-check mb-1 filter-tenant-item" data-search-name="{{ .TradeName }}">
+                                                <input class="form-check-input filter-tenant-cb" type="checkbox" value="{{ .ID }}" id="filter-tenant-{{ .ID }}" onchange="updateFilterDropdowns(); applyFilters(); updateFilterDropdownText();">
+                                                <label class="form-check-label text-white small" for="filter-tenant-{{ .ID }}">
+                                                    🏢 {{ .TradeName }}
+                                                </label>
+                                            </div>
+                                            {{ end }}
+                                            {{ end }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Filtro de Regionais - Múltipla Seleção em Combobox -->
+                                <div class="col-md-3">
+                                    <label class="text-white-50 small mb-1">Regionais</label>
+                                    <div class="dropdown" id="filter-regionals-dropdown-wrapper">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100 text-start bg-dark text-white border-secondary d-flex justify-content-between align-items-center" type="button" id="filterRegionalsDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="min-height: 31px; font-size: 0.875rem;">
+                                            <span id="filter-regionals-dropdown-label" class="text-truncate">Todas as Regionais</span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-dark p-2 border-secondary bg-black" aria-labelledby="filterRegionalsDropdown" style="max-height: 250px; overflow-y: auto; width: 100%;" onclick="event.stopPropagation()">
+                                            <!-- Campo de Pesquisa -->
+                                            <input type="text" id="filter-regionals-search" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Pesquisar regional..." oninput="filterTenantsDropdownList(this, '.filter-regional-item')">
+                                            
+                                            {{ range .Regionals }}
+                                            <div class="form-check mb-1 filter-regional-item" data-tenant-id="{{ .TenantID }}" data-search-name="{{ .Name }}">
+                                                <input class="form-check-input filter-regional-cb" type="checkbox" value="{{ .ID }}" id="filter-regional-{{ .ID }}" onchange="updateFilterDropdowns(); applyFilters(); updateFilterRegionalsDropdownText();">
+                                                <label class="form-check-label text-white small" for="filter-regional-{{ .ID }}">
+                                                    📍 {{ .Name }}
+                                                </label>
+                                            </div>
+                                            {{ end }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Filtro de Filiais (Lojas) - Múltipla Seleção em Combobox -->
+                                <div class="col-md-3">
+                                    <label class="text-white-50 small mb-1">Filiais (Lojas) Destinatárias</label>
+                                    <div class="dropdown" id="filter-stores-dropdown-wrapper">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100 text-start bg-dark text-white border-secondary d-flex justify-content-between align-items-center" type="button" id="filterStoresDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="min-height: 31px; font-size: 0.875rem;">
+                                            <span id="filter-stores-dropdown-label" class="text-truncate">Todas as Filiais</span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-dark p-2 border-secondary bg-black" aria-labelledby="filterStoresDropdown" style="max-height: 250px; overflow-y: auto; width: 100%;" onclick="event.stopPropagation()">
+                                            <!-- Campo de Pesquisa -->
+                                            <input type="text" id="filter-stores-search" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Pesquisar filial..." oninput="filterTenantsDropdownList(this, '.filter-store-item')">
+                                            
+                                            {{ range .Stores }}
+                                            <div class="form-check mb-1 filter-store-item" data-tenant-id="{{ .TenantID }}" data-regional-id="{{ if .RegionalID }}{{ .RegionalID }}{{ end }}" data-search-name="{{ .StoreName }}">
+                                                <input class="form-check-input filter-store-cb" type="checkbox" value="{{ .ID }}" id="filter-store-{{ .ID }}" onchange="updateFilterDropdowns(); applyFilters(); updateFilterStoresDropdownText();">
+                                                <label class="form-check-label text-white small" for="filter-store-{{ .ID }}">
+                                                    🏪 {{ .StoreName }}
+                                                </label>
+                                            </div>
+                                            {{ end }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Abas Horizontais -->
+                        <ul class="nav nav-pills nav-pills-custom mb-4 flex-nowrap overflow-auto pb-2 gap-2" id="categoryTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" onclick="switchCategoryTab('ALL', this)">
+                                    📂 Todos <span class="badge bg-secondary ms-1 rounded-pill" id="count-all">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" onclick="switchCategoryTab('COMMERCIAL', this)">
+                                    📣 Comerciais <span class="badge bg-secondary ms-1 rounded-pill" id="count-commercial">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" onclick="switchCategoryTab('OFFER', this)">
+                                    🏷️ Ofertas <span class="badge bg-secondary ms-1 rounded-pill" id="count-offer">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" onclick="switchCategoryTab('INSTITUTIONAL', this)">
+                                    🏢 Institucionais <span class="badge bg-secondary ms-1 rounded-pill" id="count-institutional">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" onclick="switchCategoryTab('BLOCK_OPENING', this)">
+                                    🔓 Aberturas <span class="badge bg-secondary ms-1 rounded-pill" id="count-block-opening">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" onclick="switchCategoryTab('BLOCK_CLOSING', this)">
+                                    🔒 Fechamentos <span class="badge bg-secondary ms-1 rounded-pill" id="count-block-closing">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" onclick="switchCategoryTab('EVENT', this)">
+                                    📅 Eventos <span class="badge bg-secondary ms-1 rounded-pill" id="count-event">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" onclick="switchCategoryTab('GENERAL_INFORMATION', this)">
+                                    ℹ️ Informativos <span class="badge bg-secondary ms-1 rounded-pill" id="count-general-info">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" onclick="switchCategoryTab('RIGHT_TIME', this)">
+                                    ⏰ Hora Certa <span class="badge bg-secondary ms-1 rounded-pill" id="count-right-time">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" onclick="switchCategoryTab('TEMPERATURE', this)">
+                                    🌡️ Temperatura <span class="badge bg-secondary ms-1 rounded-pill" id="count-temperature">0</span>
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="card-custom p-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="text-white fw-bold m-0" id="list-title">📋 Comerciais e Eventos Cadastrados</h5>
+                                <button type="button" id="btn-trigger-create" class="btn btn-sm btn-primary fw-bold" onclick="showCreateForm()">➕ Cadastrar Comercial</button>
+                            </div>
+
+                            <!-- Bulk Actions Panel (Hidden by default) -->
+                            <div id="bulk-actions-panel" class="alert alert-secondary py-2 px-3 mb-3 d-none align-items-center justify-content-between bg-dark border-secondary">
+                                <div class="text-white small">
+                                    <span id="selected-count" class="fw-bold text-primary">0</span> comerciais selecionados
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-warning fw-bold" onclick="bulkReprocessAudio()">🔄 Reprocessar Áudio</button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger fw-bold" onclick="bulkDeleteCommercials()">🗑️ Excluir Selecionados</button>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-dark table-striped table-sm m-0 table-dark-custom" style="font-size: 0.85rem;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 40px;" class="text-center">
+                                                <input type="checkbox" id="select-all-commercials" onchange="toggleSelectAllCommercials(this)">
+                                            </th>
+                                            <th style="cursor: pointer;" onclick="sortCommercials(1, 'string')">Nome</th>
+                                            <th style="cursor: pointer;" onclick="sortCommercials(2, 'string')">Pertencente à Empresa</th>
+                                            <th style="cursor: pointer;" onclick="sortCommercials(3, 'string')">Tipo</th>
+                                            <th style="cursor: pointer;" onclick="sortCommercials(4, 'string')">Arquivo</th>
+                                            <th class="text-center" style="cursor: pointer;" onclick="sortCommercials(5, 'duration')">Duração</th>
+                                            <th class="text-center" style="cursor: pointer;" onclick="sortCommercials(6, 'string')">Qualidade</th>
+                                            <th class="text-center" style="cursor: pointer;" onclick="sortCommercials(7, 'string')">Selo</th>
+                                            <th class="text-center" style="cursor: pointer;" onclick="sortCommercials(8, 'string')">LUFS / LRA</th>
+                                            <th class="text-center" style="cursor: pointer;" onclick="sortCommercials(9, 'string')">Cues (In/Out)</th>
+                                            <th class="text-center" style="cursor: pointer;" onclick="sortCommercials(10, 'number')">IRR</th>
+                                            <th class="text-center" style="cursor: pointer;" onclick="sortCommercials(11, 'number')">Inserções/Dia</th>
+                                            <th class="text-center" style="cursor: pointer;" onclick="sortCommercials(12, 'period')">Período</th>
+                                            <th class="text-center" style="cursor: pointer;" onclick="sortCommercials(13, 'string')">Horário</th>
+                                            <th class="text-center" style="cursor: pointer;" onclick="sortCommercials(14, 'string')">Dias da Semana</th>
+                                            <th class="text-center" style="cursor: pointer;" onclick="sortCommercials(15, 'string')">Distribuição</th>
+                                            <th class="text-center" style="cursor: pointer;" onclick="sortCommercials(16, 'date')">Última Atualização</th>
+                                            <th class="text-center" style="width: 250px;">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{ range .Commercials }}
+                                        <tr class="commercial-row" data-name="{{ .Name }}" data-type="{{ .CommercialType }}" data-tenant-id="{{ .TenantID }}" data-store-ids="{{ .StoreIDs }}" data-regional-ids="{{ .RegionalIDs }}" id="commercial-row-{{ .ID }}" {{ if isOverFiveMinutes .CueIn .CueOut }}style="color: #ff4d4d !important;"{{ end }}>
+                                            <td class="text-center">
+                                                <input type="checkbox" class="commercial-select-cb" value="{{ .ID }}" onchange="updateBulkActionsState()">
+                                            </td>
+                                            <td class="fw-bold">{{ .Name }}</td>
+                                            <td class="text-white-50">{{ .TenantName }}</td>
+                                            <td><span class="badge bg-secondary">{{ formatType .CommercialType }}</span></td>
+                                            <td><code>{{ .FileName }}</code></td>
+                                            <td class="text-center text-info">{{ formatDuration .DurationSeconds }}</td>
+                                            <td class="text-center">
+                                                {{ if eq .LoudnessScore "A" }}
+                                                    <span class="badge bg-success" title="Ideal (LRA <= 6.0 e LUFS entre -15.5 e -12.5)">Nota A</span>
+                                                {{ else if eq .LoudnessScore "B" }}
+                                                    <span class="badge bg-primary" title="Aceitável (LRA <= 9.0 e LUFS entre -15.5 e -12.5)">Nota B</span>
+                                                {{ else if eq .LoudnessScore "C" }}
+                                                    <span class="badge bg-warning text-dark" title="Precisa de Ganho (LRA <= 9.0 e LUFS fora da faixa)">Nota C</span>
+                                                {{ else if eq .LoudnessScore "D" }}
+                                                    <span class="badge bg-danger" title="Requer Compressão (LRA > 9.0)">Nota D</span>
+                                                {{ else }}
+                                                    <span class="badge bg-secondary">--</span>
+                                                {{ end }}
+                                            </td>
+                                            <td class="text-center">
+                                                {{ if .IsSonic }}
+                                                    <span class="badge bg-success fw-bold" style="letter-spacing: 1px; background: linear-gradient(135deg, #11998e, #38ef7d) !important;" title="Selo SONIC ativo">SONIC</span>
+                                                {{ else }}
+                                                    <span class="badge bg-secondary">--</span>
+                                                {{ end }}
+                                            </td>
+                                            <td class="text-center text-white-50">
+                                                <code>{{ printf "%.1f" .LUFS }} / {{ printf "%.1f" .LRA }}</code>
+                                            </td>
+                                            <td class="text-center">
+                                                <code class="{{ if .ManualCue }}text-info fw-bold{{ else }}text-warning{{ end }}">{{ printf "%.1f" .CueIn }}s / {{ printf "%.1f" .CueOut }}s</code>
+                                            </td>
+                                            <td class="text-center">
+                                                {{ if le .RiscoRuido 15 }}
+                                                    <span class="badge bg-success" title="Áudio Limpo (Risco de Ruído baixo)">{{ .RiscoRuido }}%</span>
+                                                {{ else if le .RiscoRuido 49 }}
+                                                    <span class="badge bg-warning text-dark" title="Atenção (Erros leves ou Clipping)">{{ .RiscoRuido }}%</span>
+                                                {{ else }}
+                                                    <span class="badge bg-danger" title="Crítico / Rejeitado (Erros graves ou corrupção)">{{ .RiscoRuido }}%</span>
+                                                {{ end }}
+                                            </td>
+                                            <td class="text-center">{{ .InsertionsPerDay }}</td>
+                                            <td class="text-center text-white-50" style="font-size: 0.75rem;">
+                                                {{ formatDate .StartDate }} à {{ formatDate .EndDate }}
+                                            </td>
+                                            <td class="text-center text-white-50" style="font-size: 0.75rem;">
+                                                <div>{{ .StartTime }} às {{ .EndTime }}</div>
+                                                {{ if .ExecutionTime }}
+                                                <div class="text-warning fw-bold mt-1" style="font-size: 0.7rem;">⏱️ Exato: {{ .ExecutionTime }}</div>
+                                                {{ end }}
+                                            </td>
+                                            <td class="text-center text-white-50" style="font-size: 0.75rem;">
+                                                {{ if .RunOnSunday }}D {{ end }}
+                                                {{ if .RunOnMonday }}S {{ end }}
+                                                {{ if .RunOnTuesday }}T {{ end }}
+                                                {{ if .RunOnWednesday }}Q {{ end }}
+                                                {{ if .RunOnThursday }}Q {{ end }}
+                                                {{ if .RunOnFriday }}S {{ end }}
+                                                {{ if .RunOnSaturday }}S {{ end }}
+                                            </td>
+                                            <td class="text-center">
+                                                {{ if .DistributeToAll }}
+                                                <span class="badge bg-success">Geral (Todas)</span>
+                                                {{ else }}
+                                                <span class="badge bg-warning text-dark">Direcionado</span>
+                                                {{ end }}
+                                            </td>
+                                            <td class="text-center text-white-50" style="white-space: nowrap;">{{formatDateTime .UpdatedAt}}</td>
+                                            <td class="text-center">
+                                                <div class="d-flex justify-content-center gap-1">
+                                                    <button type="button" class="btn btn-sm btn-outline-success py-0 px-2" style="font-size: 0.75rem;" title="Ouvir Áudio" onclick="playCommercial('{{ .ID }}', '{{ .Name }}', '{{ .TenantName }}')" id="btn-play-{{ .ID }}">🔊</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2" style="font-size: 0.75rem;" title="Editor de Cues" onclick="openCueEditor('{{ .ID }}', '{{ .Name }}', {{ .CueIn }}, {{ .CueOut }}, {{ .DurationSeconds }})">✂️</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.75rem;" title="Editar Comercial" onclick="openEditMode('{{ .ID }}')">✏️</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size: 0.75rem;" title="Distribuir" onclick="openDistributionModal('{{ .ID }}', '{{ .TenantID }}', '{{ .Name }}')">🎯</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.75rem;" title="Excluir" onclick="deleteSingleCommercial('{{ .ID }}', '{{ .Name }}')">🗑️</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {{ else }}
+                                        <tr id="no-items-row">
+                                            <td colspan="18" class="text-center text-muted p-4">Nenhum comercial ou evento cadastrado.</td>
+                                        </tr>
+                                        {{ end }}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- Painel de Paginação -->
+                            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2 text-white-50 small" id="pagination-controls-wrapper">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span>Linhas por página:</span>
+                                    <select id="pagination-limit-select" class="form-select form-select-sm bg-dark text-white border-secondary" style="width: auto; min-width: 80px;" onchange="changePaginationLimit(this.value)">
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                        <option value="50" selected>50</option>
+                                        <option value="100">100</option>
+                                        <option value="ALL">Todas</option>
+                                    </select>
+                                    <span id="pagination-info-text">Mostrando 0-0 de 0 linhas</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-1">
+                                    <button type="button" id="btn-page-first" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(1)">«</button>
+                                    <button type="button" id="btn-page-prev" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(currentPage - 1)">‹</button>
+                                    <span id="pagination-page-indicator" class="mx-2">Página 1 de 1</span>
+                                    <button type="button" id="btn-page-next" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(currentPage + 1)">›</button>
+                                    <button type="button" id="btn-page-last" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(totalPages)">»</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+<!-- Modal Distribuidor de Comerciais (Motor de Distribuição) -->
+<div class="modal fade" id="distributionModal" tabindex="-1" aria-labelledby="distributionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary shadow-lg">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="distributionModalLabel">🎯 Motor de Distribuição</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="text-white-50">Comercial selecionado:</label>
+                    <h5 id="modal-commercial-name" class="text-primary fw-bold">Nome do Comercial</h5>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="modal-distribute-all" onchange="toggleStoreCheckboxes()">
+                    <label class="form-check-label text-white fw-bold" for="modal-distribute-all">
+                        Enviar para todas as filiais (Geral)
+                    </label>
+                </div>
+
+                <div id="stores-selection-container">
+                    <label class="text-white-50 mb-2">Selecione as filiais destinatárias:</label>
+                    <input type="text" id="modal-store-search" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Pesquisar filial ou empresa..." oninput="filterModalStoresList(this.value)">
+                    <div class="border border-secondary rounded p-3 bg-black" style="max-height: 350px; overflow-y: auto;">
+                        {{ range $tenant := .Tenants }}
+                        {{ if ne (printf "%s" $tenant.ID) "00000000-0000-0000-0000-000000000000" }}
+                        <div class="tenant-group mb-3 border border-secondary rounded p-2" data-tenant-id="{{ $tenant.ID }}">
+                            <div class="form-check d-flex justify-content-between align-items-center">
+                                <div>
+                                    <input class="form-check-input select-all-tenant-stores" type="checkbox" id="tenant-cb-{{ $tenant.ID }}" onchange="toggleSelectAllTenant('{{ $tenant.ID }}')">
+                                    <label class="form-check-label fw-bold text-primary" for="tenant-cb-{{ $tenant.ID }}">
+                                        🏢 {{ $tenant.TradeName }}
+                                    </label>
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary py-0 px-2 btn-toggle-collapse" type="button" data-bs-toggle="collapse" data-bs-target="#tenant-collapse-{{ $tenant.ID }}" aria-expanded="true" style="font-size: 0.7rem;">
+                                    ↕️
+                                </button>
+                            </div>
+                            <div class="collapse show mt-2 ps-3 border-left" id="tenant-collapse-{{ $tenant.ID }}">
+                                {{ range $.Stores }}
+                                {{ if eq .TenantID $tenant.ID }}
+                                <div class="form-check store-checkbox-wrapper mb-1" data-tenant-id="{{ .TenantID }}">
+                                    <input class="form-check-input store-checkbox" type="checkbox" value="{{ .ID }}" id="store-cb-{{ .ID }}" onchange="updateTenantSelectAllState('{{ $tenant.ID }}')">
+                                    <label class="form-check-label text-white small" for="store-cb-{{ .ID }}">
+                                        🏪 {{ .StoreName }} (Filial nº {{ .StoreNumber }}) - <small class="text-white-50">{{ .City }}/{{ .State }}</small>
+                                    </label>
+                                </div>
+                                {{ end }}
+                                {{ end }}
+                            </div>
+                        </div>
+                        {{ end }}
+                        {{ else }}
+                        <p class="text-muted m-0 small">Nenhuma filial cadastrada.</p>
+                        {{ end }}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary justify-content-between">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-sm btn-success fw-bold px-4" onclick="saveDistribution()">💾 Salvar Distribuição</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Progresso de Upload e Análise -->
+<div class="modal fade" id="uploadProgressModal" tabindex="-1" aria-labelledby="uploadProgressModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary shadow-lg">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="uploadProgressModalLabel">🔄 Enviando e Processando Arquivos</h5>
+            </div>
+            <div class="modal-body">
+                <div id="upload-progress-list" style="max-height: 350px; overflow-y: auto;">
+                    <!-- Progress items inserted dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" id="btn-close-progress" class="btn btn-sm btn-primary w-100 fw-bold" onclick="window.location.reload()" disabled>Fechar e Atualizar Lista</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cue Editor (Ajuste Manual) -->
+<div class="modal fade" id="cueEditorModal" tabindex="-1" aria-labelledby="cueEditorModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-dark text-white border-secondary shadow-lg">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="cueEditorModalLabel">🎛️ Editor de Cue Points (Ajuste Manual)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="closeCueEditor()"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <h5 id="cue-editor-title" class="text-white fw-bold m-0 text-truncate">Nome do Comercial</h5>
+                </div>
+                
+                <!-- Wavesurfer Container -->
+                <div id="waveform-container" class="position-relative bg-black border border-secondary rounded p-3 mb-3" style="min-height: 180px;">
+                    <!-- Loading indicator -->
+                    <div id="waveform-loading" class="position-absolute top-50 start-50 translate-middle d-flex align-items-center gap-2">
+                        <div class="spinner-border spinner-border-sm text-info" role="status"></div>
+                        <span class="text-info small fw-bold">Carregando gráfico de áudio...</span>
+                    </div>
+                    <div id="waveform-canvas"></div>
+                    <div id="timeline-canvas" class="mt-2"></div>
+                </div>
+
+                <div class="row align-items-center gap-3 gap-md-0">
+                    <div class="col-md-5 d-flex align-items-center gap-2">
+                        <button type="button" id="btn-editor-play" class="btn btn-sm btn-outline-info fw-bold px-3" onclick="toggleEditorPlayPause()">▶️ Play</button>
+                        <span id="editor-time-current" style="font-size: 0.85rem; font-family: monospace;">00:00.00</span>
+                        <span id="editor-secs-current" class="text-info" style="font-size: 0.85rem; font-family: monospace; font-weight: bold;">(0.00s)</span>
+                        <span class="text-muted">/</span>
+                        <span id="editor-time-total" style="font-size: 0.85rem; font-family: monospace;">00:00.00</span>
+                        <span id="editor-secs-total" class="text-muted" style="font-size: 0.85rem; font-family: monospace;">(0.00s)</span>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-center justify-content-center gap-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="small text-white-50 fw-bold">Cue In (s):</label>
+                            <input type="number" id="input-cue-in" class="form-control form-control-sm bg-dark text-warning border-secondary fw-bold text-center" style="width: 90px;" step="0.01" min="0" onchange="updateRegionFromInputs()">
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="small text-white-50 fw-bold">Cue Out (s):</label>
+                            <input type="number" id="input-cue-out" class="form-control form-control-sm bg-dark text-warning border-secondary fw-bold text-center" style="width: 90px;" step="0.01" min="0" onchange="updateRegionFromInputs()">
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-end d-flex align-items-center justify-content-end gap-2">
+                        <button type="button" id="btn-reset-cue" class="btn btn-sm btn-outline-danger fw-bold" onclick="resetCueToAuto()">Resetar (Auto)</button>
+                        <button type="button" class="btn btn-sm btn-success fw-bold px-4" onclick="saveCueChanges()">💾 Salvar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Premium Audio Player -->
+<div id="premium-audio-player" class="d-none" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 700px; background: rgba(22, 25, 37, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); z-index: 1050; padding: 12px 20px; color: #fff; transition: all 0.3s ease;">
+    <audio id="main-audio-element" class="d-none"></audio>
+    <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap flex-md-nowrap">
+        <div class="d-flex align-items-center gap-3" style="max-width: 250px;">
+            <button type="button" class="btn btn-sm btn-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;" onclick="togglePlayPause()">
+                <span id="player-play-icon" style="font-size: 1.1rem; user-select: none;">⏸️</span>
+            </button>
+            <div style="min-width: 0;">
+                <div id="player-track-title" class="fw-bold text-white text-truncate" style="font-size: 0.9rem;">Nome do Comercial</div>
+                <div id="player-track-artist" class="text-white-50 text-truncate" style="font-size: 0.75rem;">Empresa</div>
+            </div>
+        </div>
+        
+        <div class="d-flex align-items-center gap-2 flex-grow-1" style="min-width: 200px;">
+            <span id="player-time-current" style="font-size: 0.75rem; min-width: 35px; text-align: right;">00:00</span>
+            <input type="range" id="player-progress" class="form-range" value="0" min="0" max="100" style="height: 4px; cursor: pointer;" oninput="seekAudio()">
+            <span id="player-time-total" style="font-size: 0.75rem; min-width: 35px;">00:00</span>
+        </div>
+        
+                                        <div class="d-flex align-items-center gap-2">
+            <span style="font-size: 0.85rem;">🔊</span>
+            <input type="range" id="player-volume" class="form-range" value="80" min="0" max="100" style="height: 4px; width: 80px; cursor: pointer;" oninput="setPlayerVolume()">
+            <button type="button" class="btn-close btn-close-white" style="font-size: 0.8rem; margin-left: 10px;" onclick="closeAudioPlayer()"></button>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/wavesurfer.js@7"></script>
+<script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.min.js"></script>
+<script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/timeline.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let activeCommercialId = null;
+    let distributionModalObj = null;
+    let cueEditorModalObj = null;
+    let activeCategory = 'ALL';
+    let wavesurfer = null;
+    let wsRegions = null;
+    let activeEditorTrackId = null;
+    let activeEditorDuration = 0;
+    let currentlyPlayingTrackId = null;
+
+    function toggleForm(show) {
+        if (show) {
+            document.getElementById('form-view').classList.remove('d-none');
+            document.getElementById('list-view').classList.add('d-none');
+            updateInlineDistributionView();
+        } else {
+            document.getElementById('form-view').classList.add('d-none');
+            document.getElementById('list-view').classList.remove('d-none');
+            cleanupLocalPreview();
+        }
+    }
+
+    function showCreateForm() {
+        cancelEditMode();
+        toggleForm(true);
+    }
+
+    function cleanupLocalPreview() {
+        if (wavesurfer && !activeEditorTrackId) {
+            try {
+                wavesurfer.destroy();
+            } catch (e) {
+                console.error(e);
+            }
+            wavesurfer = null;
+        }
+        const previewSection = document.getElementById('waveform-preview-section');
+        if (previewSection) previewSection.classList.add('d-none');
+        const listContainer = document.getElementById('preview-files-list');
+        if (listContainer) listContainer.innerHTML = '';
+    }
+
+    // --- EDIT MODE CONTROLS ---
+    function openEditMode(commercialId) {
+        fetch(`/commercials/details?id=${commercialId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    alert("Erro ao carregar detalhes: " + data.error);
+                    return;
+                }
+
+                const form = document.getElementById('commercial-form');
+                form.dataset.editMode = 'true';
+                form.dataset.editId = commercialId;
+
+                const editLabels = {
+                    COMMERCIAL: "Comercial",
+                    OFFER: "Oferta",
+                    INSTITUTIONAL: "Institucional",
+                    BLOCK_OPENING: "Abertura de Bloco",
+                    BLOCK_CLOSING: "Fechamento de Bloco",
+                    EVENT: "Evento Especial",
+                    GENERAL_INFORMATION: "Informativo",
+                    RIGHT_TIME: "Hora Certa",
+                    TEMPERATURE: "Temperatura"
+                };
+                const typeLabel = editLabels[data.commercial_type] || "Comercial";
+                document.getElementById('form-title').innerText = `✏️ Editar ${typeLabel}: ${data.name}`;
+                document.getElementById('btn-save-commercial').innerText = "💾 Salvar Alterações";
+                document.getElementById('btn-cancel-edit').classList.remove('d-none');
+
+                document.getElementById('files_input').required = false;
+                document.getElementById('file-input-label').innerText = "Substituir arquivo de áudio (.mp3) (opcional)";
+
+                document.querySelectorAll('.form-tenant-cb').forEach(cb => {
+                    cb.checked = (cb.value === data.tenant_id);
+                });
+                updateFormTenantDropdownText();
+                updateInlineDistributionView();
+
+                document.getElementById('commercial_type_select').value = data.commercial_type;
+                updateFormTypeRules();
+
+                form.querySelector('input[name="insertions_per_day"]').value = data.insertions_per_day;
+
+                if (data.start_date) {
+                    form.querySelector('input[name="start_date"]').value = data.start_date.substring(0, 10);
+                } else {
+                    form.querySelector('input[name="start_date"]').value = '';
+                }
+
+                const endDateCb = document.getElementById('no_end_date_checkbox');
+                if (data.end_date) {
+                    form.querySelector('input[name="end_date"]').value = data.end_date.substring(0, 10);
+                    endDateCb.checked = false;
+                } else {
+                    form.querySelector('input[name="end_date"]').value = '';
+                    endDateCb.checked = true;
+                }
+                toggleEndDate();
+
+                form.querySelector('input[name="start_time"]').value = data.start_time.substring(0, 5);
+                form.querySelector('input[name="end_time"]').value = data.end_time.substring(0, 5);
+
+                const timeInput = document.getElementById('execution_time_input');
+                if (timeInput) {
+                    timeInput.value = data.execution_time ? data.execution_time.substring(0, 5) : '';
+                }
+
+                const modeSelect = document.getElementById('event_interruption_mode_select');
+                if (modeSelect) {
+                    modeSelect.value = data.event_interruption_mode || 'SOFT';
+                }
+
+                document.getElementById('distribute_to_all').checked = data.distribute_to_all;
+                updateInlineDistributionView();
+
+                document.querySelectorAll('.inline-store-checkbox').forEach(cb => cb.checked = false);
+                if (!data.distribute_to_all && data.store_ids) {
+                    data.store_ids.forEach(sId => {
+                        const cb = document.getElementById(`inline-store-cb-${sId}`);
+                        if (cb) cb.checked = true;
+                    });
+                }
+
+                document.querySelectorAll('.inline-tenant-group').forEach(group => {
+                    const tId = group.getAttribute('data-tenant-id');
+                    updateInlineTenantSelectAllState(tId);
+                });
+
+                document.getElementById('day-0').checked = data.run_on_sunday;
+                document.getElementById('day-1').checked = data.run_on_monday;
+                document.getElementById('day-2').checked = data.run_on_tuesday;
+                document.getElementById('day-3').checked = data.run_on_wednesday;
+                document.getElementById('day-4').checked = data.run_on_thursday;
+                document.getElementById('day-5').checked = data.run_on_friday;
+                document.getElementById('day-6').checked = data.run_on_saturday;
+
+                toggleForm(true);
+            })
+            .catch(err => alert("Erro ao carregar detalhes: " + err));
+    }
+
+    function cancelEditMode() {
+        const form = document.getElementById('commercial-form');
+        form.reset();
+        form.dataset.editMode = 'false';
+        form.dataset.editId = '';
+
+        document.getElementById('btn-cancel-edit').classList.add('d-none');
+
+        // Re-apply active category tab lock if activeCategory is not 'ALL'
+        const formSelect = document.getElementById('commercial_type_select');
+        if (formSelect) {
+            if (activeCategory !== 'ALL') {
+                formSelect.value = activeCategory;
+                formSelect.disabled = true;
+            } else {
+                formSelect.disabled = false;
+            }
+        }
+
+        document.getElementById('files_input').required = true;
+        document.getElementById('file-input-label').innerText = "Selecione um ou mais arquivos (.mp3) *";
+
+        document.querySelectorAll('.form-tenant-cb').forEach(cb => {
+            cb.checked = false;
+        });
+        updateFormTenantDropdownText();
+
+        const inlineSearch = document.getElementById('inline-store-search');
+        if (inlineSearch) {
+            inlineSearch.value = '';
+            filterInlineStoresList('');
+        }
+
+        updateInlineDistributionView();
+        updateFormTypeRules();
+        toggleForm(false);
+    }
+
+    // --- FORM WARNINGS & VALIDATIONS ---
+    function toggleSelectAllFormTenants(headerCb) {
+        const isChecked = headerCb.checked;
+        const globalCb = document.getElementById('form-tenant-global');
+        if (globalCb && isChecked) {
+            globalCb.checked = false;
+        }
+        document.querySelectorAll('.form-tenant-cb').forEach(cb => {
+            if (cb !== globalCb) {
+                cb.checked = isChecked;
+            }
+        });
+        updateFormTenantDropdownText();
+        updateInlineDistributionView();
+    }
+
+    function handleTenantCheckboxChange(cb) {
+        const isEditMode = document.getElementById('commercial-form').dataset.editMode === 'true';
+        const globalVal = '00000000-0000-0000-0000-000000000000';
+        const globalCb = document.getElementById('form-tenant-global');
+        const selectAllCb = document.getElementById('form-tenant-select-all');
+
+        if (isEditMode) {
+            // Edit Mode allows only a single selection! Enforce radio-like behavior.
+            if (cb.checked) {
+                document.querySelectorAll('.form-tenant-cb').forEach(c => {
+                    if (c !== cb) c.checked = false;
+                });
+            } else {
+                // Keep at least one checked
+                cb.checked = true;
+            }
+        } else {
+            // Create Mode: multiple selected allowed, but global is mutually exclusive
+            if (cb === globalCb && globalCb.checked) {
+                document.querySelectorAll('.form-tenant-cb').forEach(c => {
+                    if (c !== globalCb) c.checked = false;
+                });
+                if (selectAllCb) {
+                    selectAllCb.checked = false;
+                    selectAllCb.indeterminate = false;
+                }
+            } else if (cb !== globalCb && cb.checked) {
+                if (globalCb) globalCb.checked = false;
+            }
+
+            // Update Select All Checkbox state
+            if (selectAllCb && cb !== globalCb) {
+                const tenantCbs = Array.from(document.querySelectorAll('.form-tenant-cb')).filter(c => c !== globalCb);
+                const checkedCount = tenantCbs.filter(c => c.checked).length;
+                if (checkedCount === 0) {
+                    selectAllCb.checked = false;
+                    selectAllCb.indeterminate = false;
+                } else if (checkedCount === tenantCbs.length) {
+                    selectAllCb.checked = true;
+                    selectAllCb.indeterminate = false;
+                } else {
+                    selectAllCb.checked = false;
+                    selectAllCb.indeterminate = true;
+                }
+            }
+        }
+
+        updateFormTenantDropdownText();
+        updateInlineDistributionView();
+    }
+
+    function updateFormTenantDropdownText() {
+        const checkedCbs = document.querySelectorAll('.form-tenant-cb:checked');
+        const label = document.getElementById('form-tenants-dropdown-label');
+        if (!label) return;
+
+        if (checkedCbs.length === 0) {
+            label.innerText = "Selecione as Empresas / Matrizes...";
+        } else if (checkedCbs.length === 1) {
+            label.innerText = checkedCbs[0].nextElementSibling.innerText.trim();
+        } else {
+            label.innerText = `${checkedCbs.length} Empresas selecionadas`;
+        }
+
+        // Warning check
+        const warning = document.getElementById('global-warning-alert');
+        if (warning) {
+            const globalCb = document.getElementById('form-tenant-global');
+            if (globalCb && globalCb.checked) {
+                warning.classList.remove('d-none');
+            } else {
+                warning.classList.add('d-none');
+            }
+        }
+    }
+
+    function validateCommercialForm(event) {
+        const formSelect = document.getElementById('commercial_type_select');
+        if (formSelect) {
+            formSelect.disabled = false;
+        }
+
+        // Only validate checkboxes if the wrapper exists (e.g. for global admin)
+        const wrapper = document.getElementById('form-tenants-dropdown-wrapper');
+        if (wrapper) {
+            const checkedCbs = document.querySelectorAll('.form-tenant-cb:checked');
+            if (checkedCbs.length === 0) {
+                alert("Por favor, selecione pelo menos uma Empresa / Matriz Pertencente.");
+                if (event) event.preventDefault();
+                return false;
+            }
+
+            const hasGlobal = Array.from(checkedCbs).some(cb => cb.value === '00000000-0000-0000-0000-000000000000');
+            if (hasGlobal) {
+                const confirmed = confirm("⚠️ ATENÇÃO:\n\nVocê selecionou 'Global / Geral'. Este comercial será associado ao tenant global e poderá ser distribuído para todas as lojas de todas as matrizes.\n\nDeseja realmente salvar como comercial Global?");
+                if (!confirmed) {
+                    if (event) event.preventDefault();
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    // --- CATEGORY TABS & FILTERING ---
+    const typeRules = {
+        COMMERCIAL: "Comerciais padrões de anúncios e patrocínios. São reproduzidos no meio dos blocos comerciais.",
+        OFFER: "Ofertas e promoções com validade temporária. São priorizadas nos blocos de ofertas da programação.",
+        INSTITUTIONAL: "Mídias de cunho institucional da empresa (ex: história, aviso de segurança). Têm veiculação institucional programada.",
+        BLOCK_OPENING: "Vinheta curta tocada obrigatoriamente no início (abertura) de cada bloco comercial.",
+        BLOCK_CLOSING: "Vinheta curta tocada obrigatoriamente no encerramento (fechamento) de cada bloco comercial.",
+        EVENT: "Mídias sazonais para eventos ou datas comemorativas (ex: Dia das Mães, Natal). Vigentes durante o período da campanha.",
+        GENERAL_INFORMATION: "Informativos de interesse geral (ex: dicas de saúde, notícias). Tocados ao longo da programação geral.",
+        RIGHT_TIME: "Vinheta que precede a locução automatizada ou anúncio da Hora Certa.",
+        TEMPERATURE: "Vinheta que precede a locução automatizada ou anúncio da Temperatura."
+    };
+
+    const formTitles = {
+        COMMERCIAL: "📣 Cadastrar Novo Comercial",
+        OFFER: "🏷️ Cadastrar Nova Oferta",
+        INSTITUTIONAL: "🏢 Cadastrar Novo Institucional",
+        BLOCK_OPENING: "🔓 Cadastrar Nova Abertura de Bloco",
+        BLOCK_CLOSING: "🔒 Cadastrar Novo Fechamento de Bloco",
+        EVENT: "📅 Cadastrar Novo Evento Especial",
+        GENERAL_INFORMATION: "ℹ️ Cadastrar Novo Informativo",
+        RIGHT_TIME: "⏰ Cadastrar Nova Hora Certa",
+        TEMPERATURE: "🌡️ Cadastrar Nova Temperatura"
+    };
+
+    const saveButtonTexts = {
+        COMMERCIAL: "💾 Salvar Comercial",
+        OFFER: "💾 Salvar Oferta",
+        INSTITUTIONAL: "💾 Salvar Institucional",
+        BLOCK_OPENING: "💾 Salvar Abertura",
+        BLOCK_CLOSING: "💾 Salvar Fechamento",
+        EVENT: "💾 Salvar Evento",
+        GENERAL_INFORMATION: "💾 Salvar Informativo",
+        RIGHT_TIME: "💾 Salvar Hora Certa",
+        TEMPERATURE: "💾 Salvar Temperatura"
+    };
+
+    function updateFormTypeRules() {
+        const select = document.getElementById('commercial_type_select');
+        const ruleText = document.getElementById('type-rule-text');
+        const eventTimeContainer = document.getElementById('event_time_container');
+        const executionTimeInput = document.getElementById('execution_time_input');
+        const dailyTimeFieldsContainer = document.getElementById('daily_time_fields_container');
+        const eventModeContainer = document.getElementById('event_mode_container');
+        const form = document.getElementById('commercial-form');
+        const isEditMode = form && form.dataset.editMode === 'true';
+
+        if (select) {
+            const val = select.value;
+            if (ruleText) {
+                ruleText.innerText = typeRules[val] || "Selecione um tipo de mídia.";
+            }
+
+            // Update Form Title and Save Button Text based on Type (if not in Edit Mode)
+            if (!isEditMode) {
+                const titleEl = document.getElementById('form-title');
+                const btnSaveEl = document.getElementById('btn-save-commercial');
+                if (titleEl) {
+                    titleEl.innerText = formTitles[val] || "📣 Cadastrar Novo Comercial / Evento";
+                }
+                if (btnSaveEl) {
+                    btnSaveEl.innerText = saveButtonTexts[val] || "💾 Salvar Comercial";
+                }
+            }
+
+            if (eventTimeContainer && executionTimeInput) {
+                if (val === 'EVENT') {
+                    eventTimeContainer.classList.remove('d-none');
+                    executionTimeInput.required = true;
+                    if (eventModeContainer) {
+                        eventModeContainer.classList.remove('d-none');
+                    }
+                    if (dailyTimeFieldsContainer) {
+                        dailyTimeFieldsContainer.classList.add('d-none');
+                        const startTimeInput = dailyTimeFieldsContainer.querySelector('input[name="start_time"]');
+                        const endTimeInput = dailyTimeFieldsContainer.querySelector('input[name="end_time"]');
+                        if (startTimeInput) startTimeInput.value = '00:00';
+                        if (endTimeInput) endTimeInput.value = '23:59';
+                    }
+                } else {
+                    eventTimeContainer.classList.add('d-none');
+                    executionTimeInput.required = false;
+                    executionTimeInput.value = '';
+                    if (eventModeContainer) {
+                        eventModeContainer.classList.add('d-none');
+                        const modeSelect = document.getElementById('event_interruption_mode_select');
+                        if (modeSelect) modeSelect.value = 'SOFT';
+                    }
+                    if (dailyTimeFieldsContainer) {
+                        dailyTimeFieldsContainer.classList.remove('d-none');
+                    }
+                }
+            }
+        }
+    }
+
+    function toggleEndDate() {
+        const checkbox = document.getElementById('no_end_date_checkbox');
+        const input = document.getElementById('end_date_input');
+        if (checkbox && input) {
+            if (checkbox.checked) {
+                input.disabled = true;
+                input.value = '';
+            } else {
+                input.disabled = false;
+            }
+        }
+    }
+
+    // --- SEQUENTIAL AJAX BATCH UPLOADER ---
+    async function handleFormSubmit(event) {
+        event.preventDefault();
+
+        if (!validateCommercialForm(null)) {
+            return;
+        }
+
+        const form = document.getElementById('commercial-form');
+        const fileInput = document.getElementById('files_input');
+        const files = Array.from(fileInput.files);
+        const isEditMode = form.dataset.editMode === 'true';
+        const commercialId = form.dataset.editId;
+
+        if (files.length === 0 && !isEditMode) {
+            alert("Selecione pelo menos um arquivo.");
+            return;
+        }
+
+        const checkedTenantCbs = document.querySelectorAll('.form-tenant-cb:checked');
+        const tenantIds = Array.from(checkedTenantCbs).map(cb => cb.value);
+        const tenantId = tenantIds.length > 0 ? tenantIds[0] : '';
+        const commercialType = document.getElementById('commercial_type_select').value;
+        const insertionsPerDay = form.querySelector('input[name="insertions_per_day"]').value;
+        const startDate = form.querySelector('input[name="start_date"]').value;
+        const endDate = form.querySelector('input[name="end_date"]').value;
+        const noEndDate = document.getElementById('no_end_date_checkbox').checked;
+        const startTime = form.querySelector('input[name="start_time"]').value;
+        const endTime = form.querySelector('input[name="end_time"]').value;
+        const executionTime = document.getElementById('execution_time_input') ? document.getElementById('execution_time_input').value : '';
+        const eventInterruptionMode = document.getElementById('event_interruption_mode_select') ? document.getElementById('event_interruption_mode_select').value : 'SOFT';
+        const distributeToAll = document.getElementById('distribute_to_all').checked;
+
+        const storeIds = [];
+        if (!distributeToAll) {
+            document.querySelectorAll('.inline-store-checkbox:checked').forEach(cb => {
+                const group = cb.closest('.inline-tenant-group');
+                if (group && !group.classList.contains('d-none')) {
+                    storeIds.push(cb.value);
+                }
+            });
+        }
+
+        const runSunday = document.getElementById('day-0').checked;
+        const runMonday = document.getElementById('day-1').checked;
+        const runTuesday = document.getElementById('day-2').checked;
+        const runWednesday = document.getElementById('day-3').checked;
+        const runThursday = document.getElementById('day-4').checked;
+        const runFriday = document.getElementById('day-5').checked;
+        const runSaturday = document.getElementById('day-6').checked;
+
+        if (!isEditMode) {
+            const filenames = files.map(f => f.name);
+            try {
+                const valRes = await fetch('/commercials/validate-names', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tenant_ids: tenantIds, names: filenames })
+                });
+                const valData = await valRes.json();
+                if (valData.duplicates && valData.duplicates.length > 0) {
+                    alert(`Os seguintes arquivos já existem no banco de dados para as empresas selecionadas:\n- ${valData.duplicates.join('\n- ')}\n\nPor favor, remova ou renomeie os arquivos.`);
+                    return;
+                }
+            } catch (err) {
+                console.error("Erro na validação de nomes:", err);
+            }
+        }
+
+        const progressModal = new bootstrap.Modal(document.getElementById('uploadProgressModal'), {
+            backdrop: 'static',
+            keyboard: false
+        });
+        progressModal.show();
+
+        const progressList = document.getElementById('upload-progress-list');
+        progressList.innerHTML = '';
+
+        const closeBtn = document.getElementById('btn-close-progress');
+        closeBtn.disabled = true;
+
+        if (isEditMode && files.length === 0) {
+            const item = document.createElement('div');
+            item.className = 'mb-3 border border-secondary rounded p-2 bg-black';
+            item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-bold">Atualizando dados do comercial...</span>
+                    <span id="status-edit" class="badge bg-warning">Processando</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                    <div id="progress-edit" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 100%;"></div>
+                </div>
+                <div id="info-edit" class="text-white-50 small mt-1"></div>
+            `;
+            progressList.appendChild(item);
+
+            const formData = new FormData();
+            formData.append('id', commercialId);
+            formData.append('tenant_id', tenantId);
+            formData.append('commercial_type', commercialType);
+            formData.append('insertions_per_day', insertionsPerDay);
+            formData.append('start_date', startDate);
+            formData.append('end_date', endDate);
+            formData.append('no_end_date', noEndDate ? 'true' : 'false');
+            formData.append('start_time', startTime);
+            formData.append('end_time', endTime);
+            formData.append('execution_time', executionTime);
+            formData.append('event_interruption_mode', eventInterruptionMode);
+            formData.append('distribute_to_all', distributeToAll ? 'true' : 'false');
+            storeIds.forEach(id => formData.append('store_ids', id));
+            formData.append('run_on_sunday', runSunday ? 'on' : '');
+            formData.append('run_on_monday', runMonday ? 'on' : '');
+            formData.append('run_on_tuesday', runTuesday ? 'on' : '');
+            formData.append('run_on_wednesday', runWednesday ? 'on' : '');
+            formData.append('run_on_thursday', runThursday ? 'on' : '');
+            formData.append('run_on_friday', runFriday ? 'on' : '');
+            formData.append('run_on_saturday', runSaturday ? 'on' : '');
+
+            try {
+                const res = await fetch('/commercials/update', {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: formData
+                });
+                const resText = await res.text();
+                let isJson = false;
+                let data = {};
+                try {
+                    data = JSON.parse(resText);
+                    isJson = true;
+                } catch(e) {}
+
+                const badge = document.getElementById('status-edit');
+                const bar = document.getElementById('progress-edit');
+                if (res.ok && (!isJson || data.success)) {
+                    badge.className = 'badge bg-success';
+                    badge.innerText = 'Concluído';
+                    bar.className = 'progress-bar bg-success';
+                } else {
+                    badge.className = 'badge bg-danger';
+                    badge.innerText = 'Erro';
+                    bar.className = 'progress-bar bg-danger';
+                    const errMsg = isJson ? data.error : resText;
+                    document.getElementById('info-edit').innerText = errMsg || 'Erro ao salvar comercial.';
+                }
+            } catch (err) {
+                const badge = document.getElementById('status-edit');
+                badge.className = 'badge bg-danger';
+                badge.innerText = 'Erro';
+                document.getElementById('info-edit').innerText = err.message || 'Erro de rede.';
+            }
+
+            closeBtn.disabled = false;
+            return;
+        }
+
+        const fileItems = files.map((file, idx) => {
+            const item = document.createElement('div');
+            item.className = 'mb-3 border border-secondary rounded p-2 bg-black';
+            item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-bold text-truncate" style="max-width: 70%;">${file.name}</span>
+                    <span id="status-${idx}" class="badge bg-secondary">Aguardando</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                    <div id="progress-${idx}" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+                </div>
+                <div id="info-${idx}" class="text-white-50 small mt-1" style="font-size: 0.75rem;"></div>
+            `;
+            progressList.appendChild(item);
+            return { file, idx };
+        });
+
+        for (let i = 0; i < fileItems.length; i++) {
+            const { file, idx } = fileItems[i];
+            const badge = document.getElementById(`status-${idx}`);
+            const bar = document.getElementById(`progress-${idx}`);
+            const info = document.getElementById(`info-${idx}`);
+
+            badge.className = 'badge bg-warning text-dark';
+            badge.innerText = 'Enviando...';
+            bar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-primary';
+
+            const formData = new FormData();
+            if (isEditMode) {
+                formData.append('id', commercialId);
+            }
+            if (tenantIds.length > 0) {
+                tenantIds.forEach(tId => formData.append('tenant_id', tId));
+            }
+            formData.append('commercial_type', commercialType);
+            formData.append('insertions_per_day', insertionsPerDay);
+            formData.append('start_date', startDate);
+            formData.append('end_date', endDate);
+            formData.append('no_end_date', noEndDate ? 'true' : 'false');
+            formData.append('start_time', startTime);
+            formData.append('end_time', endTime);
+            formData.append('execution_time', executionTime);
+            formData.append('event_interruption_mode', eventInterruptionMode);
+            formData.append('distribute_to_all', distributeToAll ? 'true' : 'false');
+            storeIds.forEach(id => formData.append('store_ids', id));
+            formData.append('run_on_sunday', runSunday ? 'on' : '');
+            formData.append('run_on_monday', runMonday ? 'on' : '');
+            formData.append('run_on_tuesday', runTuesday ? 'on' : '');
+            formData.append('run_on_wednesday', runWednesday ? 'on' : '');
+            formData.append('run_on_thursday', runThursday ? 'on' : '');
+            formData.append('run_on_friday', runFriday ? 'on' : '');
+            formData.append('run_on_saturday', runSaturday ? 'on' : '');
+            
+            formData.append('files', file);
+
+            const url = isEditMode ? '/commercials/update' : '/commercials/create';
+
+            try {
+                await new Promise((resolve) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', url, true);
+                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+                    xhr.upload.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                            const pct = Math.round((e.loaded / e.total) * 100);
+                            bar.style.width = pct + '%';
+                            if (pct === 100) {
+                                badge.innerText = 'Processando áudio...';
+                                bar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-success';
+                            } else {
+                                badge.innerText = `Enviando ${pct}%`;
+                            }
+                        }
+                    };
+
+                    xhr.onload = () => {
+                        const status = xhr.status;
+                        const responseText = xhr.responseText;
+                        let isJson = false;
+                        let data = {};
+                        try {
+                            data = JSON.parse(responseText);
+                            isJson = true;
+                        } catch (e) {}
+
+                        if (status >= 200 && status < 300) {
+                            badge.className = 'badge bg-success';
+                            const score = (isJson && data.loudness_score) ? data.loudness_score : 'A';
+                            badge.innerText = `Concluído (Nota ${score})`;
+                            bar.style.width = '100%';
+                            bar.className = 'progress-bar bg-success';
+                            if (isJson && data.duration) {
+                                info.innerText = `Duração: ${data.duration}s | LUFS: ${data.lufs ? data.lufs.toFixed(1) : ''} | IRR: ${data.risco_ruido || 0}%`;
+                            }
+                            resolve();
+                        } else {
+                            badge.className = 'badge bg-danger';
+                            badge.innerText = 'Erro';
+                            bar.className = 'progress-bar bg-danger';
+                            info.className = 'text-danger small mt-1';
+                            info.innerText = isJson ? data.error : responseText || 'Erro desconhecido.';
+                            resolve();
+                        }
+                    };
+
+                    xhr.onerror = () => {
+                        badge.className = 'badge bg-danger';
+                        badge.innerText = 'Erro de rede';
+                        bar.className = 'progress-bar bg-danger';
+                        info.className = 'text-danger small mt-1';
+                        info.innerText = 'Erro de conexão.';
+                        resolve();
+                    };
+
+                    xhr.send(formData);
+                });
+            } catch (err) {
+                console.error("XHR error:", err);
+            }
+        }
+
+        closeBtn.disabled = false;
+    }
+
+    // --- LOCAL FILES LISTING PREVIEW ---
+    function initLocalAudioPreview(inputElement) {
+        const files = inputElement.files;
+        const section = document.getElementById('waveform-preview-section');
+        const listContainer = document.getElementById('preview-files-list');
+
+        if (!files || files.length === 0) {
+            if (section) section.classList.add('d-none');
+            if (listContainer) listContainer.innerHTML = '';
+            return;
+        }
+
+        if (section) section.classList.remove('d-none');
+        if (listContainer) listContainer.innerHTML = '';
+
+        Array.from(files).forEach((file) => {
+            const li = document.createElement('li');
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            li.innerHTML = `🎵 <strong>${file.name}</strong> <span class="text-white-50">(${sizeMB} MB)</span>`;
+            listContainer.appendChild(li);
+        });
+    }
+
+    function updateInlineDistributionView() {
+        const distributeToAll = document.getElementById('distribute_to_all').checked;
+        const section = document.getElementById('inline-distribution-section');
+        if (!section) return;
+
+        if (distributeToAll) {
+            section.classList.add('d-none');
+            document.querySelectorAll('.inline-store-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.inline-select-all-tenant-stores').forEach(cb => {
+                cb.checked = false;
+                cb.indeterminate = false;
+            });
+        } else {
+            section.classList.remove('d-none');
+
+            // Get all checked matrix/tenant IDs
+            const checkedTenantCbs = document.querySelectorAll('.form-tenant-cb:checked');
+            const selectedTenantIds = Array.from(checkedTenantCbs).map(cb => cb.value);
+
+            // If the element doesn't exist (not admin), we just show all groups
+            const hasTenantsDropdown = document.querySelectorAll('.form-tenant-cb').length > 0;
+            const isGlobal = selectedTenantIds.includes('00000000-0000-0000-0000-000000000000');
+
+            document.querySelectorAll('.inline-tenant-group').forEach(group => {
+                const groupTenantId = group.getAttribute('data-tenant-id');
+                if (!hasTenantsDropdown || isGlobal || selectedTenantIds.includes(groupTenantId)) {
+                    group.classList.remove('d-none');
+                } else {
+                    group.classList.add('d-none');
+                    group.querySelectorAll('.inline-store-checkbox').forEach(cb => cb.checked = false);
+                    const selectAllCb = group.querySelector('.inline-select-all-tenant-stores');
+                    if (selectAllCb) {
+                        selectAllCb.checked = false;
+                        selectAllCb.indeterminate = false;
+                    }
+                }
+            });
+        }
+    }
+
+    function toggleSelectAllInlineTenant(tenantId) {
+        const selectAllCb = document.getElementById(`inline-tenant-cb-${tenantId}`);
+        if (!selectAllCb) return;
+        const selectAllChecked = selectAllCb.checked;
+
+        const tenantGroup = document.querySelector(`.inline-tenant-group[data-tenant-id="${tenantId}"]`);
+        if (tenantGroup) {
+            const checkboxes = tenantGroup.querySelectorAll('.inline-store-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = selectAllChecked;
+            });
+        }
+    }
+
+    function updateInlineTenantSelectAllState(tenantId) {
+        const tenantGroup = document.querySelector(`.inline-tenant-group[data-tenant-id="${tenantId}"]`);
+        if (tenantGroup) {
+            const selectAllCb = document.getElementById(`inline-tenant-cb-${tenantId}`);
+            const checkboxes = tenantGroup.querySelectorAll('.inline-store-checkbox');
+            const total = checkboxes.length;
+            const checkedCount = tenantGroup.querySelectorAll('.inline-store-checkbox:checked').length;
+
+            if (selectAllCb) {
+                if (checkedCount === 0) {
+                    selectAllCb.checked = false;
+                    selectAllCb.indeterminate = false;
+                } else if (checkedCount === total) {
+                    selectAllCb.checked = true;
+                    selectAllCb.indeterminate = false;
+                } else {
+                    selectAllCb.checked = false;
+                    selectAllCb.indeterminate = true;
+                }
+            }
+        }
+    }
+
+    // --- HIERARCHICAL STORE SELECTION IN MODAL ---
+    function toggleSelectAllTenant(tenantId) {
+        const selectAllCb = document.getElementById(`tenant-cb-${tenantId}`);
+        if (!selectAllCb) return;
+        const selectAllChecked = selectAllCb.checked;
+        
+        const tenantGroup = document.querySelector(`.tenant-group[data-tenant-id="${tenantId}"]`);
+        if (tenantGroup) {
+            const checkboxes = tenantGroup.querySelectorAll('.store-checkbox');
+            checkboxes.forEach(cb => {
+                if (!cb.disabled) {
+                    cb.checked = selectAllChecked;
+                }
+            });
+        }
+    }
+
+    function updateTenantSelectAllState(tenantId) {
+        const tenantGroup = document.querySelector(`.tenant-group[data-tenant-id="${tenantId}"]`);
+        if (tenantGroup) {
+            const selectAllCb = document.getElementById(`tenant-cb-${tenantId}`);
+            const checkboxes = tenantGroup.querySelectorAll('.store-checkbox');
+            const total = checkboxes.length;
+            const checkedCount = tenantGroup.querySelectorAll('.store-checkbox:checked').length;
+            
+            if (selectAllCb) {
+                if (checkedCount === 0) {
+                    selectAllCb.checked = false;
+                    selectAllCb.indeterminate = false;
+                } else if (checkedCount === total) {
+                    selectAllCb.checked = true;
+                    selectAllCb.indeterminate = false;
+                } else {
+                    selectAllCb.checked = false;
+                    selectAllCb.indeterminate = true;
+                }
+            }
+        }
+    }
+
+    function toggleStoreCheckboxes() {
+        const distributeAll = document.getElementById('modal-distribute-all').checked;
+        const checkboxes = document.querySelectorAll('.store-checkbox');
+        checkboxes.forEach(cb => {
+            cb.disabled = distributeAll;
+            if (distributeAll) cb.checked = false;
+        });
+
+        const tenantCheckboxes = document.querySelectorAll('.select-all-tenant-stores');
+        tenantCheckboxes.forEach(cb => {
+            cb.disabled = distributeAll;
+            if (distributeAll) {
+                cb.checked = false;
+                cb.indeterminate = false;
+            }
+        });
+    }
+
+    function openDistributionModal(commercialId, tenantId, commercialName) {
+        activeCommercialId = commercialId;
+        document.getElementById('modal-commercial-name').innerText = commercialName;
+
+        document.querySelectorAll('.store-checkbox').forEach(cb => cb.checked = false);
+        document.querySelectorAll('.select-all-tenant-stores').forEach(cb => {
+            cb.checked = false;
+            cb.indeterminate = false;
+        });
+
+        const modalSearch = document.getElementById('modal-store-search');
+        if (modalSearch) {
+            modalSearch.value = '';
+            filterModalStoresList('');
+        }
+
+        const isGlobal = (tenantId === '00000000-0000-0000-0000-000000000000');
+        document.querySelectorAll('.tenant-group').forEach(group => {
+            const groupTenantId = group.getAttribute('data-tenant-id');
+            if (isGlobal || groupTenantId === tenantId) {
+                group.classList.remove('d-none');
+            } else {
+                group.classList.add('d-none');
+            }
+        });
+
+        fetch(`/commercials/distribution?id=${commercialId}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('modal-distribute-all').checked = data.distribute_to_all;
+                toggleStoreCheckboxes();
+                
+                if (!data.distribute_to_all && data.store_ids) {
+                    data.store_ids.forEach(sId => {
+                        const cb = document.getElementById(`store-cb-${sId}`);
+                        if (cb) cb.checked = true;
+                    });
+                    
+                    document.querySelectorAll('.tenant-group').forEach(group => {
+                        const tId = group.getAttribute('data-tenant-id');
+                        updateTenantSelectAllState(tId);
+                    });
+                }
+
+                if (!distributionModalObj) {
+                    distributionModalObj = new bootstrap.Modal(document.getElementById('distributionModal'));
+                }
+                distributionModalObj.show();
+            })
+            .catch(err => alert("Erro ao carregar distribuição: " + err));
+    }
+
+    function saveDistribution() {
+        const distributeAll = document.getElementById('modal-distribute-all').checked;
+        const storeIds = [];
+        
+        if (!distributeAll) {
+            document.querySelectorAll('.store-checkbox:checked').forEach(cb => {
+                const group = cb.closest('.tenant-group');
+                if (group && !group.classList.contains('d-none')) {
+                    storeIds.push(cb.value);
+                }
+            });
+        }
+
+        const payload = {
+            commercial_id: activeCommercialId,
+            distribute_to_all: distributeAll,
+            store_ids: storeIds
+        };
+
+        fetch('/commercials/distribution', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => {
+            if (res.ok) {
+                if (distributionModalObj) distributionModalObj.hide();
+                window.location.reload();
+            } else {
+                alert("Erro ao salvar distribuição");
+            }
+        })
+        .catch(err => alert("Erro: " + err));
+    }
+
+    // --- FLOATING PREMIUM PLAYER ---
+    function playCommercial(id, name, tenantName) {
+        if (currentlyPlayingTrackId === id) {
+            togglePlayPause();
+            return;
+        }
+
+        document.querySelectorAll('.commercial-row').forEach(row => {
+            row.classList.remove('playing-track-row');
+        });
+        
+        const row = document.getElementById('commercial-row-' + id);
+        if (row) {
+            row.classList.add('playing-track-row');
+        }
+
+        currentlyPlayingTrackId = id;
+
+        document.querySelectorAll("[id^='btn-play-']").forEach(btn => {
+            btn.innerText = "🔊";
+        });
+
+        const player = document.getElementById('premium-audio-player');
+        const audio = document.getElementById('main-audio-element');
+        const titleEl = document.getElementById('player-track-title');
+        const artistEl = document.getElementById('player-track-artist');
+        const playIcon = document.getElementById('player-play-icon');
+        const progressBar = document.getElementById('player-progress');
+
+        player.classList.remove('d-none');
+        titleEl.innerText = name;
+        artistEl.innerText = tenantName || "Global";
+
+        audio.src = `/commercials/play?id=${id}`;
+        audio.volume = document.getElementById('player-volume').value / 100;
+
+        audio.play()
+            .then(() => {
+                playIcon.innerText = "⏸️";
+                const rowBtn = document.getElementById('btn-play-' + id);
+                if (rowBtn) rowBtn.innerText = "⏸️";
+                startProgressTracker();
+            })
+            .catch(err => {
+                console.error("Playback error:", err);
+                playIcon.innerText = "▶️";
+                const rowBtn = document.getElementById('btn-play-' + id);
+                if (rowBtn) rowBtn.innerText = "🔊";
+            });
+    }
+
+    function togglePlayPause() {
+        const audio = document.getElementById('main-audio-element');
+        const playIcon = document.getElementById('player-play-icon');
+        if (!audio.src) return;
+
+        const rowBtn = document.getElementById('btn-play-' + currentlyPlayingTrackId);
+
+        if (audio.paused) {
+            audio.play();
+            playIcon.innerText = "⏸️";
+            if (rowBtn) rowBtn.innerText = "⏸️";
+        } else {
+            audio.pause();
+            playIcon.innerText = "▶️";
+            if (rowBtn) rowBtn.innerText = "🔊";
+        }
+    }
+
+    function startProgressTracker() {
+        const audio = document.getElementById('main-audio-element');
+        const progress = document.getElementById('player-progress');
+        const current = document.getElementById('player-time-current');
+        const total = document.getElementById('player-time-total');
+
+        audio.ontimeupdate = () => {
+            if (audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                progress.value = pct;
+                current.innerText = formatPlayerTime(audio.currentTime);
+                total.innerText = formatPlayerTime(audio.duration);
+            }
+        };
+
+        audio.onended = () => {
+            document.getElementById('player-play-icon').innerText = "▶️";
+            const rowBtn = document.getElementById('btn-play-' + currentlyPlayingTrackId);
+            if (rowBtn) rowBtn.innerText = "🔊";
+            progress.value = 0;
+            current.innerText = "00:00";
+        };
+    }
+
+    function seekAudio() {
+        const audio = document.getElementById('main-audio-element');
+        const progress = document.getElementById('player-progress');
+        if (!audio.src || !audio.duration) return;
+
+        audio.currentTime = (progress.value / 100) * audio.duration;
+    }
+
+    function setPlayerVolume() {
+        const audio = document.getElementById('main-audio-element');
+        const volSlider = document.getElementById('player-volume');
+        if (audio) audio.volume = volSlider.value / 100;
+    }
+
+    function closeAudioPlayer() {
+        const player = document.getElementById('premium-audio-player');
+        const audio = document.getElementById('main-audio-element');
+        if (audio) {
+            audio.pause();
+            audio.src = "";
+        }
+        player.classList.add('d-none');
+
+        const rowBtn = document.getElementById('btn-play-' + currentlyPlayingTrackId);
+        if (rowBtn) rowBtn.innerText = "🔊";
+
+        currentlyPlayingTrackId = null;
+        document.querySelectorAll('.commercial-row').forEach(row => {
+            row.classList.remove('playing-track-row');
+        });
+    }
+
+    function formatPlayerTime(seconds) {
+        if (isNaN(seconds)) return "00:00";
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    // --- VISUAL CUE EDITOR MODAL ---
+    function openCueEditor(id, name, cueIn, cueOut, duration) {
+        activeEditorTrackId = id;
+        activeEditorDuration = duration;
+        
+        document.getElementById('cue-editor-title').innerText = name;
+        document.getElementById('input-cue-in').value = cueIn.toFixed(2);
+        document.getElementById('input-cue-out').value = cueOut.toFixed(2);
+
+        document.getElementById('waveform-loading').classList.remove('d-none');
+        document.getElementById('waveform-canvas').innerHTML = "";
+        document.getElementById('timeline-canvas').innerHTML = "";
+
+        if (!cueEditorModalObj) {
+            const modalEl = document.getElementById('cueEditorModal');
+            cueEditorModalObj = new bootstrap.Modal(modalEl);
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                cleanupCueEditor();
+            });
+            modalEl.addEventListener('shown.bs.modal', function () {
+                const btnPlay = document.getElementById('btn-editor-play');
+                if (btnPlay) btnPlay.focus();
+            });
+            modalEl.addEventListener('keydown', handleCueEditorKeyDown);
+        }
+
+        cleanupCueEditor();
+        document.getElementById('editor-time-current').innerText = "00:00.00";
+        document.getElementById('editor-secs-current').innerText = "(0.00s)";
+        document.getElementById('editor-time-total').innerText = "00:00.00";
+        document.getElementById('editor-secs-total').innerText = "(0.00s)";
+
+        cueEditorModalObj.show();
+
+        setTimeout(() => {
+            initEditorWavesurfer(id, cueIn, cueOut);
+        }, 300);
+    }
+
+    function initEditorWavesurfer(id, cueIn, cueOut) {
+        if (wavesurfer) {
+            try { wavesurfer.destroy(); } catch(e) {}
+        }
+
+        wavesurfer = WaveSurfer.create({
+            container: '#waveform-canvas',
+            waveColor: '#4f5b66',
+            progressColor: 'var(--primary-color)',
+            cursorColor: '#ffcc00',
+            cursorWidth: 2,
+            height: 120,
+            barWidth: 2,
+            barGap: 1,
+            responsive: true,
+            url: `/commercials/play?id=${id}`
+        });
+
+        wavesurfer.registerPlugin(
+            WaveSurfer.Timeline.create({
+                container: '#timeline-canvas',
+                primaryLabelColor: '#8a9ba8',
+                secondaryLabelColor: '#4f5b66',
+                primaryFontColor: '#8a9ba8',
+                secondaryFontColor: '#4f5b66'
+            })
+        );
+
+        wsRegions = wavesurfer.registerPlugin(WaveSurfer.Regions.create());
+
+        wavesurfer.on('ready', () => {
+            document.getElementById('waveform-loading').classList.add('d-none');
+            const duration = wavesurfer.getDuration();
+            activeEditorDuration = duration;
+            document.getElementById('editor-time-total').innerText = formatCueEditorTime(duration);
+            document.getElementById('editor-secs-total').innerText = `(${duration.toFixed(2)}s)`;
+
+            wsRegions.addRegion({
+                id: 'cue-region',
+                start: cueIn,
+                end: cueOut > 0 ? cueOut : duration,
+                color: 'rgba(0, 210, 255, 0.15)',
+                drag: true,
+                resize: true
+            });
+        });
+
+        wsRegions.on('region-updated', (region) => {
+            if (region.id === 'cue-region') {
+                document.getElementById('input-cue-in').value = region.start.toFixed(2);
+                document.getElementById('input-cue-out').value = region.end.toFixed(2);
+            }
+        });
+
+        wavesurfer.on('timeupdate', () => {
+            const currentTime = wavesurfer.getCurrentTime();
+            document.getElementById('editor-time-current').innerText = formatCueEditorTime(currentTime);
+            document.getElementById('editor-secs-current').innerText = `(${currentTime.toFixed(2)}s)`;
+        });
+
+        wavesurfer.on('play', () => {
+            document.getElementById('btn-editor-play').innerText = "⏸️ Pause";
+        });
+
+        wavesurfer.on('pause', () => {
+            document.getElementById('btn-editor-play').innerText = "▶️ Play";
+        });
+    }
+
+    function toggleEditorPlayPause() {
+        if (wavesurfer) {
+            wavesurfer.playPause();
+        }
+    }
+
+    function updateRegionFromInputs() {
+        if (!wsRegions) return;
+        const region = wsRegions.getRegions().find(r => r.id === 'cue-region');
+        if (region) {
+            let cueIn = parseFloat(document.getElementById('input-cue-in').value) || 0;
+            let cueOut = parseFloat(document.getElementById('input-cue-out').value) || activeEditorDuration;
+
+            if (cueIn < 0) cueIn = 0;
+            if (cueOut > activeEditorDuration) cueOut = activeEditorDuration;
+            if (cueIn >= cueOut) {
+                cueIn = region.start;
+                cueOut = region.end;
+                document.getElementById('input-cue-in').value = cueIn.toFixed(2);
+                document.getElementById('input-cue-out').value = cueOut.toFixed(2);
+            }
+
+            region.update({
+                start: cueIn,
+                end: cueOut
+            });
+        }
+    }
+
+    function saveCueChanges() {
+        const cueIn = parseFloat(document.getElementById('input-cue-in').value) || 0;
+        const cueOut = parseFloat(document.getElementById('input-cue-out').value) || 0;
+
+        fetch('/commercials/save-cue', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: activeEditorTrackId,
+                cue_in: cueIn,
+                cue_out: cueOut
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Cue points salvos com sucesso!');
+                closeCueEditor();
+                window.location.reload();
+            } else {
+                alert('Erro ao salvar: ' + (data.error || 'Desconhecido'));
+            }
+        })
+        .catch(err => alert('Erro na comunicação: ' + err));
+    }
+
+    function resetCueToAuto() {
+        if (!confirm('Deseja realmente resetar os Cue Points para o modo automático?')) return;
+
+        fetch('/commercials/reset-cue', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: activeEditorTrackId
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Cue points resetados com sucesso!');
+                closeCueEditor();
+                window.location.reload();
+            } else {
+                alert('Erro ao resetar: ' + (data.error || 'Desconhecido'));
+            }
+        })
+        .catch(err => alert('Erro na comunicação: ' + err));
+    }
+
+    function closeCueEditor() {
+        cleanupCueEditor();
+        if (cueEditorModalObj) {
+            cueEditorModalObj.hide();
+        }
+    }
+
+    function cleanupCueEditor() {
+        if (wavesurfer && activeEditorTrackId) {
+            try {
+                wavesurfer.pause();
+                wavesurfer.destroy();
+            } catch (e) {
+                console.error("Error cleaning cue wavesurfer:", e);
+            }
+            wavesurfer = null;
+        }
+        activeEditorTrackId = null;
+        const btnPlay = document.getElementById('btn-editor-play');
+        if (btnPlay) btnPlay.innerText = "▶️ Play";
+    }
+
+    function formatCueEditorTime(seconds) {
+        if (isNaN(seconds)) return "00:00.00";
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        const ms = Math.floor((seconds % 1) * 100);
+        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+    }
+
+    function handleCueEditorKeyDown(e) {
+        if (e.key === ' ' || e.key === 'Spacebar') {
+            const activeTag = document.activeElement.tagName.toLowerCase();
+            if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'button') {
+                return;
+            }
+            e.preventDefault();
+            toggleEditorPlayPause();
+        }
+    }
+
+    // --- TABLE SELECTIONS & BULK ACTIONS ---
+    function toggleSelectAllCommercials(headerCb) {
+        const isChecked = headerCb.checked;
+        const rows = document.querySelectorAll('.commercial-row');
+        
+        rows.forEach(row => {
+            if (!row.classList.contains('d-none')) {
+                const cb = row.querySelector('.commercial-select-cb');
+                if (cb) cb.checked = isChecked;
+            }
+        });
+        updateBulkActionsState();
+    }
+
+    function updateBulkActionsState() {
+        const checkedCbs = document.querySelectorAll('.commercial-row:not(.d-none) .commercial-select-cb:checked');
+        const count = checkedCbs.length;
+        
+        const panel = document.getElementById('bulk-actions-panel');
+        const countSpan = document.getElementById('selected-count');
+        const headerCb = document.getElementById('select-all-commercials');
+        
+        if (count > 0) {
+            panel.classList.remove('d-none');
+            panel.classList.add('d-flex');
+            countSpan.innerText = count;
+        } else {
+            panel.classList.add('d-none');
+            panel.classList.remove('d-flex');
+        }
+
+        const totalVisible = document.querySelectorAll('.commercial-row:not(.d-none)').length;
+        if (headerCb) {
+            if (count === 0) {
+                headerCb.checked = false;
+                headerCb.indeterminate = false;
+            } else if (count === totalVisible) {
+                headerCb.checked = true;
+                headerCb.indeterminate = false;
+            } else {
+                headerCb.checked = false;
+                headerCb.indeterminate = true;
+            }
+        }
+    }
+
+    function deleteSingleCommercial(id, name) {
+        if (confirm(`Deseja realmente excluir o comercial '${name}'?`)) {
+            fetch('/commercials/batch-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: [id] })
+            })
+            .then(res => {
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Erro ao excluir comercial.");
+                }
+            })
+            .catch(err => alert("Erro na requisição: " + err));
+        }
+    }
+
+    function bulkDeleteCommercials() {
+        const checkedCbs = document.querySelectorAll('.commercial-row:not(.d-none) .commercial-select-cb:checked');
+        const ids = Array.from(checkedCbs).map(cb => cb.value);
+        if (ids.length === 0) return;
+
+        if (confirm(`Deseja realmente excluir os ${ids.length} comerciais selecionados?`)) {
+            fetch('/commercials/batch-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: ids })
+            })
+            .then(res => {
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Erro ao excluir comerciais selecionados.");
+                }
+            })
+            .catch(err => alert("Erro na requisição: " + err));
+        }
+    }
+
+    function bulkReprocessAudio() {
+        const checkedCbs = document.querySelectorAll('.commercial-row:not(.d-none) .commercial-select-cb:checked');
+        const ids = Array.from(checkedCbs).map(cb => cb.value);
+        if (ids.length === 0) return;
+
+        if (confirm(`Deseja reprocessar o áudio dos ${ids.length} comerciais selecionados?\n\nEste processo recalcula LUFS, LRA e Risco de Ruído.`)) {
+            const progressModal = new bootstrap.Modal(document.getElementById('uploadProgressModal'), {
+                backdrop: 'static',
+                keyboard: false
+            });
+            progressModal.show();
+
+            const progressList = document.getElementById('upload-progress-list');
+            progressList.innerHTML = `
+                <div class="mb-3 border border-secondary rounded p-3 bg-black">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-bold">Reprocessando áudios selecionados...</span>
+                        <span id="reprocess-badge" class="badge bg-warning">Processando</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 100%;"></div>
+                    </div>
+                    <div id="reprocess-info" class="text-white-50 small mt-1">Carregando métricas dos arquivos no ffmpeg...</div>
+                </div>
+            `;
+            const closeBtn = document.getElementById('btn-close-progress');
+            closeBtn.disabled = true;
+
+            fetch('/commercials/batch-reprocess', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: ids })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const badge = document.getElementById('reprocess-badge');
+                const info = document.getElementById('reprocess-info');
+                
+                if (data.success) {
+                    badge.className = 'badge bg-success';
+                    badge.innerText = 'Concluído';
+                    const successCount = data.results.filter(r => r.success).length;
+                    info.className = 'text-success small mt-1';
+                    info.innerText = `Processamento concluído. ${successCount} áudios atualizados com sucesso.`;
+                } else {
+                    badge.className = 'badge bg-danger';
+                    badge.innerText = 'Erro';
+                    info.className = 'text-danger small mt-1';
+                    info.innerText = data.error || "Erro geral no processamento.";
+                }
+                closeBtn.disabled = false;
+            })
+            .catch(err => {
+                const badge = document.getElementById('reprocess-badge');
+                badge.className = 'badge bg-danger';
+                badge.innerText = 'Erro';
+                document.getElementById('reprocess-info').innerText = err.message || "Erro de rede.";
+                closeBtn.disabled = false;
+            });
+        }
+    }
+
+    // --- TAB FILTERING & COUNTS ---
+    function switchCategoryTab(category, btnElement) {
+        activeCategory = category;
+
+        document.querySelectorAll('.commercial-select-cb').forEach(cb => cb.checked = false);
+        const headerCb = document.getElementById('select-all-commercials');
+        if (headerCb) headerCb.checked = false;
+        updateBulkActionsState();
+
+        document.querySelectorAll('#categoryTabs .nav-link').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        if (btnElement) btnElement.classList.add('active');
+
+        // Lock form dropdown selection depending on category
+        const formSelect = document.getElementById('commercial_type_select');
+        if (category !== 'ALL') {
+            if (formSelect) {
+                formSelect.value = category;
+                formSelect.disabled = true;
+                updateFormTypeRules();
+            }
+        } else {
+            if (formSelect) {
+                formSelect.disabled = false;
+            }
+        }
+
+        const listTitles = {
+            ALL: "📋 Todos os Comerciais e Eventos",
+            COMMERCIAL: "📣 Comerciais (Patrocínio / Anúncio)",
+            OFFER: "🏷️ Ofertas",
+            INSTITUTIONAL: "🏢 Institucionais",
+            BLOCK_OPENING: "🔓 Aberturas de Bloco",
+            BLOCK_CLOSING: "🔒 Fechamentos de Bloco",
+            EVENT: "📅 Eventos Especiais",
+            GENERAL_INFORMATION: "ℹ️ Informativos",
+            RIGHT_TIME: "⏰ Hora Certa",
+            TEMPERATURE: "🌡️ Temperatura"
+        };
+        document.getElementById('list-title').innerText = listTitles[category] || "📋 Comerciais e Eventos";
+
+        const buttonTexts = {
+            ALL: "➕ Cadastrar Comercial",
+            COMMERCIAL: "➕ Cadastrar Comercial",
+            OFFER: "➕ Cadastrar Oferta",
+            INSTITUTIONAL: "➕ Cadastrar Institucional",
+            BLOCK_OPENING: "➕ Cadastrar Abertura",
+            BLOCK_CLOSING: "➕ Cadastrar Fechamento",
+            EVENT: "➕ Cadastrar Evento",
+            GENERAL_INFORMATION: "➕ Cadastrar Informativo",
+            RIGHT_TIME: "➕ Cadastrar Hora Certa",
+            TEMPERATURE: "➕ Cadastrar Temperatura"
+        };
+        const btnTrigger = document.getElementById('btn-trigger-create');
+        if (btnTrigger) {
+            btnTrigger.innerHTML = buttonTexts[category] || "➕ Cadastrar Comercial";
+        }
+
+        applyFilters();
+    }
+
+    // --- ADVANCED FILTERS PANEL ENGINE ---
+    function initFilterOptions() {
+        // No-op since we migrated store filter to checkbox list
+    }
+
+    function updateFilterDropdowns() {
+        const checkedTenantCbs = document.querySelectorAll('.filter-tenant-cb:checked');
+        const selectedTenantIds = Array.from(checkedTenantCbs).map(cb => cb.value);
+
+        // 1. Filter visible regionals checkboxes based on selected companies (tenants)
+        const regionalItems = document.querySelectorAll('.filter-regional-item');
+        regionalItems.forEach(item => {
+            const tenantId = item.getAttribute('data-tenant-id');
+            const isVisible = (selectedTenantIds.length === 0 || selectedTenantIds.includes(tenantId));
+            if (isVisible) {
+                item.classList.remove('d-none');
+            } else {
+                item.classList.add('d-none');
+                const cb = item.querySelector('.filter-regional-cb');
+                if (cb) cb.checked = false;
+            }
+        });
+        updateFilterRegionalsDropdownText();
+
+        // 2. Filter visible stores checkboxes based on selected companies (tenants) AND selected regionals
+        const checkedRegionalCbs = document.querySelectorAll('.filter-regional-cb:checked');
+        const selectedRegionalIds = Array.from(checkedRegionalCbs).map(cb => cb.value);
+
+        const storeItems = document.querySelectorAll('.filter-store-item');
+        storeItems.forEach(item => {
+            const tenantId = item.getAttribute('data-tenant-id');
+            const regionalId = item.getAttribute('data-regional-id');
+            
+            const tenantOk = (selectedTenantIds.length === 0 || selectedTenantIds.includes(tenantId));
+            const regionalOk = (selectedRegionalIds.length === 0 || selectedRegionalIds.includes(regionalId));
+            
+            if (tenantOk && regionalOk) {
+                item.classList.remove('d-none');
+            } else {
+                item.classList.add('d-none');
+                const cb = item.querySelector('.filter-store-cb');
+                if (cb) cb.checked = false;
+            }
+        });
+        updateFilterStoresDropdownText();
+    }
+
+    function applyFilters() {
+        const category = activeCategory;
+        const checkedTenantCbs = document.querySelectorAll('.filter-tenant-cb:checked');
+        const selectedTenantIds = Array.from(checkedTenantCbs).map(cb => cb.value);
+
+        const checkedRegionalCbs = document.querySelectorAll('.filter-regional-cb:checked');
+        const selectedRegionalIds = Array.from(checkedRegionalCbs).map(cb => cb.value);
+
+        const checkedStoreCbs = document.querySelectorAll('.filter-store-cb:checked');
+        const selectedStoreIds = Array.from(checkedStoreCbs).map(cb => cb.value);
+
+        const nameFilter = document.getElementById('filter-name-input') ? document.getElementById('filter-name-input').value.toLowerCase().trim() : '';
+
+        const rows = document.querySelectorAll('.commercial-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const rowName = row.getAttribute('data-name') || '';
+            const rowType = row.getAttribute('data-type');
+            const rowTenantId = row.getAttribute('data-tenant-id');
+            const rowStoreIdsStr = row.getAttribute('data-store-ids') || '';
+            const rowRegionalIdsStr = row.getAttribute('data-regional-ids') || '';
+
+            const rowStoreIds = rowStoreIdsStr ? rowStoreIdsStr.split(',') : [];
+            const rowRegionalIds = rowRegionalIdsStr ? rowRegionalIdsStr.split(',') : [];
+
+            // 1. Tab category filter
+            const categoryMatch = (category === 'ALL' || rowType === category);
+
+            // 2. Multi-company filter
+            const tenantMatch = (selectedTenantIds.length === 0 || selectedTenantIds.includes(rowTenantId));
+
+            // 3. Multi-regional filter
+            const regionalMatch = (selectedRegionalIds.length === 0 || rowRegionalIds.some(rId => selectedRegionalIds.includes(rId)));
+
+            // 4. Store filter
+            const storeMatch = (selectedStoreIds.length === 0 || rowStoreIds.some(sId => selectedStoreIds.includes(sId)));
+
+            // 5. Name filter
+            const nameMatch = (nameFilter === '' || rowName.toLowerCase().includes(nameFilter));
+
+            if (categoryMatch && tenantMatch && regionalMatch && storeMatch && nameMatch) {
+                row.classList.remove('d-none');
+                visibleCount++;
+            } else {
+                row.classList.add('d-none');
+            }
+        });
+
+        const noItems = document.getElementById('no-items-row');
+        if (noItems) {
+            if (visibleCount === 0) {
+                noItems.classList.remove('d-none');
+            } else {
+                noItems.classList.add('d-none');
+            }
+        }
+
+        updateCategoryCounts();
+        updateBulkActionsState();
+        if (typeof updatePagination === 'function') {
+            updatePagination();
+        }
+    }
+
+    function updateCategoryCounts() {
+        const checkedTenantCbs = document.querySelectorAll('.filter-tenant-cb:checked');
+        const selectedTenantIds = Array.from(checkedTenantCbs).map(cb => cb.value);
+
+        const checkedRegionalCbs = document.querySelectorAll('.filter-regional-cb:checked');
+        const selectedRegionalIds = Array.from(checkedRegionalCbs).map(cb => cb.value);
+
+        const checkedStoreCbs = document.querySelectorAll('.filter-store-cb:checked');
+        const selectedStoreIds = Array.from(checkedStoreCbs).map(cb => cb.value);
+
+        const nameFilter = document.getElementById('filter-name-input') ? document.getElementById('filter-name-input').value.toLowerCase().trim() : '';
+
+        const rows = document.querySelectorAll('.commercial-row');
+        const counts = {
+            ALL: 0,
+            COMMERCIAL: 0,
+            OFFER: 0,
+            INSTITUTIONAL: 0,
+            BLOCK_OPENING: 0,
+            BLOCK_CLOSING: 0,
+            EVENT: 0,
+            GENERAL_INFORMATION: 0,
+            RIGHT_TIME: 0,
+            TEMPERATURE: 0
+        };
+
+        rows.forEach(row => {
+            const rowName = row.getAttribute('data-name') || '';
+            const type = row.getAttribute('data-type');
+            const rowTenantId = row.getAttribute('data-tenant-id');
+            const rowStoreIdsStr = row.getAttribute('data-store-ids') || '';
+            const rowRegionalIdsStr = row.getAttribute('data-regional-ids') || '';
+
+            const rowStoreIds = rowStoreIdsStr ? rowStoreIdsStr.split(',') : [];
+            const rowRegionalIds = rowRegionalIdsStr ? rowRegionalIdsStr.split(',') : [];
+
+            const tenantMatch = (selectedTenantIds.length === 0 || selectedTenantIds.includes(rowTenantId));
+            const regionalMatch = (selectedRegionalIds.length === 0 || rowRegionalIds.some(rId => selectedRegionalIds.includes(rId)));
+            const storeMatch = (selectedStoreIds.length === 0 || rowStoreIds.some(sId => selectedStoreIds.includes(sId)));
+            const nameMatch = (nameFilter === '' || rowName.toLowerCase().includes(nameFilter));
+
+            if (tenantMatch && regionalMatch && storeMatch && nameMatch) {
+                counts.ALL++;
+                if (counts[type] !== undefined) {
+                    counts[type]++;
+                }
+            }
+        });
+
+        document.getElementById('count-all').innerText = counts.ALL;
+        document.getElementById('count-commercial').innerText = counts.COMMERCIAL;
+        document.getElementById('count-offer').innerText = counts.OFFER;
+        document.getElementById('count-institutional').innerText = counts.INSTITUTIONAL;
+        document.getElementById('count-block-opening').innerText = counts.BLOCK_OPENING;
+        document.getElementById('count-block-closing').innerText = counts.BLOCK_CLOSING;
+        document.getElementById('count-event').innerText = counts.EVENT;
+        document.getElementById('count-general-info').innerText = counts.GENERAL_INFORMATION;
+        document.getElementById('count-right-time').innerText = counts.RIGHT_TIME;
+        document.getElementById('count-temperature').innerText = counts.TEMPERATURE;
+    }
+
+    function updateFilterDropdownText() {
+        const checkedCbs = document.querySelectorAll('.filter-tenant-cb:checked');
+        const label = document.getElementById('filter-tenants-dropdown-label');
+        if (!label) return;
+        if (checkedCbs.length === 0) {
+            label.innerText = "Todas as Empresas";
+        } else if (checkedCbs.length === 1) {
+            label.innerText = checkedCbs[0].nextElementSibling.innerText.trim();
+        } else {
+            label.innerText = `${checkedCbs.length} Empresas selecionadas`;
+        }
+    }
+
+    function updateFilterRegionalsDropdownText() {
+        const checkedCbs = document.querySelectorAll('.filter-regional-cb:checked');
+        const label = document.getElementById('filter-regionals-dropdown-label');
+        if (!label) return;
+        if (checkedCbs.length === 0) {
+            label.innerText = "Todas as Regionais";
+        } else if (checkedCbs.length === 1) {
+            label.innerText = checkedCbs[0].nextElementSibling.innerText.trim();
+        } else {
+            label.innerText = `${checkedCbs.length} Regionais selecionadas`;
+        }
+    }
+
+    function updateFilterStoresDropdownText() {
+        const checkedCbs = document.querySelectorAll('.filter-store-cb:checked');
+        const label = document.getElementById('filter-stores-dropdown-label');
+        if (!label) return;
+        if (checkedCbs.length === 0) {
+            label.innerText = "Todas as Filiais";
+        } else if (checkedCbs.length === 1) {
+            label.innerText = checkedCbs[0].nextElementSibling.innerText.trim();
+        } else {
+            label.innerText = `${checkedCbs.length} Filiais selecionadas`;
+        }
+    }
+
+    function filterTenantsDropdownList(input, itemSelector) {
+        const filter = input.value.toLowerCase().trim();
+        document.querySelectorAll(itemSelector).forEach(item => {
+            const nameAttr = item.getAttribute('data-search-name') || '';
+            const isGlobalVal = item.querySelector('#filter-tenant-global') || item.querySelector('#form-tenant-global');
+            if (isGlobalVal || nameAttr.toLowerCase().includes(filter)) {
+                item.classList.remove('d-none');
+            } else {
+                item.classList.add('d-none');
+            }
+        });
+    }
+
+    let activeSortColIndex = 1;
+    let activeSortDataType = 'string';
+    let activeSortDir = 'asc';
+    let commercialSortDirections = {};
+
+    function sortCommercials(colIndex, dataType, forceDir) {
+        const table = document.querySelector('table');
+        if (!table) return;
+        const tbody = table.querySelector('tbody');
+        if (!tbody) return;
+        const rows = Array.from(tbody.querySelectorAll('.commercial-row'));
+        if (rows.length === 0) return;
+
+        const key = 'comm-' + colIndex;
+        let nextDir = 'asc';
+        if (forceDir) {
+            nextDir = forceDir;
+        } else {
+            const currentDir = commercialSortDirections[key] || 'desc';
+            nextDir = currentDir === 'asc' ? 'desc' : 'asc';
+        }
+        commercialSortDirections[key] = nextDir;
+        activeSortColIndex = colIndex;
+        activeSortDataType = dataType;
+        activeSortDir = nextDir;
+        localStorage.setItem('imc_comm_sort', JSON.stringify({ colIndex, dataType, dir: nextDir }));
+
+        const headers = table.querySelectorAll('thead th');
+        headers.forEach((th, idx) => {
+            if (idx === colIndex) {
+                th.setAttribute('data-sort-dir', nextDir);
+                th.style.color = 'var(--primary-color)';
+                th.innerHTML = th.innerHTML.replace(/ [▲▼]/g, '') + (nextDir === 'asc' ? ' ▲' : ' ▼');
+            } else {
+                th.removeAttribute('data-sort-dir');
+                if (idx >= 1 && idx <= 14) {
+                    th.style.color = '';
+                    th.innerHTML = th.innerHTML.replace(/ [▲▼]/g, '');
+                }
+            }
+        });
+
+        rows.sort((a, b) => {
+            let cellA = a.cells[colIndex] ? a.cells[colIndex].innerText.trim() : '';
+            let cellB = b.cells[colIndex] ? b.cells[colIndex].innerText.trim() : '';
+
+            if (dataType === 'number') {
+                let numA = parseFloat(cellA.replace(/[^\d.-]/g, '')) || 0;
+                let numB = parseFloat(cellB.replace(/[^\d.-]/g, '')) || 0;
+                return nextDir === 'asc' ? numA - numB : numB - numA;
+            } else if (dataType === 'duration') {
+                let numA = parseDurationToSeconds(cellA);
+                let numB = parseDurationToSeconds(cellB);
+                return nextDir === 'asc' ? numA - numB : numB - numA;
+            } else if (dataType === 'period') {
+                let numA = parsePeriodToTimestamp(cellA);
+                let numB = parsePeriodToTimestamp(cellB);
+                return nextDir === 'asc' ? numA - numB : numB - numA;
+            } else {
+                return nextDir === 'asc' ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+            }
+        });
+
+        rows.forEach(row => tbody.appendChild(row));
+    }
+
+    function parseDurationToSeconds(str) {
+        if (!str || str === '--') return 0;
+        if (str.includes(':')) {
+            let parts = str.split(':');
+            let m = parseInt(parts[0]) || 0;
+            let s = parseFloat(parts[1]) || 0;
+            return m * 60 + s;
+        }
+        return parseFloat(str.replace(/[^\d.-]/g, '')) || 0;
+    }
+
+    function parsePeriodToTimestamp(str) {
+        if (!str || str === '--') return 0;
+        let parts = str.split(' à ');
+        let dateStr = parts[0].trim();
+        let dateParts = dateStr.split('/');
+        if (dateParts.length === 3) {
+            let day = parseInt(dateParts[0]) || 0;
+            let month = parseInt(dateParts[1]) || 0;
+            let year = parseInt(dateParts[2]) || 0;
+            return new Date(year, month - 1, day).getTime();
+        }
+        return 0;
+    }
+
+    let currentPage = 1;
+    let totalPages = 1;
+    let itemsPerPage = 50;
+
+    function initPagination() {
+        const savedLimit = localStorage.getItem('imc_table_limit');
+        if (savedLimit) {
+            itemsPerPage = savedLimit === 'ALL' ? 'ALL' : parseInt(savedLimit) || 50;
+        } else {
+            itemsPerPage = 50;
+        }
+        const limitSelect = document.getElementById('pagination-limit-select');
+        if (limitSelect) {
+            limitSelect.value = itemsPerPage;
+        }
+        updatePagination();
+    }
+
+    function changePaginationLimit(val) {
+        itemsPerPage = val === 'ALL' ? 'ALL' : parseInt(val) || 50;
+        localStorage.setItem('imc_table_limit', val);
+        currentPage = 1;
+        updatePagination();
+    }
+
+    function goToPage(page) {
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        updatePagination();
+    }
+
+    function updatePagination() {
+        const rows = Array.from(document.querySelectorAll('.commercial-row'));
+        const visibleRows = rows.filter(row => !row.classList.contains('d-none'));
+        const totalItems = visibleRows.length;
+
+        if (itemsPerPage === 'ALL') {
+            totalPages = 1;
+            currentPage = 1;
+            visibleRows.forEach(row => row.classList.remove('pg-hidden'));
+            
+            const infoText = document.getElementById('pagination-info-text');
+            if (infoText) infoText.innerText = `Mostrando 1-${totalItems} de ${totalItems} linhas`;
+            const pageIndicator = document.getElementById('pagination-page-indicator');
+            if (pageIndicator) pageIndicator.innerText = `Página 1 de 1`;
+            
+            togglePaginationButtonsDisabled(true, true, true, true);
+            return;
+        }
+
+        totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+
+        visibleRows.forEach((row, idx) => {
+            if (idx >= startIndex && idx < endIndex) {
+                row.classList.remove('pg-hidden');
+            } else {
+                row.classList.add('pg-hidden');
+            }
+        });
+
+        const infoText = document.getElementById('pagination-info-text');
+        if (infoText) {
+            infoText.innerText = totalItems === 0 ? "Mostrando 0-0 de 0 linhas" : `Mostrando ${startIndex + 1}-${endIndex} de ${totalItems} linhas`;
+        }
+
+        const pageIndicator = document.getElementById('pagination-page-indicator');
+        if (pageIndicator) {
+            pageIndicator.innerText = `Página ${currentPage} de ${totalPages}`;
+        }
+
+        togglePaginationButtonsDisabled(
+            currentPage === 1, 
+            currentPage === 1, 
+            currentPage === totalPages, 
+            currentPage === totalPages
+        );
+    }
+
+    function togglePaginationButtonsDisabled(first, prev, next, last) {
+        const btnFirst = document.getElementById('btn-page-first');
+        const btnPrev = document.getElementById('btn-page-prev');
+        const btnNext = document.getElementById('btn-page-next');
+        const btnLast = document.getElementById('btn-page-last');
+        if (btnFirst) btnFirst.disabled = first;
+        if (btnPrev) btnPrev.disabled = prev;
+        if (btnNext) btnNext.disabled = next;
+        if (btnLast) btnLast.disabled = last;
+    }
+
+    function filterInlineStoresList(query) {
+        query = query.toLowerCase().trim();
+        const groups = document.querySelectorAll('#inline-distribution-section .inline-tenant-group');
+        groups.forEach(group => {
+            const tenantName = group.querySelector('.form-check-label').innerText.toLowerCase();
+            const wrappers = group.querySelectorAll('.inline-store-checkbox-wrapper');
+            let visibleCount = 0;
+            
+            wrappers.forEach(wrapper => {
+                const storeLabel = wrapper.querySelector('.form-check-label').innerText.toLowerCase();
+                if (storeLabel.includes(query) || tenantName.includes(query)) {
+                    wrapper.classList.remove('d-none');
+                    visibleCount++;
+                } else {
+                    wrapper.classList.add('d-none');
+                }
+            });
+            
+            if (visibleCount > 0) {
+                group.classList.remove('d-none');
+            } else {
+                group.classList.add('d-none');
+            }
+        });
+    }
+
+    function filterModalStoresList(query) {
+        query = query.toLowerCase().trim();
+        const groups = document.querySelectorAll('#distributionModal .tenant-group');
+        groups.forEach(group => {
+            const tenantName = group.querySelector('.form-check-label').innerText.toLowerCase();
+            const wrappers = group.querySelectorAll('.store-checkbox-wrapper');
+            let visibleCount = 0;
+            
+            wrappers.forEach(wrapper => {
+                const storeLabel = wrapper.querySelector('.form-check-label').innerText.toLowerCase();
+                if (storeLabel.includes(query) || tenantName.includes(query)) {
+                    wrapper.classList.remove('d-none');
+                    visibleCount++;
+                } else {
+                    wrapper.classList.add('d-none');
+                }
+            });
+            
+            if (visibleCount > 0) {
+                group.classList.remove('d-none');
+            } else {
+                group.classList.add('d-none');
+            }
+        });
+    }
+
+    function toggleSidebar() {
+        const container = document.getElementById('main-layout-container');
+        const btn = document.getElementById('toggle-sidebar-btn');
+        if (!container) return;
+
+        const isCollapsed = container.classList.toggle('sidebar-collapsed');
+        if (btn) {
+            btn.innerText = isCollapsed ? '▶️' : '◀️';
+        }
+        localStorage.setItem('sidebarCollapsed', isCollapsed ? 'true' : 'false');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Restaurar estado do menu lateral
+        const collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (collapsed) {
+            const container = document.getElementById('main-layout-container');
+            const btn = document.getElementById('toggle-sidebar-btn');
+            if (container) container.classList.add('sidebar-collapsed');
+            if (btn) btn.innerText = '▶️';
+        }
+
+        // Cache original values for filters dropdowns
+        initFilterOptions();
+        initPagination();
+
+        updateFilterDropdownText();
+        updateFormTenantDropdownText();
+
+        // Restore table sorting (Default: Nome - index 1, string, asc)
+        let savedSort = null;
+        try {
+            savedSort = JSON.parse(localStorage.getItem('imc_comm_sort'));
+        } catch (e) {}
+        if (!savedSort) {
+            savedSort = { colIndex: 1, dataType: 'string', dir: 'asc' };
+        }
+        sortCommercials(savedSort.colIndex, savedSort.dataType, savedSort.dir);
+
+        // Run initial filters and tab state
+        switchCategoryTab('ALL', document.querySelector('#categoryTabs .nav-link'));
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMC-Server - Filiais (Lojas)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: {{ .Theme.PrimaryColor }};
+            --secondary-color: {{ .Theme.SecondaryColor }};
+            --background-color: {{ .Theme.BackgroundColor }};
+            --font-color: {{ if index .Theme "FontColor" }}{{ index .Theme "FontColor" }}{{ else }}#ffffff{{ end }};
+            --field-background-color: {{ if index .Theme "FieldBackgroundColor" }}{{ index .Theme "FieldBackgroundColor" }}{{ else }}rgba(255, 255, 255, 0.05){{ end }};
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--font-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Top Navbar Custom Styling */
+        .bg-dark-navbar {
+            background-color: var(--secondary-color) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        .navbar-dark .navbar-nav .nav-link {
+            color: #cbd5e0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.5rem 0.85rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .navbar-dark .navbar-nav .nav-link:hover,
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: var(--primary-color);
+        }
+        .dropdown-menu-dark {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 6px;
+        }
+        .dropdown-menu-dark .dropdown-item {
+            color: #cbd5e0;
+            font-size: 0.88rem;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        .dropdown-menu-dark .dropdown-item:hover,
+        .dropdown-menu-dark .dropdown-item.active {
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+        .card-custom {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .form-control, .form-select {
+            background-color: var(--field-background-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--font-color);
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary-color);
+            color: var(--font-color);
+            box-shadow: none;
+        }
+        .form-control::placeholder {
+            color: #888888;
+        }
+        label {
+            font-size: 0.85rem;
+            color: #cbd5e0;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        select option {
+            background-color: #ffffff;
+            color: #212529;
+        }
+
+        .table-dark-custom {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .table-dark-custom th {
+            background-color: rgba(255, 255, 255, 0.03);
+            color: var(--primary-color);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+        }
+        .table-dark-custom td {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+            vertical-align: middle;
+        }
+
+        /* Dynamic table row highlighting on hover */
+        .table tbody tr:hover td {
+            background-color: rgba(255, 255, 255, 0.075) !important;
+            color: #ffffff !important;
+        }
+        .table tbody tr:hover {
+            outline: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+        .pg-hidden {
+            display: none !important;
+        }
+
+        .fade-in-custom {
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .token-badge {
+            font-family: monospace;
+            background-color: rgba(255, 255, 255, 0.06);
+            padding: 3px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.08);
+            font-size: 0.8rem;
+            color: #ffb703;
+        }
+
+        /* Improved filter checkbox visibility styling */
+        .dropdown-menu .form-check {
+            padding-top: 5px;
+            padding-bottom: 5px;
+            padding-left: 2.2rem;
+            border-radius: 4px;
+            transition: background 0.15s ease;
+        }
+        .dropdown-menu .form-check:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        .dropdown-menu .form-check-input {
+            cursor: pointer;
+            width: 1.15rem;
+            height: 1.15rem;
+            border: 2px solid #5a627a !important; /* Prominent bright border */
+            background-color: #161925;
+            margin-left: -1.6rem;
+            transition: all 0.2s ease;
+        }
+        .dropdown-menu .form-check-input:checked {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 8px var(--primary-color) !important;
+        }
+        .dropdown-menu .form-check-label {
+            cursor: pointer;
+            user-select: none;
+            font-weight: 500;
+            color: #cbd5e0 !important;
+        }
+        .dropdown-menu .form-check-input:checked + .form-check-label {
+            color: #ffffff !important;
+            font-weight: bold;
+        }
+    </style>
+    <!-- xterm.js Terminal CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+</head>
+<body>
+
+<!-- TOP NAVBAR PULL-DOWN -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark-navbar sticky-top px-3 py-2">
+    <div class="container-fluid">
+        <!-- BRAND / LOGO -->
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            <img src="{{ .Theme.LogoURL }}" alt="Logo IMC" style="max-height: 36px;">
+            <span class="fw-bold tracking-wide small text-uppercase text-light d-none d-sm-inline">IMC Server</span>
+        </a>
+
+        <!-- MOBILE TOGGLE BUTTON -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavbarNav" aria-controls="topNavbarNav" aria-expanded="false" aria-label="Alternar navegação">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- NAV ITEMS -->
+        <div class="collapse navbar-collapse" id="topNavbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-1">
+                
+                <!-- 1. HIERARQUIA & GESTÃO -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle active" href="#" id="navHierarchy" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🏢 Hierarquia & Gestão
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navHierarchy">
+                        <li><a class="dropdown-item" href="/tenants">🏢 Matrizes / Clientes</a></li>
+                        <li><a class="dropdown-item" href="/regionals">📍 Regionais</a></li>
+                        <li><a class="dropdown-item active" href="/stores">🏪 Filiais (Lojas)</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/users">👤 Usuários & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 2. MONITORAMENTO & AUDITORIA -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navMonitoring" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📊 Monitoramento & Auditoria
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMonitoring">
+                        <li><a class="dropdown-item" href="/radios/status">📻 Status das Rádios</a></li>
+                        <li><a class="dropdown-item" href="/play-history">📊 Relatórios & Histórico</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/reports/access-logs"><i class="fa-solid fa-shield-halved me-1 text-info"></i> Auditoria de Logins & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 3. ACERVO & MÍDIAS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navMedia" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🎵 Acervo & Mídias
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMedia">
+                        <li><a class="dropdown-item" href="/music-styles">🎧 Estilos Musicais</a></li>
+                        <li><a class="dropdown-item" href="/video-styles">📺 Estilos de Vídeo</a></li>
+                        <li><a class="dropdown-item" href="/streamings">📻 Streamings & Rádios Online</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/grids/audio">📅 Grades de Áudio</a></li>
+                        <li><a class="dropdown-item" href="/grids/video">📺 Grades de Vídeo</a></li>
+                    </ul>
+                </li>
+
+                <!-- 4. LOCUÇÃO & AVISOS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navWarnings" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📢 Locução & Avisos
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navWarnings">
+                        <li><a class="dropdown-item" href="/commercials">📣 Comerciais & Eventos</a></li>
+                        <li><a class="dropdown-item" href="/streamings"><i class="fa-solid fa-tower-broadcast me-2"></i> Streamings & Rádios</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/voice-packs">🏷️ Aviso de Placas</a></li>
+                        <li><a class="dropdown-item" href="/chimes">🔔 Sinais Sonoros (Chimes)</a></li>
+                        <li><a class="dropdown-item" href="/pre-formatted-warnings">📢 Avisos Pré-Formatados</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!-- RIGHT USER / LOGOUT AREA -->
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex flex-column text-end d-none d-md-block">
+                    <span class="text-white small fw-bold">{{ .User.Name }}</span>
+                    <span class="badge bg-primary text-uppercase" style="font-size: 0.65rem;">{{ .User.Role }}</span>
+                </div>
+                <a href="/logout" class="btn btn-sm btn-outline-danger px-3 py-1">
+                    Sair
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- CONTEÚDO PRINCIPAL (LARGURA TOTAL) -->
+<main class="container-fluid px-4 py-3">
+    <!-- ÁREA DO CONTEÚDO -->
+                {{if .ErrorMessage}}
+                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    {{.ErrorMessage}}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {{end}}
+
+                {{if .SuccessMessage}}
+                <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    {{.SuccessMessage}}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {{end}}
+
+                <div class="row g-4">
+                    <!-- SEÇÃO DO FORMULÁRIO (OCULTO POR PADRÃO, FICA CENTRALIZADO) -->
+                    <div id="form-view" class="col-lg-8 mx-auto fade-in-custom {{if .ErrorMessage}}d-block{{else}}d-none{{end}}">
+                        <div class="card-custom p-4 shadow-sm">
+                            <h5 id="form-title" class="text-white fw-bold mb-3">🏪 Cadastrar Nova Filial (Loja)</h5>
+                            
+                            <form id="store-form" action="/stores/create" method="POST">
+                                <input type="hidden" name="id" id="store-id" value="">
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label>Matriz / Cliente *</label>
+                                        <select name="tenant_id" id="tenant-select" class="form-select" onchange="filterTenantDependents()" required>
+                                            <option value="">-- Selecione uma Empresa --</option>
+                                            {{range .Tenants}}
+                                                <option value="{{.ID}}" {{if eq (index $.Form "tenant_id") (printf "%s" .ID)}}selected{{end}}>{{.TradeName}}</option>
+                                            {{end}}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Regional Vinculada (Opcional)</label>
+                                        <select name="regional_id" id="regional-select" class="form-select">
+                                            <option value="">-- Nenhuma / Sem Regional --</option>
+                                            {{range .Regionals}}
+                                                <option value="{{.ID}}" data-tenant="{{.TenantID}}" {{if eq (index $.Form "regional_id") (printf "%s" .ID)}}selected{{end}}>{{.Name}}</option>
+                                            {{end}}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label>Grade de Programação (Áudio) *</label>
+                                        <select name="audio_grid_id" id="audio-grid-select" class="form-select">
+                                            <option value="">-- Nenhuma / Sem Grade --</option>
+                                            {{range .Grids}}
+                                                {{if eq .MediaType "AUDIO"}}
+                                                    <option value="{{.ID}}" data-tenant="{{.TenantID}}" {{if eq (index $.Form "audio_grid_id") (printf "%s" .ID)}}selected{{end}}>{{.Name}}</option>
+                                                {{end}}
+                                            {{end}}
+                                        </select>
+                                        <small class="text-white-50 mt-1 d-block">Define a programação musical (Acervo e/ou Canais de Streaming por horário) e blocos comerciais.</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Grade de Programação (Vídeo)</label>
+                                        <select name="video_grid_id" id="video-grid-select" class="form-select">
+                                            <option value="">-- Nenhuma / Sem Grade --</option>
+                                            {{range .Grids}}
+                                                {{if eq .MediaType "VIDEO"}}
+                                                    <option value="{{.ID}}" data-tenant="{{.TenantID}}" {{if eq (index $.Form "video_grid_id") (printf "%s" .ID)}}selected{{end}}>{{.Name}}</option>
+                                                {{end}}
+                                            {{end}}
+                                        </select>
+                                        <small class="text-white-50 mt-1 d-block">Opcional para filiais com TVs ou telas corporativas.</small>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label>Nome Fantasia da Filial *</label>
+                                        <input type="text" id="store-name" name="store_name" class="form-control" placeholder="Ex: Cordeiro Centro ou Cordeiro Loja 02" value="{{index .Form "store_name"}}" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Número Interno (Opcional)</label>
+                                        <input type="text" id="store-number" name="store_number" class="form-control" placeholder="Ex: Loja 02 ou 104" value="{{index .Form "store_number"}}">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Fuso Horário *</label>
+                                        <select name="timezone" id="timezone" class="form-select" required>
+                                            <option value="America/Sao_Paulo" {{if or (eq (index $.Form "timezone") "America/Sao_Paulo") (not (index $.Form "timezone"))}}selected{{end}}>America/Sao_Paulo (GMT-3)</option>
+                                            <option value="America/Noronha" {{if eq (index $.Form "timezone") "America/Noronha"}}selected{{end}}>America/Noronha (GMT-2)</option>
+                                            <option value="America/Manaus" {{if eq (index $.Form "timezone") "America/Manaus"}}selected{{end}}>America/Manaus (GMT-4)</option>
+                                            <option value="America/Rio_Branco" {{if eq (index $.Form "timezone") "America/Rio_Branco"}}selected{{end}}>America/Rio_Branco (GMT-5)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>Tipo de Rádio *</label>
+                                        <select name="radio_type" id="radio-type" class="form-select" required>
+                                            <option value="server" {{if or (eq (index $.Form "radio_type") "server") (not (index $.Form "radio_type"))}}selected{{end}}>Servidor (Cloud / Docker) - Padrão</option>
+                                            <option value="local" {{if eq (index $.Form "radio_type") "local"}}selected{{end}}>Local (Terminal Físico na Loja)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <hr style="border-color: rgba(255,255,255,0.1);">
+                                <h6 class="text-primary fw-bold">📍 Endereço da Filial</h6>
+
+                                <div class="row mb-2">
+                                        <div class="col-md-3">
+                                            <label>CEP (Opcional)</label>
+                                            <input type="text" id="zip_code" name="zip_code" class="form-control" placeholder="Ex: 80010010" value="{{index .Form "zip_code"}}" onblur="buscarCEP()">
+                                        </div>
+                                        <div class="col-md-5">
+                                            <label>Rua / Logradouro</label>
+                                            <input type="text" id="street" name="street" class="form-control" value="{{index .Form "street"}}">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label>Bairro</label>
+                                            <input type="text" id="district" name="district" class="form-control" placeholder="Ex: Centro" value="{{index .Form "district"}}">
+                                        </div>
+                                    </div>
+	
+                                    <div class="row mb-2">
+                                        <div class="col-md-3">
+                                            <label>Número</label>
+                                            <input type="text" id="number" name="number" class="form-control" placeholder="Ex: 100-A" value="{{index .Form "number"}}">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Cidade *</label>
+                                            <input type="text" id="city" name="city" class="form-control" value="{{index .Form "city"}}" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label>Estado (UF) *</label>
+                                            <input type="text" id="state" name="state" class="form-control" placeholder="Ex: PR" value="{{index .Form "state"}}" required>
+                                        </div>
+                                    </div>
+
+                                <hr style="border-color: rgba(255,255,255,0.1);">
+                                <h6 class="text-success fw-bold">👤 Contato Local</h6>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label>Nome do Gerente (Opcional)</label>
+                                        <input type="text" id="manager-name" name="manager_name" class="form-control" placeholder="Ex: João da Silva" value="{{index .Form "manager_name"}}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Telefone da Filial (Opcional)</label>
+                                        <input type="text" id="phone" name="phone" class="form-control" placeholder="Ex: 4133334444" value="{{index .Form "phone"}}">
+                                    </div>
+                                </div>
+
+                                <hr style="border-color: rgba(255,255,255,0.1);">
+                                <h6 class="text-info fw-bold">⚙️ Serviços habilitados</h6>
+
+                                <div class="mb-3 d-flex gap-4 flex-wrap">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="is-active" {{if or (eq (index $.Form "is_active") "on") (not (index $.Form "store_name"))}}checked{{end}}>
+                                        <label class="form-check-label text-success fw-bold" for="is-active">
+                                            🟢 Filial Ativa / Habilitada
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="has_audio" id="has-audio" {{if or (eq (index $.Form "has_audio") "on") (not (index $.Form "store_name"))}}checked{{end}}>
+                                        <label class="form-check-label" for="has-audio">
+                                            🔊 Habilitar Rádio / Áudio na Loja
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="has_video" id="has-video" {{if eq (index $.Form "has_video") "on"}}checked{{end}}>
+                                        <label class="form-check-label" for="has-video">
+                                            📺 Habilitar TV Corporativa / Vídeo na Loja
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" id="submit-btn" class="btn btn-primary w-100 fw-bold" style="background-color: var(--primary-color); border: none;">💾 Gravar Filial</button>
+                                    <button type="button" id="cancel-btn" class="btn btn-outline-secondary w-50 fw-bold" onclick="cancelEdit()">Cancelar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO DA LISTA/TABELA (LARGURA TOTAL) -->
+                    <div id="list-view" class="col-12 fade-in-custom {{if .ErrorMessage}}d-none{{else}}d-block{{end}}">
+                        <!-- Painel de Filtros Avançados -->
+                        <div class="card-custom p-3 mb-3 shadow-sm border-secondary bg-dark text-white">
+                            <div class="d-flex align-items-center gap-2 mb-2 text-primary fw-bold" style="font-size: 0.95rem;">
+                                <span>🔍</span>
+                                <span>Filtrar Filiais (Lojas)</span>
+                            </div>
+                            <div class="row g-3">
+                                <!-- Filtro de Matriz (Cliente) - Múltipla Seleção em Combobox -->
+                                <div class="col-md-3">
+                                    <label class="text-white-50 small mb-1">Empresas (Matrizes)</label>
+                                    <div class="dropdown" id="filter-tenants-dropdown-wrapper">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100 text-start bg-dark text-white border-secondary d-flex justify-content-between align-items-center" type="button" id="filterTenantsDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="min-height: 31px; font-size: 0.875rem;">
+                                            <span id="filter-tenants-dropdown-label" class="text-truncate">Todas as Empresas</span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-dark p-2 border-secondary bg-black" aria-labelledby="filterTenantsDropdown" style="max-height: 250px; overflow-y: auto; width: 100%;" onclick="event.stopPropagation()">
+                                            <!-- Campo de Pesquisa -->
+                                            <input type="text" id="filter-tenants-search" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Pesquisar empresa..." oninput="filterDropdownList(this, '.filter-tenant-item')">
+                                            
+                                            {{ range .Tenants }}
+                                            {{ if ne (printf "%s" .ID) "00000000-0000-0000-0000-000000000000" }}
+                                            <div class="form-check mb-1 filter-tenant-item" data-search-name="{{ .TradeName }}">
+                                                <input class="form-check-input filter-tenant-cb" type="checkbox" value="{{ .ID }}" id="filter-tenant-{{ .ID }}" onchange="updateFilterDropdowns(); filterTable(); updateFilterDropdownText();">
+                                                <label class="form-check-label text-white small" for="filter-tenant-{{ .ID }}">
+                                                    🏢 {{ .TradeName }}
+                                                </label>
+                                            </div>
+                                            {{ end }}
+                                            {{ end }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Filtro de Regionais - Múltipla Seleção em Combobox -->
+                                <div class="col-md-3">
+                                    <label class="text-white-50 small mb-1">Regionais</label>
+                                    <div class="dropdown" id="filter-regionals-dropdown-wrapper">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100 text-start bg-dark text-white border-secondary d-flex justify-content-between align-items-center" type="button" id="filterRegionalsDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="min-height: 31px; font-size: 0.875rem;">
+                                            <span id="filter-regionals-dropdown-label" class="text-truncate">Todas as Regionais</span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-dark p-2 border-secondary bg-black" aria-labelledby="filterRegionalsDropdown" style="max-height: 250px; overflow-y: auto; width: 100%;" onclick="event.stopPropagation()">
+                                            <!-- Campo de Pesquisa -->
+                                            <input type="text" id="filter-regionals-search" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Pesquisar regional..." oninput="filterDropdownList(this, '.filter-regional-item')">
+                                            
+                                            {{ range .Regionals }}
+                                            <div class="form-check mb-1 filter-regional-item" data-tenant-id="{{ .TenantID }}" data-search-name="{{ .Name }}">
+                                                <input class="form-check-input filter-regional-cb" type="checkbox" value="{{ .ID }}" id="filter-regional-{{ .ID }}" onchange="updateFilterDropdowns(); filterTable(); updateFilterRegionalsDropdownText();">
+                                                <label class="form-check-label text-white small" for="filter-regional-{{ .ID }}">
+                                                    📍 {{ .Name }}
+                                                </label>
+                                            </div>
+                                            {{ end }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Filtro de Filiais (Lojas) - Múltipla Seleção em Combobox -->
+                                <div class="col-md-3">
+                                    <label class="text-white-50 small mb-1">Filiais (Lojas)</label>
+                                    <div class="dropdown" id="filter-stores-dropdown-wrapper">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100 text-start bg-dark text-white border-secondary d-flex justify-content-between align-items-center" type="button" id="filterStoresDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="min-height: 31px; font-size: 0.875rem;">
+                                            <span id="filter-stores-dropdown-label" class="text-truncate">Todas as Filiais</span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-dark p-2 border-secondary bg-black" aria-labelledby="filterStoresDropdown" style="max-height: 250px; overflow-y: auto; width: 100%;" onclick="event.stopPropagation()">
+                                            <!-- Campo de Pesquisa -->
+                                            <input type="text" id="filter-stores-search" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Pesquisar filial..." oninput="filterDropdownList(this, '.filter-store-item')">
+                                            
+                                            {{ range .Stores }}
+                                            <div class="form-check mb-1 filter-store-item" data-tenant-id="{{ .TenantID }}" data-regional-id="{{ if .RegionalID }}{{ .RegionalID }}{{ end }}" data-search-name="{{ .StoreName }}">
+                                                <input class="form-check-input filter-store-cb" type="checkbox" value="{{ .ID }}" id="filter-store-{{ .ID }}" onchange="updateFilterDropdowns(); filterTable(); updateFilterStoresDropdownText();">
+                                                <label class="form-check-label text-white small" for="filter-store-{{ .ID }}">
+                                                    🏪 {{ .StoreName }}
+                                                </label>
+                                            </div>
+                                            {{ end }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Filtro de Recursos -->
+                                <div class="col-md-3">
+                                    <label class="text-white-50 small mb-1">Recursos / Status</label>
+                                    <select id="filter-resources" class="form-select form-select-sm bg-dark text-white border-secondary" style="min-height: 31px; font-size: 0.875rem;" onchange="filterTable()">
+                                        <option value="all">🔍 Todos os recursos</option>
+                                        <option value="audio">🔊 Apenas Áudio</option>
+                                        <option value="video">📺 Apenas Vídeo</option>
+                                        <option value="both">✨ Áudio e Vídeo</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-custom p-4 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                <h5 class="text-white fw-bold m-0">📋 Filiais (Lojas) Mapeadas</h5>
+                                <div class="d-flex gap-2 align-items-center flex-wrap">
+                                    <div style="width: 250px;">
+                                        <input type="text" id="search-input" class="form-control form-control-sm" placeholder="🔍 Pesquisar por cidade, fuso..." onkeyup="filterTable()">
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-info fw-bold px-3" data-bs-toggle="modal" data-bs-target="#excelImportModal">📥 Importar Excel</button>
+                                    <button type="button" class="btn btn-sm btn-primary fw-bold px-3" style="background-color: var(--primary-color); border: none;" onclick="showCreateForm()">➕ Nova Filial</button>
+                                </div>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-dark table-striped table-dark-custom m-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome / Número</th>
+                                            <th>Matriz (Cliente)</th>
+                                            <th>Status</th>
+                                            <th>Tipo</th>
+                                            <th>Regional</th>
+                                            <th>Localização</th>
+                                            <th>Token de Sincronismo (Player)</th>
+                                            <th>Recursos</th>
+                                            <th>Último Sync</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{range .Stores}}
+                                        <tr class="store-row" data-id="{{.ID}}" data-tenant-id="{{.TenantID}}" data-regional-id="{{if .RegionalID}}{{.RegionalID}}{{end}}" data-has-audio="{{.HasAudio}}" data-has-video="{{.HasVideo}}" data-is-active="{{.IsActive}}">
+                                            <td class="td-store-name">
+                                                <strong class="text-white">{{.StoreName}}</strong>
+                                                {{if .StoreNumber}}<br><span class="text-muted small">Cod: {{.StoreNumber}}</span>{{end}}
+                                            </td>
+                                            <td class="td-tenant">{{.TenantTradeName}}</td>
+                                            <td>
+                                                {{if .IsActive}}
+                                                    <button type="button" class="btn btn-sm btn-outline-success fw-bold px-2 py-1 store-status-btn" data-id="{{.ID}}" data-name="{{.StoreName}}" onclick="toggleStoreStatus('{{.ID}}', '{{.StoreName}}', true, this)" title="Filial Ativa - Clique para Suspender">
+                                                        <i class="fa-solid fa-circle-check text-success me-1"></i> Ativa
+                                                    </button>
+                                                {{else}}
+                                                    <button type="button" class="btn btn-sm btn-outline-danger fw-bold px-2 py-1 store-status-btn" data-id="{{.ID}}" data-name="{{.StoreName}}" onclick="toggleStoreStatus('{{.ID}}', '{{.StoreName}}', false, this)" title="Filial Suspensa - Clique para Reativar">
+                                                        <i class="fa-solid fa-circle-xmark text-danger me-1"></i> Suspensa
+                                                    </button>
+                                                {{end}}
+                                            </td>
+                                            <td>
+                                                {{if eq .RadioType "local"}}
+                                                    <span class="badge bg-info small">Local</span>
+                                                {{else}}
+                                                    <span class="badge bg-primary small">Servidor</span>
+                                                {{end}}
+                                            </td>
+                                            <td class="td-regional">{{if .RegionalName}}{{.RegionalName}}{{else}}<span class="text-muted small">Sem Regional</span>{{end}}</td>
+                                            <td class="td-location">
+                                                {{.City}} - {{.State}}
+                                                {{if .District}}<br><span class="text-muted small">{{.District}}</span>{{end}}
+                                                <br><span class="badge bg-secondary small" style="opacity: 0.85;">🕒 {{.Timezone}}</span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-1">
+                                                    <span class="token-badge">{{.Token}}</span>
+                                                    <button type="button" class="btn btn-sm btn-outline-info p-1 py-0" style="font-size: 0.75rem;" onclick="copyToken(this, '{{.Token}}')" title="Copiar Token">📋</button>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{if .HasAudio}}
+                                                    <span class="badge bg-success small me-1">Áudio</span>
+                                                    {{if .ExternalStreamName}}<br><span class="text-info small">📻 Hotmix: {{.ExternalStreamName}}</span>{{else if .AudioGridName}}<br><span class="text-muted small">Grid: {{.AudioGridName}}</span>{{else}}<br><span class="text-warning small" style="font-size: 0.75rem;">⚠️ Sem Grid Áudio</span>{{end}}
+                                                {{end}}
+                                                {{if .HasVideo}}
+                                                    {{if .HasAudio}}<br class="mb-1">{{end}}
+                                                    <span class="badge bg-primary small me-1">Vídeo</span>
+                                                    {{if .VideoGridName}}<br><span class="text-muted small">Grid: {{.VideoGridName}}</span>{{else}}<br><span class="text-warning small" style="font-size: 0.75rem;">⚠️ Sem Grid Vídeo</span>{{end}}
+                                                {{end}}
+                                            </td>
+                                            <td>
+                                                {{if .LastAudioSync}}
+                                                    <span class="text-success small">🔊 {{.LastAudioSync.Format "02/01 15:04"}}</span>
+                                                {{else}}
+                                                    <span class="text-muted small">Nunca sincronizou</span>
+                                                {{end}}
+                                            </td>
+                                            <td>
+                                                <div class="d-flex gap-1">
+                                                    <button type="button" class="btn btn-sm btn-outline-warning" 
+                                                        onclick="editStore(this, {
+                                                            id: '{{.ID}}',
+                                                            tenant_id: '{{.TenantID}}',
+                                                            regional_id: '{{if .RegionalID}}{{.RegionalID}}{{end}}',
+                                                            audio_grid_id: '{{if .AudioGridID}}{{.AudioGridID}}{{end}}',
+                                                            video_grid_id: '{{if .VideoGridID}}{{.VideoGridID}}{{end}}',
+                                                            store_name: '{{.StoreName}}',
+                                                            store_number: '{{.StoreNumber}}',
+                                                            zip_code: '{{.ZipCode}}',
+                                                            street: '{{.Street}}',
+                                                            number: '{{.Number}}',
+                                                            district: '{{.District}}',
+                                                            city: '{{.City}}',
+                                                            state: '{{.State}}',
+                                                            timezone: '{{.Timezone}}',
+                                                            phone: '{{.Phone}}',
+                                                            manager_name: '{{.ManagerName}}',
+                                                            radio_type: '{{.RadioType}}',
+                                                            has_audio: {{.HasAudio}},
+                                                            has_video: {{.HasVideo}},
+                                                            is_active: {{.IsActive}},
+                                                            external_stream_url: '{{if .ExternalStreamURL}}{{.ExternalStreamURL}}{{end}}',
+                                                            external_stream_name: '{{if .ExternalStreamName}}{{.ExternalStreamName}}{{end}}'
+                                                        })">✏️</button>
+                                                    <button type="button" onclick="openWebTerminal('docker', '{{.ID}}', '{{.StoreName}}')" class="btn btn-sm btn-outline-info" title="Abrir Terminal Docker / SSH da loja">💻 SSH Docker</button>
+                                                     <a href="/stores/delete?id={{.ID}}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja realmente excluir esta Filial? O Player C# desta loja perderá a conexão imediatamente.')">🗑️</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {{else}}
+                                        <tr>
+                                            <td colspan="10" class="text-center text-muted p-4">Nenhuma filial cadastrada até o momento.</td>
+                                        </tr>
+                                        {{end}}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- Painel de Paginação -->
+                            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2 text-white-50 small" id="pagination-controls-wrapper">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span>Linhas por página:</span>
+                                    <select id="pagination-limit-select" class="form-select form-select-sm bg-dark text-white border-secondary" style="width: auto; min-width: 80px;" onchange="changePaginationLimit(this.value)">
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                        <option value="50" selected>50</option>
+                                        <option value="100">100</option>
+                                        <option value="ALL">Todas</option>
+                                    </select>
+                                    <span id="pagination-info-text">Mostrando 0-0 de 0 linhas</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-1">
+                                    <button type="button" id="btn-page-first" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(1)">«</button>
+                                    <button type="button" id="btn-page-prev" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(currentPage - 1)">‹</button>
+                                    <span id="pagination-page-indicator" class="mx-2">Página 1 de 1</span>
+                                    <button type="button" id="btn-page-next" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(currentPage + 1)">›</button>
+                                    <button type="button" id="btn-page-last" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(totalPages)">»</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+<script>
+    // Filtra dinamicamente as regionais e grades conforme a matriz selecionada
+    function filterTenantDependents() {
+        const tenantSelect = document.getElementById('tenant-select');
+        const selectedTenant = tenantSelect.value;
+
+        // 1. Filtrar Regionais
+        const regionalSelect = document.getElementById('regional-select');
+        const regOptions = regionalSelect.querySelectorAll('option');
+        let firstRegMatch = "";
+        
+        regOptions.forEach(option => {
+            const optionTenant = option.getAttribute('data-tenant');
+            if (optionTenant) {
+                if (optionTenant === selectedTenant) {
+                    option.style.display = "";
+                    if (firstRegMatch === "") {
+                        firstRegMatch = option.value;
+                    }
+                } else {
+                    option.style.display = "none";
+                }
+            }
+        });
+
+        const currentReg = regionalSelect.value;
+        const currentRegOpt = regionalSelect.querySelector(`option[value="${currentReg}"]`);
+        if (currentReg !== "" && currentRegOpt && currentRegOpt.getAttribute('data-tenant') !== selectedTenant) {
+            regionalSelect.value = "";
+        }
+
+        // 2. Filtrar Grades (Áudio e Vídeo)
+        ['audio-grid-select', 'video-grid-select'].forEach(id => {
+            const select = document.getElementById(id);
+            if (select) {
+                select.querySelectorAll('option').forEach(option => {
+                    const optTenant = option.getAttribute('data-tenant');
+                    if (!optTenant || optTenant === "" || optTenant === selectedTenant || optTenant === '00000000-0000-0000-0000-000000000000') {
+                        option.style.display = "";
+                    } else {
+                        option.style.display = "none";
+                    }
+                });
+                const selectedVal = select.value;
+                const selectedOpt = select.querySelector(`option[value="${selectedVal}"]`);
+                if (selectedVal !== "" && selectedOpt) {
+                    const optTenant = selectedOpt.getAttribute('data-tenant');
+                    if (optTenant && optTenant !== "" && optTenant !== selectedTenant && optTenant !== '00000000-0000-0000-0000-000000000000') {
+                        select.value = "";
+                    }
+                }
+            }
+        });
+    }
+
+    function toggleAudioSourceType(type) {
+        if (type === 'hotmix') {
+            document.getElementById('hotmix-wrapper').classList.remove('d-none');
+        } else {
+            document.getElementById('hotmix-wrapper').classList.add('d-none');
+            document.getElementById('hotmix-station-select').value = "";
+            document.getElementById('external-stream-url').value = "";
+        }
+    }
+
+    // Copia o token seguro para a área de transferência com feedback visual de sucesso
+    
+    
+    function copyToken(btn, token) {
+        if (!token) return;
+        
+        var copied = false;
+        try {
+            var tempInput = document.createElement("textarea");
+            tempInput.value = token;
+            tempInput.style.position = "fixed";
+            tempInput.style.left = "-9999px";
+            tempInput.style.top = "-9999px";
+            document.body.appendChild(tempInput);
+            tempInput.focus();
+            tempInput.select();
+            copied = document.execCommand("copy");
+            document.body.removeChild(tempInput);
+        } catch (e) {
+            copied = false;
+        }
+
+        if (!copied && navigator.clipboard) {
+            try {
+                navigator.clipboard.writeText(token);
+                copied = true;
+            } catch(e) {}
+        }
+        
+        var originalText = btn.innerHTML;
+        btn.innerHTML = '✔ Copiado!';
+        btn.classList.remove('btn-outline-info');
+        btn.classList.add('btn-success');
+        setTimeout(function() {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-info');
+        }, 2000);
+    }
+
+    function showCreateForm() {
+        try {
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+            const setCheck = (id, val) => { const el = document.getElementById(id); if (el) el.checked = val; };
+
+            setVal('store-id', "");
+            const form = document.getElementById('store-form');
+            if (form) {
+                form.action = "/stores/create";
+                form.reset();
+            }
+            const title = document.getElementById('form-title');
+            if (title) title.innerText = "🏪 Cadastrar Nova Filial (Loja)";
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) submitBtn.innerText = "💾 Gravar Filial";
+
+            setVal('district', "");
+            setVal('timezone', "America/Sao_Paulo");
+            setVal('radio-type', "server");
+            setVal('audio-grid-select', "");
+            setVal('video-grid-select', "");
+
+            setCheck('has-audio', true);
+            setCheck('has-video', false);
+
+            filterTenantDependents();
+
+            const listView = document.getElementById('list-view');
+            if (listView) {
+                listView.classList.remove('d-block');
+                listView.classList.add('d-none');
+            }
+            const formView = document.getElementById('form-view');
+            if (formView) {
+                formView.classList.remove('d-none');
+                formView.classList.add('d-block');
+                formView.scrollIntoView({ behavior: 'smooth' });
+            }
+        } catch (e) {
+            console.error("Erro em showCreateForm:", e);
+        }
+    }
+
+    function editStore(btn, store) {
+        try {
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = (val !== undefined && val !== null) ? val : ""; };
+            const setCheck = (id, val) => { const el = document.getElementById(id); if (el) el.checked = Boolean(val); };
+
+            setVal('store-id', store.id);
+            const form = document.getElementById('store-form');
+            if (form) form.action = "/stores/update";
+            const title = document.getElementById('form-title');
+            if (title) title.innerText = "✏️ Editar Filial / Loja";
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) submitBtn.innerText = "💾 Salvar Alterações";
+
+            setVal('tenant-select', store.tenant_id);
+            filterTenantDependents();
+
+            setVal('regional-select', store.regional_id);
+            setVal('video-grid-select', store.video_grid_id);
+            setVal('audio-grid-select', store.audio_grid_id);
+
+            setVal('store-name', store.store_name);
+            setVal('store-number', store.store_number);
+            setVal('zip_code', store.zip_code);
+            setVal('street', store.street);
+            setVal('number', store.number);
+            setVal('district', store.district);
+            setVal('city', store.city);
+            setVal('state', store.state);
+            setVal('timezone', store.timezone || 'America/Sao_Paulo');
+            setVal('radio-type', store.radio_type || 'server');
+            setVal('phone', store.phone);
+            setVal('manager-name', store.manager_name);
+            
+            setCheck('is-active', store.is_active !== undefined ? store.is_active : true);
+            setCheck('has-audio', store.has_audio);
+            setCheck('has-video', store.has_video);
+
+            const listView = document.getElementById('list-view');
+            if (listView) {
+                listView.classList.remove('d-block');
+                listView.classList.add('d-none');
+            }
+            const formView = document.getElementById('form-view');
+            if (formView) {
+                formView.classList.remove('d-none');
+                formView.classList.add('d-block');
+                formView.scrollIntoView({ behavior: 'smooth' });
+            }
+        } catch (e) {
+            console.error("Erro em editStore:", e);
+        }
+    }
+
+    function toggleStoreStatus(storeId, storeName, currentActive, btn) {
+        const actionText = currentActive ? "suspender" : "reativar";
+        const warnExtra = currentActive ? "\n\n⚠️ O áudio será cortado e o container da rádio será parado imediatamente." : "\n\n✨ A rádio será religada e o áudio voltará ao ar.";
+        if (!confirm(`Deseja realmente ${actionText} a filial "${storeName}"?${warnExtra}`)) {
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+
+        fetch('/stores/toggle-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ id: storeId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            if (data.success) {
+                if (data.is_active) {
+                    btn.className = "btn btn-sm btn-outline-success fw-bold px-2 py-1 store-status-btn";
+                    btn.innerHTML = `<i class="fa-solid fa-circle-check text-success me-1"></i> Ativa`;
+                    btn.setAttribute("onclick", `toggleStoreStatus('${storeId}', '${storeName}', true, this)`);
+                    btn.title = "Filial Ativa - Clique para Suspender";
+                } else {
+                    btn.className = "btn btn-sm btn-outline-danger fw-bold px-2 py-1 store-status-btn";
+                    btn.innerHTML = `<i class="fa-solid fa-circle-xmark text-danger me-1"></i> Suspensa`;
+                    btn.setAttribute("onclick", `toggleStoreStatus('${storeId}', '${storeName}', false, this)`);
+                    btn.title = "Filial Suspensa - Clique para Reativar";
+                }
+            } else {
+                alert("Erro ao alterar status: " + (data.error || "Erro desconhecido"));
+                location.reload();
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            alert("Erro de conexão ao alterar status.");
+            location.reload();
+        });
+    }
+
+    function cancelEdit() {
+        document.getElementById('store-id').value = "";
+        document.getElementById('store-form').action = "/stores/create";
+        document.getElementById('form-title').innerText = "🏪 Cadastrar Nova Filial (Loja)";
+        document.getElementById('submit-btn').innerText = "💾 Gravar Filial";
+        document.getElementById('store-form').reset();
+        document.getElementById('timezone').value = "America/Sao_Paulo";
+        document.getElementById('radio-type').value = "server";
+        document.getElementById('audio-grid-select').value = "";
+        document.getElementById('video-grid-select').value = "";
+
+        // Alterna visualizações
+        document.getElementById('form-view').classList.remove('d-block');
+        document.getElementById('form-view').classList.add('d-none');
+        document.getElementById('list-view').classList.remove('d-none');
+        document.getElementById('list-view').classList.add('d-block');
+    }
+
+    let currentPage = 1;
+    let totalPages = 1;
+    let itemsPerPage = 50;
+
+    function initPagination() {
+        const savedLimit = localStorage.getItem('imc_table_limit');
+        if (savedLimit) {
+            itemsPerPage = savedLimit === 'ALL' ? 'ALL' : parseInt(savedLimit) || 50;
+        } else {
+            itemsPerPage = 50;
+        }
+        const limitSelect = document.getElementById('pagination-limit-select');
+        if (limitSelect) {
+            limitSelect.value = itemsPerPage;
+        }
+        updatePagination();
+    }
+
+    function changePaginationLimit(val) {
+        itemsPerPage = val === 'ALL' ? 'ALL' : parseInt(val) || 50;
+        localStorage.setItem('imc_table_limit', val);
+        currentPage = 1;
+        updatePagination();
+    }
+
+    function goToPage(page) {
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        updatePagination();
+    }
+
+    function updatePagination() {
+        const rows = Array.from(document.querySelectorAll('.store-row'));
+        const visibleRows = rows.filter(row => !row.classList.contains('d-none'));
+        const totalItems = visibleRows.length;
+
+        if (itemsPerPage === 'ALL') {
+            totalPages = 1;
+            currentPage = 1;
+            visibleRows.forEach(row => row.classList.remove('pg-hidden'));
+            
+            const infoText = document.getElementById('pagination-info-text');
+            if (infoText) infoText.innerText = `Mostrando 1-${totalItems} de ${totalItems} linhas`;
+            const pageIndicator = document.getElementById('pagination-page-indicator');
+            if (pageIndicator) pageIndicator.innerText = `Página 1 de 1`;
+            
+            togglePaginationButtonsDisabled(true, true, true, true);
+            return;
+        }
+
+        totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+
+        visibleRows.forEach((row, idx) => {
+            if (idx >= startIndex && idx < endIndex) {
+                row.classList.remove('pg-hidden');
+            } else {
+                row.classList.add('pg-hidden');
+            }
+        });
+
+        const infoText = document.getElementById('pagination-info-text');
+        if (infoText) {
+            infoText.innerText = totalItems === 0 ? "Mostrando 0-0 de 0 linhas" : `Mostrando ${startIndex + 1}-${endIndex} de ${totalItems} linhas`;
+        }
+
+        const pageIndicator = document.getElementById('pagination-page-indicator');
+        if (pageIndicator) {
+            pageIndicator.innerText = `Página ${currentPage} de ${totalPages}`;
+        }
+
+        togglePaginationButtonsDisabled(
+            currentPage === 1, 
+            currentPage === 1, 
+            currentPage === totalPages, 
+            currentPage === totalPages
+        );
+    }
+
+    function togglePaginationButtonsDisabled(first, prev, next, last) {
+        const btnFirst = document.getElementById('btn-page-first');
+        const btnPrev = document.getElementById('btn-page-prev');
+        const btnNext = document.getElementById('btn-page-next');
+        const btnLast = document.getElementById('btn-page-last');
+        if (btnFirst) btnFirst.disabled = first;
+        if (btnPrev) btnPrev.disabled = prev;
+        if (btnNext) btnNext.disabled = next;
+        if (btnLast) btnLast.disabled = last;
+    }
+
+    function filterDropdownList(input, itemSelector) {
+        const filter = input.value.toLowerCase().trim();
+        document.querySelectorAll(itemSelector).forEach(item => {
+            const nameAttr = item.getAttribute('data-search-name') || '';
+            if (nameAttr.toLowerCase().includes(filter)) {
+                item.classList.remove('d-none');
+            } else {
+                item.classList.add('d-none');
+            }
+        });
+    }
+
+    function updateFilterDropdownText() {
+        const checkedCbs = document.querySelectorAll('.filter-tenant-cb:checked');
+        const label = document.getElementById('filter-tenants-dropdown-label');
+        if (!label) return;
+        if (checkedCbs.length === 0) {
+            label.innerText = "Todas as Empresas";
+        } else if (checkedCbs.length === 1) {
+            label.innerText = checkedCbs[0].nextElementSibling.innerText.trim();
+        } else {
+            label.innerText = `${checkedCbs.length} Empresas selecionadas`;
+        }
+    }
+
+    function updateFilterRegionalsDropdownText() {
+        const checkedCbs = document.querySelectorAll('.filter-regional-cb:checked');
+        const label = document.getElementById('filter-regionals-dropdown-label');
+        if (!label) return;
+        if (checkedCbs.length === 0) {
+            label.innerText = "Todas as Regionais";
+        } else if (checkedCbs.length === 1) {
+            label.innerText = checkedCbs[0].nextElementSibling.innerText.trim();
+        } else {
+            label.innerText = `${checkedCbs.length} Regionais selecionadas`;
+        }
+    }
+
+    function updateFilterStoresDropdownText() {
+        const checkedCbs = document.querySelectorAll('.filter-store-cb:checked');
+        const label = document.getElementById('filter-stores-dropdown-label');
+        if (!label) return;
+        if (checkedCbs.length === 0) {
+            label.innerText = "Todas as Filiais";
+        } else if (checkedCbs.length === 1) {
+            label.innerText = checkedCbs[0].nextElementSibling.innerText.trim();
+        } else {
+            label.innerText = `${checkedCbs.length} Filiais selecionadas`;
+        }
+    }
+
+    function updateFilterDropdowns() {
+        const checkedTenantCbs = document.querySelectorAll('.filter-tenant-cb:checked');
+        const selectedTenantIds = Array.from(checkedTenantCbs).map(cb => cb.value);
+
+        // 1. Filter visible regionals checkboxes based on selected companies (tenants)
+        const regionalItems = document.querySelectorAll('.filter-regional-item');
+        regionalItems.forEach(item => {
+            const tenantId = item.getAttribute('data-tenant-id');
+            const isVisible = (selectedTenantIds.length === 0 || selectedTenantIds.includes(tenantId));
+            if (isVisible) {
+                item.classList.remove('d-none');
+            } else {
+                item.classList.add('d-none');
+                const cb = item.querySelector('.filter-regional-cb');
+                if (cb) cb.checked = false;
+            }
+        });
+        updateFilterRegionalsDropdownText();
+
+        // 2. Filter visible stores checkboxes based on selected companies (tenants) AND selected regionals
+        const checkedRegionalCbs = document.querySelectorAll('.filter-regional-cb:checked');
+        const selectedRegionalIds = Array.from(checkedRegionalCbs).map(cb => cb.value);
+
+        const storeItems = document.querySelectorAll('.filter-store-item');
+        storeItems.forEach(item => {
+            const tenantId = item.getAttribute('data-tenant-id');
+            const regionalId = item.getAttribute('data-regional-id');
+            
+            const tenantOk = (selectedTenantIds.length === 0 || selectedTenantIds.includes(tenantId));
+            const regionalOk = (selectedRegionalIds.length === 0 || selectedRegionalIds.includes(regionalId));
+            
+            if (tenantOk && regionalOk) {
+                item.classList.remove('d-none');
+            } else {
+                item.classList.add('d-none');
+                const cb = item.querySelector('.filter-store-cb');
+                if (cb) cb.checked = false;
+            }
+        });
+        updateFilterStoresDropdownText();
+    }
+
+    function filterTable() {
+        const query = document.getElementById('search-input') ? document.getElementById('search-input').value.toLowerCase().trim() : '';
+        const resourceFilter = document.getElementById('filter-resources').value;
+        
+        const checkedTenantCbs = document.querySelectorAll('.filter-tenant-cb:checked');
+        const selectedTenantIds = Array.from(checkedTenantCbs).map(cb => cb.value);
+
+        const checkedRegionalCbs = document.querySelectorAll('.filter-regional-cb:checked');
+        const selectedRegionalIds = Array.from(checkedRegionalCbs).map(cb => cb.value);
+
+        const checkedStoreCbs = document.querySelectorAll('.filter-store-cb:checked');
+        const selectedStoreIds = Array.from(checkedStoreCbs).map(cb => cb.value);
+
+        const rows = document.querySelectorAll('.store-row');
+        
+        rows.forEach(row => {
+            const storeName = row.querySelector('.td-store-name').innerText.toLowerCase();
+            const regional = row.querySelector('.td-regional').innerText.toLowerCase();
+            const tenant = row.querySelector('.td-tenant').innerText.toLowerCase();
+            const location = row.querySelector('.td-location').innerText.toLowerCase();
+            
+            const rowStoreId = row.getAttribute('data-id');
+            const rowTenantId = row.getAttribute('data-tenant-id');
+            const rowRegionalId = row.getAttribute('data-regional-id') || '';
+            
+            // Check resources from data attributes
+            const hasAudio = row.getAttribute('data-has-audio') === 'true';
+            const hasVideo = row.getAttribute('data-has-video') === 'true';
+            
+            let matchesQuery = storeName.includes(query) || regional.includes(query) || tenant.includes(query) || location.includes(query);
+            
+            let matchesResource = false;
+            if (resourceFilter === 'all') {
+                matchesResource = true;
+            } else if (resourceFilter === 'audio') {
+                matchesResource = hasAudio;
+            } else if (resourceFilter === 'video') {
+                matchesResource = hasVideo;
+            } else if (resourceFilter === 'both') {
+                matchesResource = hasAudio && hasVideo;
+            }
+            
+            const matchesTenant = (selectedTenantIds.length === 0 || selectedTenantIds.includes(rowTenantId));
+            const matchesRegional = (selectedRegionalIds.length === 0 || selectedRegionalIds.includes(rowRegionalId));
+            const matchesStore = (selectedStoreIds.length === 0 || selectedStoreIds.includes(rowStoreId));
+            
+            if (matchesQuery && matchesResource && matchesTenant && matchesRegional && matchesStore) {
+                row.classList.remove('d-none');
+            } else {
+                row.classList.add('d-none');
+            }
+        });
+        currentPage = 1;
+        updatePagination();
+        saveStoresFilters();
+    }
+
+    let isRestoring = false;
+    function saveStoresFilters() {
+        if (isRestoring) return;
+        const query = document.getElementById('search-input') ? document.getElementById('search-input').value : '';
+        const resourceFilter = document.getElementById('filter-resources').value;
+        const tenantIds = Array.from(document.querySelectorAll('.filter-tenant-cb:checked')).map(cb => cb.value);
+        const regionalIds = Array.from(document.querySelectorAll('.filter-regional-cb:checked')).map(cb => cb.value);
+        const storeIds = Array.from(document.querySelectorAll('.filter-store-cb:checked')).map(cb => cb.value);
+        
+        localStorage.setItem('imc_stores_filter_query', query);
+        localStorage.setItem('imc_stores_filter_resource', resourceFilter);
+        localStorage.setItem('imc_stores_filter_tenants', JSON.stringify(tenantIds));
+        localStorage.setItem('imc_stores_filter_regionals', JSON.stringify(regionalIds));
+        localStorage.setItem('imc_stores_filter_stores', JSON.stringify(storeIds));
+    }
+
+    function restoreStoresFilters() {
+        isRestoring = true;
+        const query = localStorage.getItem('imc_stores_filter_query') || '';
+        const resourceFilter = localStorage.getItem('imc_stores_filter_resource') || 'all';
+        let tenantIds = [];
+        let regionalIds = [];
+        let storeIds = [];
+        try {
+            tenantIds = JSON.parse(localStorage.getItem('imc_stores_filter_tenants')) || [];
+            regionalIds = JSON.parse(localStorage.getItem('imc_stores_filter_regionals')) || [];
+            storeIds = JSON.parse(localStorage.getItem('imc_stores_filter_stores')) || [];
+        } catch(e) {}
+
+        if (document.getElementById('search-input')) {
+            document.getElementById('search-input').value = query;
+        }
+        document.getElementById('filter-resources').value = resourceFilter;
+
+        tenantIds.forEach(id => {
+            const cb = document.getElementById('filter-tenant-' + id);
+            if (cb) cb.checked = true;
+        });
+        regionalIds.forEach(id => {
+            const cb = document.getElementById('filter-regional-' + id);
+            if (cb) cb.checked = true;
+        });
+        storeIds.forEach(id => {
+            const cb = document.getElementById('filter-store-' + id);
+            if (cb) cb.checked = true;
+        });
+
+        updateFilterDropdowns();
+        updateFilterDropdownText();
+        updateFilterRegionalsDropdownText();
+        updateFilterStoresDropdownText();
+        isRestoring = false;
+        filterTable();
+    }
+
+    // Inicializa o filtro de regionais e grades no carregamento inicial da página
+    window.onload = function() {
+        filterTenantDependents();
+        initPagination();
+        restoreStoresFilters();
+    };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<!-- Modal Web Terminal Interativo (Docker / SSH) -->
+<div class="modal fade" id="webTerminalModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-info shadow-lg">
+            <div class="modal-header border-secondary py-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-terminal-fill text-info fs-5"></i>
+                    <h6 class="modal-title m-0 fw-bold" id="terminalModalTitle">💻 Web Terminal Linux / Docker</h6>
+                    <span class="badge bg-success" id="terminalStatusBadge">Conectado</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-outline-info" id="btnDockerConnectStore" onclick="connectDockerCurrentStore()" title="Conectar ao Container Docker da Loja"><i class="bi bi-box-seam me-1"></i> 🐳 Conectar Docker da Loja</button>
+                    <button class="btn btn-sm btn-outline-light" onclick="sendTerminalCommand('docker ps\n')" title="Listar Contêineres Docker"><i class="bi bi-list-task me-1"></i> Docker PS</button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="clearTerminal()"><i class="bi bi-eraser me-1"></i> Limpar</button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="closeTerminal()"></button>
+                </div>
+            </div>
+            <div class="modal-body p-2" style="background-color: #090d16;">
+                <div id="terminal-container" style="background-color: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155; min-height: 420px;"></div>
+            </div>
+            <div class="modal-footer border-secondary py-1 d-flex justify-content-between">
+                <small class="text-muted"><i class="bi bi-info-circle me-1"></i> PTY WebSocket Ativo | Use o teclado para interagir diretamente com a linha de comando Linux do Docker.</small>
+                <button type="button" class="btn btn-sm btn-secondary px-3" data-bs-dismiss="modal" onclick="closeTerminal()">Fechar Terminal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- xterm.js JavaScript Libs -->
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+
+<script>
+    var term = null;
+    var fitAddon = null;
+    var wsSocket = null;
+    var currentTerminalTarget = '';
+    var currentStoreName = '';
+
+    function openWebTerminal(mode, target, storeName) {
+        currentTerminalTarget = target || '';
+        currentStoreName = storeName || '';
+        var modalEl = document.getElementById('webTerminalModal');
+        var titleEl = document.getElementById('terminalModalTitle');
+        var badgeEl = document.getElementById('terminalStatusBadge');
+
+        if (titleEl) titleEl.innerHTML = '💻 Terminal Docker / SSH — <span class="text-info">' + (storeName || target) + '</span>';
+        if (badgeEl) {
+            badgeEl.className = 'badge bg-warning text-dark';
+            badgeEl.innerText = 'Conectando...';
+        }
+
+        try {
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                var bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                bsModal.show();
+            } else {
+                modalEl.classList.add('show');
+                modalEl.style.display = 'block';
+                document.body.classList.add('modal-open');
+            }
+        } catch(e) {
+            modalEl.classList.add('show');
+            modalEl.style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        initTerminal(mode, target);
+    }
+
+    function connectDockerCurrentStore() {
+        if (currentTerminalTarget) {
+            var clean = currentTerminalTarget.replace(/^\/+/, '');
+            sendTerminalCommand('docker exec -it ' + clean + ' sh\n');
+        } else {
+            sendTerminalCommand('docker ps\n');
+        }
+    }
+
+    function initTerminal(mode, target) {
+        var container = document.getElementById('terminal-container');
+        container.innerHTML = '';
+
+        term = new Terminal({
+            cursorBlink: true,
+            theme: {
+                background: '#0f172a',
+                foreground: '#f8fafc',
+                cursor: '#38bdf8',
+                selectionBackground: '#334155',
+                black: '#0f172a',
+                red: '#ef4444',
+                green: '#22c55e',
+                yellow: '#eab308',
+                blue: '#3b82f6',
+                magenta: '#ec4899',
+                cyan: '#06b6d4',
+                white: '#f8fafc'
+            },
+            fontSize: 14,
+            fontFamily: 'Menlo, Monaco, "Courier New", monospace'
+        });
+
+        fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        term.open(container);
+        fitAddon.fit();
+
+        var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        var cleanTarget = (target || '').replace(/^\/+/, '');
+        var wsUrl = protocol + '//' + window.location.host + '/ws/terminal?mode=' + (mode || 'docker') + '&target=' + encodeURIComponent(cleanTarget);
+
+        wsSocket = new WebSocket(wsUrl);
+
+        wsSocket.onopen = function () {
+            var badgeEl = document.getElementById('terminalStatusBadge');
+            if (badgeEl) {
+                badgeEl.className = 'badge bg-success';
+                badgeEl.innerText = 'Online';
+            }
+            term.writeln('\r\n\x1b[32m✔ Sessão WebSSH / Terminal Docker conectada com sucesso!\x1b[0m\r\n');
+            sendResize();
+        };
+
+        wsSocket.onmessage = function (event) {
+            term.write(event.data);
+        };
+
+        wsSocket.onclose = function () {
+            var badgeEl = document.getElementById('terminalStatusBadge');
+            if (badgeEl) {
+                badgeEl.className = 'badge bg-danger';
+                badgeEl.innerText = 'Desconectado';
+            }
+            term.writeln('\r\n\x1b[31m❌ Conexão com o Terminal encerrada.\x1b[0m');
+        };
+
+        wsSocket.onerror = function (err) {
+            term.writeln('\r\n\x1b[31m❌ Erro na conexão WebSocket com o servidor.\x1b[0m');
+        };
+
+        term.onData(function (data) {
+            if (wsSocket && wsSocket.readyState === WebSocket.OPEN) {
+                wsSocket.send(JSON.stringify({ type: 'input', data: data }));
+            }
+        });
+
+        window.addEventListener('resize', handleResize);
+    }
+
+    function handleResize() {
+        if (fitAddon && term) {
+            fitAddon.fit();
+            sendResize();
+        }
+    }
+
+    function sendResize() {
+        if (wsSocket && wsSocket.readyState === WebSocket.OPEN && term) {
+            wsSocket.send(JSON.stringify({
+                type: 'resize',
+                cols: term.cols,
+                rows: term.rows
+            }));
+        }
+    }
+
+    function sendTerminalCommand(cmdText) {
+        if (wsSocket && wsSocket.readyState === WebSocket.OPEN) {
+            wsSocket.send(JSON.stringify({ type: 'input', data: cmdText }));
+        }
+    }
+
+    function clearTerminal() {
+        if (term) term.clear();
+    }
+
+    function closeTerminal() {
+        if (wsSocket) {
+            wsSocket.close();
+            wsSocket = null;
+        }
+        if (term) {
+            term.dispose();
+            term = null;
+        }
+        window.removeEventListener('resize', handleResize);
+    }
+</script>
+<!-- Modal de Importação Excel -->
+<div class="modal fade" id="excelImportModal" tabindex="-1" aria-labelledby="excelImportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary shadow-lg">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="excelImportModalLabel">📥 Importar Filiais via Planilha Excel</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/stores/import" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <p class="text-white-50 small">Cadastre múltiplas filiais de uma só vez importando uma planilha <code>.xlsx</code> pré-formatada.</p>
+                    <div class="mb-3">
+                        <label class="form-label text-white small fw-bold">Arquivo Excel (.xlsx) *</label>
+                        <input type="file" name="file" accept=".xlsx" class="form-control form-control-sm bg-dark text-white border-secondary" required>
+                    </div>
+                    <div class="p-2 rounded bg-black border border-secondary d-flex justify-content-between align-items-center">
+                        <span class="text-white-50 small">Precisa do formato padrão?</span>
+                        <a href="/stores/download-template" class="btn btn-sm btn-outline-info fw-bold">📥 Baixar Modelo</a>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-success fw-bold px-4">🚀 Importar Filiais</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

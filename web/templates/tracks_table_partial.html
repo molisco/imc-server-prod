@@ -1,0 +1,121 @@
+{{if .Tracks}}
+<style>
+    /* Dynamic table row highlighting on hover */
+    .table tbody tr:hover td {
+        background-color: rgba(255, 255, 255, 0.075) !important;
+        color: #ffffff !important;
+    }
+    .table tbody tr:hover {
+        outline: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+    .pg-hidden {
+        display: none !important;
+    }
+</style>
+<div class="table-responsive position-relative" style="max-height: 450px; overflow-y: auto;" data-tracks-count="{{.TracksCount}}" data-total-duration="{{formatTotalDuration .TotalDurationSeconds}}">
+    <table class="table table-dark table-striped table-sm m-0" style="font-size: 0.8rem;">
+        <thead class="sticky-thead bg-dark" style="position: sticky; top: 0; z-index: 10;">
+            <tr class="border-bottom border-secondary">
+                <th style="width: 30px;" class="bg-dark align-middle"><input type="checkbox" class="form-check-input select-all-tracks-{{.ID}}" onchange="toggleSelectAllTracks('{{.ID}}', this)"></th>
+                <th style="width: 40px;" class="text-center bg-dark align-middle">Play</th>
+                <th class="bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 2, 'string')">Nome do Arquivo</th>
+                <th class="bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 3, 'string')">Título (Tag)</th>
+                <th class="bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 4, 'string')">Artista</th>
+                <th class="bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 5, 'string')">Álbum</th>
+                <th class="text-center bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 6, 'number')">Ano</th>
+                <th class="text-center bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 7, 'size')">Tamanho</th>
+                <th class="text-center bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 8, 'number')">Bitrate</th>
+                <th class="text-center bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 9, 'number')">Freq. Amostra</th>
+                <th class="text-center bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 10, 'duration')">Duração</th>
+                <th class="text-center bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 11, 'number')">LUFS</th>
+                <th class="text-center bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 12, 'number')">LRA</th>
+                <th class="text-center bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 13, 'number')">Cue In</th>
+                <th class="text-center bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 14, 'number')">Cue Out</th>
+                <th class="text-center bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 15, 'string')">Nota</th>
+                <th class="text-center bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 16, 'string')">Selo</th>
+                <th class="text-center bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 17, 'date')">Última Atualização</th>
+                <th class="text-center bg-dark align-middle" style="cursor: pointer;" onclick="sortTracks('{{.ID}}', 18, 'number')">IRR</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Tracks}}
+            <tr id="track-row-{{.ID}}" class="track-data-row align-middle" data-filename="{{.FileName}}" data-title="{{.Title}}" data-artist="{{.Artist}}" data-album="{{.Album}}" data-score="{{.LoudnessScore}}" {{if isOverFiveMinutes .CueIn .CueOut}}style="color: #ff4d4d !important;"{{end}}>
+                <td><input type="checkbox" class="form-check-input track-checkbox track-checkbox-{{.MusicStyleID}}" value="{{.ID}}" onchange="updateSelectedCount('{{.MusicStyleID}}')"></td>
+                <td class="text-center">
+                    <div class="d-flex justify-content-center align-items-center gap-1">
+                        <button type="button" class="btn btn-sm btn-link text-success p-0 text-decoration-none" onclick="playMusic('{{.ID}}', '{{.DisplayName}}', '{{.Artist}}')" title="Tocar">▶️</button>
+                        <button type="button" class="btn btn-sm btn-link text-warning p-0 text-decoration-none" onclick="openCueEditor('{{.ID}}', '{{.DisplayName}}', '{{.Artist}}', {{.CueIn}}, {{.CueOut}}, {{.DurationSeconds}}, {{.ManualCue}})" style="font-size: 0.85rem;" title="Ajustar Cue Points (Waveform)">✂️</button>
+                    </div>
+                </td>
+                <td><code>{{.FileName}}</code></td>
+                <td>{{if .Title}}{{.Title}}{{else}}<span class="text-muted small">Sem tag</span>{{end}}</td>
+                <td>{{if .Artist}}{{.Artist}}{{else}}<span class="text-muted small">Sem tag</span>{{end}}</td>
+                <td>{{if .Album}}{{.Album}}{{else}}<span class="text-muted small">Sem tag</span>{{end}}</td>
+                <td class="text-center">{{if .Year}}{{.Year}}{{else}}<span class="text-muted small">--</span>{{end}}</td>
+                <td class="text-center text-white-50">{{if .FileSizeBytes}}{{formatSize .FileSizeBytes}}{{else}}--{{end}}</td>
+                <td class="text-center text-white-50">{{if .BitRateKbps}}{{.BitRateKbps}} kbps{{else}}--{{end}}</td>
+                <td class="text-center text-white-50">{{if .SampleRateHz}}{{formatSampleRate .SampleRateHz}}{{else}}--{{end}}</td>
+                <td class="text-center"><span class="text-info">{{formatDuration .DurationSeconds}}</span></td>
+                <td class="text-center"><code class="text-white-50">{{printf "%.1f" .LUFS}}</code></td>
+                <td class="text-center"><code class="text-white-50">{{printf "%.1f" .LRA}}</code></td>
+                <td class="text-center"><code class="{{if .ManualCue}}text-info fw-bold{{else}}text-warning{{end}}">{{printf "%.2f" .CueIn}}s</code></td>
+                <td class="text-center"><code class="{{if .ManualCue}}text-info fw-bold{{else}}text-warning{{end}}">{{printf "%.2f" .CueOut}}s</code></td>
+                <td class="text-center">
+                    {{if eq .LoudnessScore "A"}}
+                        <span class="badge bg-success" title="Ideal (LRA <= 6.0 e LUFS entre -15.5 e -12.5)">Nota A</span>
+                    {{else if eq .LoudnessScore "B"}}
+                        <span class="badge bg-primary" title="Aceitável (LRA <= 9.0 e LUFS entre -15.5 e -12.5)">Nota B</span>
+                    {{else if eq .LoudnessScore "C"}}
+                        <span class="badge bg-warning text-dark" title="Precisa de Ganho (LRA <= 9.0 e LUFS fora da faixa)">Nota C</span>
+                    {{else if eq .LoudnessScore "D"}}
+                        <span class="badge bg-danger" title="Requer Compressão (LRA > 9.0)">Nota D</span>
+                    {{else}}
+                        <span class="badge bg-secondary">--</span>
+                    {{end}}
+                </td>
+                <td class="text-center">
+                    {{if .IsSonic}}
+                        <span class="badge bg-success fw-bold" style="letter-spacing: 1px; background: linear-gradient(135deg, #11998e, #38ef7d) !important;" title="Selo SONIC ativo">SONIC</span>
+                    {{else}}
+                        <span class="badge bg-secondary">--</span>
+                    {{end}}
+                </td>
+                <td class="text-center text-white-50" style="white-space: nowrap;">{{formatDateTime .UpdatedAt}}</td>
+                <td class="text-center">
+                    {{if le .RiscoRuido 15}}
+                        <span class="badge bg-success" title="Áudio Limpo (Risco de Ruído baixo)">{{.RiscoRuido}}%</span>
+                    {{else if le .RiscoRuido 49}}
+                        <span class="badge bg-warning text-dark" title="Atenção (Erros leves ou Clipping)">{{.RiscoRuido}}%</span>
+                    {{else}}
+                        <span class="badge bg-danger" title="Crítico / Rejeitado (Erros graves ou corrupção)">{{.RiscoRuido}}%</span>
+                    {{end}}
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+<!-- Painel de Paginação para Músicas -->
+<div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2 text-white-50 small" id="pagination-controls-wrapper-{{.ID}}">
+    <div class="d-flex align-items-center gap-2">
+        <span>Linhas por página:</span>
+        <select id="pagination-limit-select-{{.ID}}" class="form-select form-select-sm bg-dark text-white border-secondary" style="width: auto; min-width: 80px;" onchange="changeTracksPaginationLimit('{{.ID}}', this.value)">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="ALL">Todas</option>
+        </select>
+        <span id="pagination-info-text-{{.ID}}">Mostrando 0-0 de 0 linhas</span>
+    </div>
+    <div class="d-flex align-items-center gap-1">
+        <button type="button" id="btn-page-first-{{.ID}}" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToTracksPage('{{.ID}}', 1)">«</button>
+        <button type="button" id="btn-page-prev-{{.ID}}" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToTracksPage('{{.ID}}', getTracksCurrentPage('{{.ID}}') - 1)">‹</button>
+        <span id="pagination-page-indicator-{{.ID}}" class="mx-2">Página 1 de 1</span>
+        <button type="button" id="btn-page-next-{{.ID}}" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToTracksPage('{{.ID}}', getTracksCurrentPage('{{.ID}}') + 1)">›</button>
+        <button type="button" id="btn-page-last-{{.ID}}" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToTracksPage('{{.ID}}', getTracksTotalPages('{{.ID}}'))">»</button>
+    </div>
+</div>
+{{else}}
+<p class="text-muted m-0 small" data-tracks-count="0" data-total-duration="00:00:00">Nenhuma música sincronizada. Certifique-se de que o diretório existe e contém arquivos .mp3.</p>
+{{end}}

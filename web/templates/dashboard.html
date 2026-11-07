@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMC-Server - Painel Central</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        /* =========================================================================
+           WHITE LABEL ENGINE: Variáveis CSS Dinâmicas.
+           ========================================================================= */
+        :root {
+            --primary-color: {{ .Theme.PrimaryColor }};
+            --secondary-color: {{ .Theme.SecondaryColor }};
+            --background-color: {{ .Theme.BackgroundColor }};
+            --font-color: {{ if index .Theme "FontColor" }}{{ index .Theme "FontColor" }}{{ else }}#ffffff{{ end }};
+            --field-background-color: {{ if index .Theme "FieldBackgroundColor" }}{{ index .Theme "FieldBackgroundColor" }}{{ else }}rgba(255, 255, 255, 0.05){{ end }};
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--font-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Barra Lateral (Sidebar) */
+        .sidebar {
+            background-color: var(--secondary-color);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            min-height: 100vh;
+        }
+
+        .nav-section-title {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #718096;
+            margin-top: 1.2rem;
+            margin-bottom: 0.4rem;
+            padding-left: 0.6rem;
+            font-weight: 700;
+        }
+
+        .nav-link-custom {
+            color: #cbd5e0;
+            padding: 0.6rem 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link-custom:hover, .nav-link-custom.active {
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+        /* Topbar de navegação */
+        .topbar {
+            background-color: var(--secondary-color);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+        }
+
+        .card-custom {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card-hub {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            height: 100%;
+        }
+
+        .card-hub:hover .card-custom {
+            transform: translateY(-3px);
+            border-color: var(--primary-color);
+            box-shadow: 0 8px 24px rgba(67, 100, 247, 0.18);
+        }
+
+        .metric-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .hub-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- MENU LATERAL PADRÃO -->
+        <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse p-3">
+            <div class="text-center mb-3 pb-3 border-bottom border-secondary">
+                <img src="{{ .Theme.LogoURL }}" alt="Logo IMC" class="img-fluid mb-2" style="max-height: 48px;">
+                <h6 class="text-uppercase tracking-wider text-muted small m-0">IMC Central Server</h6>
+            </div>
+            
+            <div class="position-sticky">
+                <ul class="nav flex-column">
+                    <div class="nav-section-title">HIERARQUIA & GESTÃO</div>
+                    <li><a href="/tenants" class="nav-link-custom">🏢 Matrizes / Clientes</a></li>
+                    <li><a href="/regionals" class="nav-link-custom">📍 Regionais</a></li>
+                    <li><a href="/stores" class="nav-link-custom">🏪 Filiais (Lojas)</a></li>
+                    <li><a href="/users" class="nav-link-custom">👤 Usuários & Acessos</a></li>
+
+                    <div class="nav-section-title">MONITORAMENTO & AUDITORIA</div>
+                    <li><a href="/radios/status" class="nav-link-custom">📻 Status das Rádios</a></li>
+                    <li><a href="/play-history" class="nav-link-custom">📊 Relatórios & Histórico</a></li>
+
+                    <div class="nav-section-title">ACERVO & MÍDIAS</div>
+                    <li><a href="/music-styles" class="nav-link-custom">🎧 Estilos Musicais</a></li>
+                    <li><a href="/video-styles" class="nav-link-custom">📺 Estilos de Vídeo</a></li>
+                    <li><a href="/streamings" class="nav-link-custom">📻 Rádios & Streamings</a></li>
+                    <li><a href="/grids/audio" class="nav-link-custom">📅 Grades de Áudio</a></li>
+                    <li><a href="/grids/video" class="nav-link-custom">📺 Grades de Vídeo</a></li>
+
+                    <div class="nav-section-title">LOCUÇÃO & AVISOS</div>
+                    <li><a href="/commercials" class="nav-link-custom">📣 Comerciais & Eventos</a></li>
+                    <li><a href="/voice-packs" class="nav-link-custom">🏷️ Aviso de Placas</a></li>
+                    <li><a href="/chimes" class="nav-link-custom">🔔 Sinais Sonoros (Chimes)</a></li>
+                    <li><a href="/pre-formatted-warnings" class="nav-link-custom">📢 Avisos Pré-Formatados</a></li>
+                </ul>
+                
+                <div class="mt-4 pt-3 border-top border-secondary text-center">
+                    <a href="/logout" class="btn btn-sm btn-outline-danger w-100 py-2">Sair do Sistema</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pb-5">
+            <!-- TOPBAR PADRÃO -->
+            <div class="topbar d-flex justify-content-between align-items-center my-3 rounded">
+                <div>
+                    <h4 class="m-0 fw-bold">Painel de Controle</h4>
+                    <small class="text-muted">Visão Geral do Sistema de Rádio Corporativa</small>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-light small">Olá, <strong>{{ .User.Name }}</strong></span>
+                    <span class="badge bg-primary text-uppercase px-2 py-1">{{ .User.Role }}</span>
+                </div>
+            </div>
+
+            <!-- CARDS DE MÉTRICAS PRINCIPAIS -->
+            <div class="row g-3 mt-1 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="card-custom p-3 text-center">
+                        <div class="metric-value text-primary">{{ .StoresCount }}</div>
+                        <small class="text-muted text-uppercase fw-semibold">Lojas Cadastradas</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card-custom p-3 text-center">
+                        <div class="metric-value text-success">{{ .CommercialsCount }}</div>
+                        <small class="text-muted text-uppercase fw-semibold">Comerciais & Avisos</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card-custom p-3 text-center">
+                        <div class="metric-value text-info">{{ .MusicStylesCount }}</div>
+                        <small class="text-muted text-uppercase fw-semibold">Estilos Musicais</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card-custom p-3 text-center">
+                        <div class="metric-value text-warning">{{ .UsersCount }}</div>
+                        <small class="text-muted text-uppercase fw-semibold">Usuários do Sistema</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HUB DE ACESSO RÁPIDO ORGANIZADO POR CATEGORIAS -->
+            
+            <!-- 1. HIERARQUIA & GESTÃO -->
+            <h6 class="text-uppercase tracking-wider text-muted fw-bold mb-3">🏢 Estrutura & Administração Multi-Tenant</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <a href="/tenants" class="card-hub">
+                        <div class="card-custom p-3">
+                            <div class="hub-icon">🏢</div>
+                            <h6 class="fw-bold text-white mb-1">Matrizes / Clientes</h6>
+                            <p class="text-muted small mb-0">Cadastro e identidade visual das redes contratantes.</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="/regionals" class="card-hub">
+                        <div class="card-custom p-3">
+                            <div class="hub-icon">📍</div>
+                            <h6 class="fw-bold text-white mb-1">Regionais</h6>
+                            <p class="text-muted small mb-0">Divisões geográficas e coordenadores de grupo.</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="/stores" class="card-hub">
+                        <div class="card-custom p-3">
+                            <div class="hub-icon">🏪</div>
+                            <h6 class="fw-bold text-white mb-1">Filiais (Lojas)</h6>
+                            <p class="text-muted small mb-0">Configuração das lojas físicas e players de áudio/vídeo.</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="/users" class="card-hub">
+                        <div class="card-custom p-3">
+                            <div class="hub-icon">👤</div>
+                            <h6 class="fw-bold text-white mb-1">Usuários & Acessos</h6>
+                            <p class="text-muted small mb-0">Controle RBAC, operadores, perfis e permissões.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 2. MONITORAMENTO & OPERAÇÃO -->
+            <h6 class="text-uppercase tracking-wider text-muted fw-bold mb-3">📻 Monitoramento & Auditoria em Tempo Real</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <a href="/radios/status" class="card-hub">
+                        <div class="card-custom p-3 d-flex align-items-center gap-3">
+                            <div class="hub-icon mb-0">📻</div>
+                            <div>
+                                <h6 class="fw-bold text-white mb-1">Status & Saúde das Rádios</h6>
+                                <p class="text-muted small mb-0">Painel de diagnósticos, conectividade dos players e heartbeat.</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="/play-history" class="card-hub">
+                        <div class="card-custom p-3 d-flex align-items-center gap-3">
+                            <div class="hub-icon mb-0">📊</div>
+                            <div>
+                                <h6 class="fw-bold text-white mb-1">Relatórios & Histórico</h6>
+                                <p class="text-muted small mb-0">Comprovação de veiculação (checking) por Matriz e Filial.</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="/streamings" class="card-hub">
+                        <div class="card-custom p-3 d-flex align-items-center gap-3">
+                            <div class="hub-icon mb-0">🌐</div>
+                            <div>
+                                <h6 class="fw-bold text-white mb-1">Streamings & Rádios</h6>
+                                <p class="text-muted small mb-0">Catálogo de emissoras online e lojas conectadas.</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 3. MÍDIAS & PROGRAMAÇÃO -->
+            <h6 class="text-uppercase tracking-wider text-muted fw-bold mb-3">🎧 Programação Musical & Grades</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <a href="/music-styles" class="card-hub">
+                        <div class="card-custom p-3">
+                            <div class="hub-icon">🎧</div>
+                            <h6 class="fw-bold text-white mb-1">Estilos Musicais</h6>
+                            <p class="text-muted small mb-0">Acervo musical, controle de CUE points e normalização SONIC.</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="/video-styles" class="card-hub">
+                        <div class="card-custom p-3">
+                            <div class="hub-icon">📺</div>
+                            <h6 class="fw-bold text-white mb-1">Estilos de Vídeo</h6>
+                            <p class="text-muted small mb-0">Categorias de vídeos institucionais e promocionais.</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="/grids/audio" class="card-hub">
+                        <div class="card-custom p-3">
+                            <div class="hub-icon">📅</div>
+                            <h6 class="fw-bold text-white mb-1">Grades de Áudio</h6>
+                            <p class="text-muted small mb-0">Montagem da linha do tempo semanal de estilos e comerciais.</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="/grids/video" class="card-hub">
+                        <div class="card-custom p-3">
+                            <div class="hub-icon">📺</div>
+                            <h6 class="fw-bold text-white mb-1">Grades de Vídeo</h6>
+                            <p class="text-muted small mb-0">Programação de reprodução dos painéis de TV/Vídeo.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 4. COMERCIAIS & EVENTOS -->
+            <h6 class="text-uppercase tracking-wider text-muted fw-bold mb-3">📢 Avisos, Comerciais & Conteúdo Sonoro</h6>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <a href="/commercials" class="card-hub">
+                        <div class="card-custom p-3">
+                            <div class="hub-icon">📣</div>
+                            <h6 class="fw-bold text-white mb-1">Comerciais & Eventos</h6>
+                            <p class="text-muted small mb-0">Spots, campanhas de ofertas, aberturas e fechamentos de bloco.</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="/voice-packs" class="card-hub">
+                        <div class="card-custom p-3">
+                            <div class="hub-icon">🏷️</div>
+                            <h6 class="fw-bold text-white mb-1">Aviso de Placas</h6>
+                            <p class="text-muted small mb-0">Montagem dinâmica de chamadas de veículos no estacionamento.</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="/chimes" class="card-hub">
+                        <div class="card-custom p-3">
+                            <div class="hub-icon">🔔</div>
+                            <h6 class="fw-bold text-white mb-1">Sinais Sonoros (Chimes)</h6>
+                            <p class="text-muted small mb-0">Efeitos de introdução e chimes para alertas na loja.</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="/pre-formatted-warnings" class="card-hub">
+                        <div class="card-custom p-3">
+                            <div class="hub-icon">📢</div>
+                            <h6 class="fw-bold text-white mb-1">Mensagens Pré-Formatadas</h6>
+                            <p class="text-muted small mb-0">Avisos operacionais rápidos gravados para disparo imediato.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

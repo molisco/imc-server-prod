@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+import os
+import sys
+import subprocess
+
+def get_process_info():
+    try:
+        ps_out = subprocess.check_output(["ps", "aux", "--cols", "1000"], text=True)
+    except Exception as e:
+        print(f"Erro ao executar ps: {e}")
+        return []
+
+    lines = ps_out.strip().split("\n")[1:]
+    results = []
+
+    for line in lines:
+        parts = line.split(None, 10)
+        if len(parts) < 11:
+            continue
+        user, pid, cpu, mem, vsz, rss, tty, stat, start, time_str, cmd = parts
+        
+        if "liquidsoap" in cmd or "imc-audio-local" in cmd:
+            store_name = "Central / Host"
+            store_id = "-"
+            harbor_port = "-"
+            
+            try:
+                with open(f"/proc/{pid}/cmdline", "rb") as f:
+                    raw = f.read().decode("utf-8", errors="ignore")
+                    cmd_args = raw.split("\x00")
+                    for arg in cmd_args:
+                        if arg.startswith("--store-name="):
+                            store_name = arg.split("=", 1)[1].strip("'\"")
+                        elif arg.startswith("--store-id="):
+                            store_id = arg.split("=", 1)[1].strip("'\"")
+                        elif arg.startswith("--port="):
+                            harbor_port = arg.split("=", 1)[1].strip("'\"")
+            except Exception:
+                pass
+
+            proc_type = "Liquidsoap Playout" if ("liquidsoap" in cmd) else "Daemon Go"
+            results.append({
+                "pid": pid,
+                "type": proc_type,
+                "store_name": store_name,
+                "harbor_port": harbor_port,
+                "cpu": float(cpu),
+                "mem": float(mem),
+                "rss_mb": round(int(rss) / 1024, 1),
+                "time": time_str
+            })
+    return results
+
+def main():
+    procs = get_process_info()
+    
+    print("\033[1;36m" + "="*85 + "\033[0m")
+    print("\033[1;37m           IMC SERVER - MONITOR EM TEMPO REAL DE RÁDIOS & PROCESSOS\033[0m")
+    print("\033[1;36m" + "="*85 + "\033[0m")
+    print(f"\033[1;33m{'PID':<8} {'EMPRESA / FILIAL':<30} {'PROCESSO':<22} {'CPU%':<8} {'RAM(MB)':<10} {'PORTA':<8}\033[0m")
+    print("-" * 85)
+    
+    if not procs:
+        print("  Nenhum processo de rádio (Liquidsoap / Go) em execução no momento.")
+    else:
+        procs.sort(key=lambda x: x["cpu"], reverse=True)
+        total_cpu = 0.0
+        total_ram = 0.0
+        for p in procs:
+            total_cpu += p["cpu"]
+            total_ram += p["rss_mb"]
+            cpu_color = "\033[1;31m" if p["cpu"] > 50 else ("\033[1;33m" if p["cpu"] > 20 else "\033[1;32m")
+            print(f"{p['pid']:<8} \033[1m{p['store_name']:<30}\033[0m {p['type']:<22} {cpu_color}{p['cpu']:>5.1f}%\033[0m   {p['rss_mb']:>6.1f} MB   {p['harbor_port']:<8}")
+        print("-" * 85)
+        print(f"\033[1;37mTOTAL ({len(procs)} processos): {' ':>29} \033[1;32m{total_cpu:>5.1f}%\033[0m   \033[1;32m{total_ram:>6.1f} MB\033[0m")
+    print("\033[1;36m" + "="*85 + "\033[0m\n")
+
+if __name__ == "__main__":
+    main()

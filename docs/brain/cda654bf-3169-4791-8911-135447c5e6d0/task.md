@@ -1,0 +1,8 @@
+- [x] Atualizar o esquema do banco de dados PostgreSQL (`internal/database/postgres.go`) adicionando a coluna `is_sonic`
+- [x] Atualizar as structs nos modelos Go (`internal/models/music_track.go` e `internal/models/media..go`) para incluir o campo `IsSonic`
+- [x] Atualizar os repositórios (`music_track_repository.go` e `commercial_repository.go`) para persistir e buscar a coluna `is_sonic`
+- [x] Implementar a esteira universal de 5 fases (rejeição de IRR > 50, masterização física universal com FFmpeg e validação SONIC) em `internal/utils/metadata.go`
+- [x] Atualizar os handlers (`music_style_handler.go` e `commercial_handler.go`) para processar e salvar a tag `IsSonic`, além de registrar a função de template `isOverFiveMinutes`
+- [x] Modificar `store_handler.go` para filtrar mídias não-SONIC (ou maiores de 5 minutos) no payload de sincronização `/sync`
+- [x] Atualizar as tabelas de exibição do painel web (`tracks_table_partial.html` e `commercials.html`) para marcar em vermelho mídias maiores de 5 minutos
+- [x] Verificar o funcionamento completo (upload, reprocessamento, exibição em vermelho, e exclusão de sincronização)

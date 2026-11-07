@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMC-Server - Mensagens Pré-Formatadas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: {{ .Theme.PrimaryColor }};
+            --secondary-color: {{ .Theme.SecondaryColor }};
+            --background-color: {{ .Theme.BackgroundColor }};
+            --font-color: {{ if index .Theme "FontColor" }}{{ index .Theme "FontColor" }}{{ else }}#ffffff{{ end }};
+            --field-background-color: {{ if index .Theme "FieldBackgroundColor" }}{{ index .Theme "FieldBackgroundColor" }}{{ else }}rgba(255, 255, 255, 0.05){{ end }};
+        }
+        body { background-color: var(--background-color) !important; color: #ffffff !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; }
+        .sidebar { background-color: var(--secondary-color); border-right: 1px solid rgba(255, 255, 255, 0.08); min-height: 100vh; }
+        .nav-link-custom { color: #e2e8f0 !important; padding: 0.8rem 1rem; display: block; text-decoration: none; border-radius: 6px; transition: all 0.2s ease; }
+        .nav-link-custom:hover, .nav-link-custom.active { background-color: var(--primary-color); color: #ffffff !important; }
+        .topbar { background-color: var(--secondary-color); border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 1rem; }
+        .card-custom { background-color: #1e293b !important; border: 1px solid #334155 !important; border-radius: 12px; }
+        
+        /* High Contrast Explicit Text Fixes */
+        p, span, label, td, th, h1, h2, h3, h4, h5, h6, div { color: #ffffff !important; }
+        .text-muted, small, .extra-small { color: #cbd5e1 !important; }
+        code { color: #38bdf8 !important; background-color: #0f172a !important; border: 1px solid #334155; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem; }
+        
+        .table-custom { color: #ffffff !important; width: 100%; border-collapse: separate; border-spacing: 0; }
+        .table-custom th { background-color: #0f172a !important; color: #94a3b8 !important; border-bottom: 2px solid #334155 !important; padding: 14px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; }
+        .table-custom td { background-color: #1e293b !important; color: #ffffff !important; border-bottom: 1px solid #334155 !important; padding: 14px; vertical-align: middle; }
+        .table-custom tr:hover td { background-color: #273549 !important; }
+        
+        .badge-sonic { background: linear-gradient(135deg, #00b09b, #96c93d); color: white !important; padding: 5px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+
+        /* Top Navbar Custom Styling */
+        .bg-dark-navbar {
+            background-color: var(--secondary-color) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        .navbar-dark .navbar-nav .nav-link {
+            color: #cbd5e0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.5rem 0.85rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .navbar-dark .navbar-nav .nav-link:hover,
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: var(--primary-color);
+        }
+        .dropdown-menu-dark {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 6px;
+        }
+        .dropdown-menu-dark .dropdown-item {
+            color: #cbd5e0;
+            font-size: 0.88rem;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        .dropdown-menu-dark .dropdown-item:hover,
+        .dropdown-menu-dark .dropdown-item.active {
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+        /* Pulse Animation for Sonic Processing Modal */
+        @keyframes sonicPulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .sonic-pulse-icon { animation: sonicPulse 1.5s infinite ease-in-out; color: #00b09b; display: inline-block; }
+    </style>
+</head>
+<body>
+
+<!-- TOP NAVBAR PULL-DOWN -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark-navbar sticky-top px-3 py-2">
+    <div class="container-fluid">
+        <!-- BRAND / LOGO -->
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            <img src="{{ .Theme.LogoURL }}" alt="Logo IMC" style="max-height: 36px;">
+            <span class="fw-bold tracking-wide small text-uppercase text-light d-none d-sm-inline">IMC Server</span>
+        </a>
+
+        <!-- MOBILE TOGGLE BUTTON -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavbarNav" aria-controls="topNavbarNav" aria-expanded="false" aria-label="Alternar navegação">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- NAV ITEMS -->
+        <div class="collapse navbar-collapse" id="topNavbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-1">
+                
+                <!-- 1. HIERARQUIA & GESTÃO -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navHierarchy" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🏢 Hierarquia & Gestão
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navHierarchy">
+                        <li><a class="dropdown-item" href="/tenants">🏢 Matrizes / Clientes</a></li>
+                        <li><a class="dropdown-item" href="/regionals">📍 Regionais</a></li>
+                        <li><a class="dropdown-item" href="/stores">🏪 Filiais (Lojas)</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/users">👤 Usuários & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 2. MONITORAMENTO & AUDITORIA -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navMonitoring" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📊 Monitoramento & Auditoria
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMonitoring">
+                        <li><a class="dropdown-item" href="/radios/status">📻 Status das Rádios</a></li>
+                        <li><a class="dropdown-item" href="/play-history">📊 Relatórios & Histórico</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/reports/access-logs"><i class="fa-solid fa-shield-halved me-1 text-info"></i> Auditoria de Logins & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 3. ACERVO & MÍDIAS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navMedia" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🎵 Acervo & Mídias
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMedia">
+                        <li><a class="dropdown-item" href="/music-styles">🎧 Estilos Musicais</a></li>
+                        <li><a class="dropdown-item" href="/video-styles">📺 Estilos de Vídeo</a></li>
+                        <li><a class="dropdown-item" href="/streamings">📻 Streamings & Rádios Online</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/grids/audio">📅 Grades de Áudio</a></li>
+                        <li><a class="dropdown-item" href="/grids/video">📺 Grades de Vídeo</a></li>
+                    </ul>
+                </li>
+
+                <!-- 4. LOCUÇÃO & AVISOS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle active" href="#" id="navWarnings" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📢 Locução & Avisos
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navWarnings">
+                        <li><a class="dropdown-item" href="/commercials">📣 Comerciais & Eventos</a></li>
+                        <li><a class="dropdown-item" href="/streamings"><i class="fa-solid fa-tower-broadcast me-2"></i> Streamings & Rádios</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/voice-packs">🏷️ Aviso de Placas</a></li>
+                        <li><a class="dropdown-item" href="/chimes">🔔 Sinais Sonoros (Chimes)</a></li>
+                        <li><a class="dropdown-item active" href="/pre-formatted-warnings">📢 Avisos Pré-Formatados</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!-- RIGHT USER / LOGOUT AREA -->
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex flex-column text-end d-none d-md-block">
+                    <span class="text-white small fw-bold">{{ .User.Name }}</span>
+                    <span class="badge bg-primary text-uppercase" style="font-size: 0.65rem;">{{ .User.Role }}</span>
+                </div>
+                <a href="/logout" class="btn btn-sm btn-outline-danger px-3 py-1">
+                    Sair
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- CONTEÚDO PRINCIPAL (LARGURA TOTAL) -->
+<main class="container-fluid px-4 py-3">
+    <!-- TOP HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h4 class="m-0 text-white fw-bold">📢 Mensagens Pré-Formatadas</h4>
+            <span class="text-muted" style="color: #cbd5e1 !important;">Anúncios institucionais e mensagens prontas com análise Sonic Pipeline</span>
+        </div>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newWarningModal">
+            <i class="bi bi-plus-circle me-1"></i> Nova Mensagem
+        </button>
+    </div>
+
+            <div class="card card-custom p-4 mb-5">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Nome da Mensagem</th>
+                                <th>Arquivo Físico</th>
+                                <th>Duração</th>
+                                <th>Sonic Normalização (LUFS)</th>
+                                <th>Player de Áudio</th>
+                                <th class="text-end" style="width: 250px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{ range .Warnings }}
+                            <tr>
+                                <td class="align-middle">
+                                    <strong class="fs-6 text-white d-block">{{ .Name }}</strong>
+                                </td>
+                                <td class="align-middle"><code>{{ .FileName }}</code></td>
+                                <td class="align-middle"><span class="badge bg-secondary fs-6">{{ .DurationSeconds }}s</span></td>
+                                <td class="align-middle"><span class="badge badge-sonic"><i class="bi bi-soundwave me-1"></i> {{ printf "%.1f" .LUFS }} LUFS</span></td>
+                                <td class="align-middle">
+                                    <audio controls src="/midias/pre_formatted_warnings/{{ .FileName }}" preload="metadata" style="height: 36px; width: 280px;"></audio>
+                                </td>
+                                <td class="text-end align-middle">
+                                    <div class="btn-group">
+                                        <button type="button" 
+                                                class="btn btn-outline-info btn-sm" 
+                                                onclick="triggerSonicProcessingWarning('/pre-formatted-warnings/reprocess-sonic?id={{ .ID }}', '{{ .Name }}')"
+                                                title="Reprocessar e normalizar o volume no padrão SONIC">
+                                            <i class="bi bi-soundwave me-1"></i> Sonic
+                                        </button>
+                                        <button class="btn btn-outline-warning btn-sm" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#editWarningModal_{{ .ID }}" 
+                                                title="Editar informações e/ou substituir arquivo de áudio">
+                                            <i class="bi bi-pencil-square me-1"></i> Editar
+                                        </button>
+                                        <a href="/pre-formatted-warnings/delete?id={{ .ID }}" 
+                                           class="btn btn-outline-danger btn-sm" 
+                                           onclick="return confirm('Deseja excluir esta mensagem pré-formatada?')">
+                                            <i class="bi bi-trash me-1"></i> Excluir
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Modal Editar Mensagem Pré-Formatada -->
+                            <div class="modal fade" id="editWarningModal_{{ .ID }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content bg-dark text-white border-secondary">
+                                        <div class="modal-header border-secondary">
+                                            <h5 class="modal-title"><i class="bi bi-pencil-square text-warning me-2"></i> Editar Mensagem: {{ .Name }}</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <form action="/pre-formatted-warnings/update" method="POST" enctype="multipart/form-data">
+                                            <input type="hidden" name="id" value="{{ .ID }}">
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold text-white">Nome da Mensagem *</label>
+                                                    <input type="text" name="name" class="form-control bg-secondary text-white border-secondary" value="{{ .Name }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold text-white">Substituir Arquivo de Áudio (.mp3 ou .wav)</label>
+                                                    <input type="file" name="audio_file" class="form-control bg-secondary text-white border-secondary" accept=".mp3,.wav">
+                                                    <small class="text-muted extra-small">Deixe em branco para manter o arquivo atual (<code>{{ .FileName }}</code>). Se enviado um novo arquivo, ele será reprocessado pelo Sonic Pipeline.</small>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer border-secondary">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="submit" class="btn btn-warning"><i class="bi bi-check2-circle me-1"></i> Salvar Alterações</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{ else }}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-5">
+                                    <i class="bi bi-megaphone-fill fs-1 mb-2 text-primary d-block"></i>
+                                    <h5 class="text-white">Nenhuma Mensagem Pré-Formatada Cadastrada</h5>
+                                    <p class="small text-muted mb-0">Clique no botão <strong>"Nova Mensagem"</strong> para enviar um arquivo MP3 ou WAV.</p>
+                                </td>
+                            </tr>
+                            {{ end }}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+<!-- Modal de Carregamento & Progresso do Sonic Pipeline -->
+<div class="modal fade" id="sonicLoadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-info shadow-lg p-3">
+            <div class="modal-body text-center py-4">
+                <div class="mb-3">
+                    <i class="bi bi-soundwave fs-1 sonic-pulse-icon"></i>
+                </div>
+                <h4 class="fw-bold text-info mb-2" id="sonicModalTitle">⚡ Processando no Padrão SONIC Pipeline</h4>
+                <p class="text-light mb-3" id="sonicModalTarget">Normalizando volume para <strong>-14 LUFS</strong>, equalizando frequências e curva de loudness...</p>
+                
+                <div class="progress bg-secondary mb-3" style="height: 12px;">
+                    <div id="sonicProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" style="width: 100%;"></div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center small px-2">
+                    <span class="text-muted"><i class="bi bi-clock-history me-1"></i> Tempo Estimado:</span>
+                    <strong class="text-warning" id="sonicTimeEstimate">~2 a 4 segundos</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nova Mensagem -->
+<div class="modal fade" id="newWarningModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-megaphone-fill text-primary me-2"></i> Nova Mensagem Pré-Formatada</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/pre-formatted-warnings/create" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white">Nome da Mensagem *</label>
+                        <input type="text" name="name" class="form-control bg-secondary text-white border-secondary" placeholder="Ex: Aviso Achados e Perdidos" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white">Arquivo de Áudio (.mp3 ou .wav) *</label>
+                        <input type="file" name="audio_file" class="form-control bg-secondary text-white border-secondary" accept=".mp3,.wav" required>
+                        <small class="text-muted extra-small">O arquivo será processado automaticamente pelo Sonic Pipeline para análise e normalização de volume.</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-soundwave me-1"></i> Salvar e Processar no Sonic</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function triggerSonicProcessingWarning(url, name) {
+        if (!confirm('Deseja reprocessar a mensagem ' + name + ' no padrão SONIC (-14 LUFS)?')) {
+            return;
+        }
+
+        const modalEl = document.getElementById('sonicLoadingModal');
+        const titleEl = document.getElementById('sonicModalTitle');
+        const targetEl = document.getElementById('sonicModalTarget');
+        const timeEl = document.getElementById('sonicTimeEstimate');
+
+        if (titleEl) titleEl.innerText = '⚡ Processando Mensagem no Padrão SONIC';
+        if (targetEl) targetEl.innerHTML = 'Normalizando volume para <strong>-14 LUFS</strong> em <em>' + name + '</em>...';
+        if (timeEl) timeEl.innerText = '~2 a 4 segundos';
+
+        const bsModal = new bootstrap.Modal(modalEl);
+        bsModal.show();
+
+        setTimeout(() => {
+            window.location.href = url;
+        }, 300);
+    }
+</script>
+</body>
+</html>

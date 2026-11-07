@@ -1,0 +1,26 @@
+- [x] Create `tools/rename_music.py` with filename prefix cleanup and duplicate handling.
+- [x] Verify the script using dry-run on a test directory.
+- [x] Run the script and show the results to the user.
+- [x] Investigate and fix the form view rendering bug in `grids_audio.html` and `grids_video.html`.
+- [x] Create and commit backup of custom conversation rules (`AGENTS.md`) in both workspaces.
+- [x] implement dynamic `ServerMode` flags, cross-platform watchdog killing, and dynamic harbor templates in `imc-audio-local`.
+- [x] Create containerization setup with multi-stage `Dockerfile` and `docker-compose.yml` templates.
+- [x] Save conversation logs backup (`docs/brain`) and push commits in both Git repositories.
+- [x] Implement schema patch for radio_type in postgres.go
+- [x] Add RadioType to models/store.go
+- [x] Add radio_type database queries in repository/store_repository.go
+- [x] Update store_handler.go to support radio_type in CRUD
+- [x] Update stores.html template with Radio Type selectors and badges
+- [x] Create radios_status.html template for status dashboard
+- [x] Implement HandleRadiosStatusPage in store_handler.go
+- [x] Add Status link to all templates sidebar
+- [x] Implement schema patch for harbor_port in postgres.go
+- [x] Add HarborPort to models/store.go
+- [x] Add harbor_port database queries in repository/store_repository.go
+- [x] Create docker_orchestrator.go under utils/
+- [x] Integrate docker orchestration inside HandleCreateStore, HandleUpdateStore, and HandleDeleteStore in store_handler.go
+- [x] Implement Visual Sync Mode & Buffer Badges on Dashboard `/`
+- [x] Integrate warning trigger inputs (Vehicle Plate and Pre-Formatted warnings) directly in dashboard `/`
+- [x] Fix playout history status transition bug in `scheduler.go` (MarkTrackAsPlaying)
+- [x] Render `'pulada'` status correctly as a badge in diagnostics history table (`web_dashboard.go`)
+- [x] Re-route diagnostics ports `5001-5003` internally on Docker and configure Caddy HTTPS reverse-proxy

@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMC-Server - Estilos Musicais</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: {{ .Theme.PrimaryColor }};
+            --secondary-color: {{ .Theme.SecondaryColor }};
+            --background-color: {{ .Theme.BackgroundColor }};
+            --font-color: {{ if index .Theme "FontColor" }}{{ index .Theme "FontColor" }}{{ else }}#ffffff{{ end }};
+            --field-background-color: {{ if index .Theme "FieldBackgroundColor" }}{{ index .Theme "FieldBackgroundColor" }}{{ else }}rgba(255, 255, 255, 0.05){{ end }};
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--font-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Top Navbar Custom Styling */
+        .bg-dark-navbar {
+            background-color: var(--secondary-color) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        .navbar-dark .navbar-nav .nav-link {
+            color: #cbd5e0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.5rem 0.85rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .navbar-dark .navbar-nav .nav-link:hover,
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: var(--primary-color);
+        }
+        .dropdown-menu-dark {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 6px;
+        }
+        .dropdown-menu-dark .dropdown-item {
+            color: #cbd5e0;
+            font-size: 0.88rem;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        .dropdown-menu-dark .dropdown-item:hover,
+        .dropdown-menu-dark .dropdown-item.active {
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+        .card-custom {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .form-control, .form-select {
+            background-color: var(--field-background-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--font-color);
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary-color);
+            color: var(--font-color);
+            box-shadow: none;
+        }
+        .form-control::placeholder {
+            color: #888888;
+        }
+        label {
+            font-size: 0.85rem;
+            color: #cbd5e0;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .table-dark-custom {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .table-dark-custom th {
+            background-color: rgba(255, 255, 255, 0.03);
+            color: var(--primary-color);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+        }
+        .table-dark-custom td {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+            vertical-align: middle;
+        }
+        /* Dynamic table row highlighting on hover */
+        .table tbody tr:hover td {
+            background-color: rgba(255, 255, 255, 0.075) !important;
+            color: #ffffff !important;
+        }
+        .table tbody tr:hover {
+            outline: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+        .pg-hidden {
+            display: none !important;
+        }
+        .sticky-thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #12141d !important;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1) !important;
+        }
+        .playing-track-row {
+            background-color: rgba(67, 100, 247, 0.15) !important;
+            border-left: 4px solid var(--primary-color) !important;
+            box-shadow: inset 0 0 10px rgba(67, 100, 247, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP NAVBAR PULL-DOWN -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark-navbar sticky-top px-3 py-2">
+    <div class="container-fluid">
+        <!-- BRAND / LOGO -->
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            <img src="{{ .Theme.LogoURL }}" alt="Logo IMC" style="max-height: 36px;">
+            <span class="fw-bold tracking-wide small text-uppercase text-light d-none d-sm-inline">IMC Server</span>
+        </a>
+
+        <!-- MOBILE TOGGLE BUTTON -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavbarNav" aria-controls="topNavbarNav" aria-expanded="false" aria-label="Alternar navegação">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- NAV ITEMS -->
+        <div class="collapse navbar-collapse" id="topNavbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-1">
+                
+                <!-- 1. HIERARQUIA & GESTÃO -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navHierarchy" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🏢 Hierarquia & Gestão
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navHierarchy">
+                        <li><a class="dropdown-item" href="/tenants">🏢 Matrizes / Clientes</a></li>
+                        <li><a class="dropdown-item" href="/regionals">📍 Regionais</a></li>
+                        <li><a class="dropdown-item" href="/stores">🏪 Filiais (Lojas)</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/users">👤 Usuários & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 2. MONITORAMENTO & AUDITORIA -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navMonitoring" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📊 Monitoramento & Auditoria
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMonitoring">
+                        <li><a class="dropdown-item" href="/radios/status">📻 Status das Rádios</a></li>
+                        <li><a class="dropdown-item" href="/play-history">📊 Relatórios & Histórico</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/reports/access-logs"><i class="fa-solid fa-shield-halved me-1 text-info"></i> Auditoria de Logins & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 3. ACERVO & MÍDIAS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle active" href="#" id="navMedia" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🎵 Acervo & Mídias
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMedia">
+                        <li><a class="dropdown-item active" href="/music-styles">🎧 Estilos Musicais</a></li>
+                        <li><a class="dropdown-item" href="/video-styles">📺 Estilos de Vídeo</a></li>
+                        <li><a class="dropdown-item" href="/streamings">📻 Streamings & Rádios Online</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/grids/audio">📅 Grades de Áudio</a></li>
+                        <li><a class="dropdown-item" href="/grids/video">📺 Grades de Vídeo</a></li>
+                    </ul>
+                </li>
+
+                <!-- 4. LOCUÇÃO & AVISOS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navWarnings" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📢 Locução & Avisos
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navWarnings">
+                        <li><a class="dropdown-item" href="/commercials">📣 Comerciais & Eventos</a></li>
+                        <li><a class="dropdown-item" href="/streamings"><i class="fa-solid fa-tower-broadcast me-2"></i> Streamings & Rádios</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/voice-packs">🏷️ Aviso de Placas</a></li>
+                        <li><a class="dropdown-item" href="/chimes">🔔 Sinais Sonoros (Chimes)</a></li>
+                        <li><a class="dropdown-item" href="/pre-formatted-warnings">📢 Avisos Pré-Formatados</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!-- RIGHT USER / LOGOUT AREA -->
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex flex-column text-end d-none d-md-block">
+                    <span class="text-white small fw-bold">{{ .User.Name }}</span>
+                    <span class="badge bg-primary text-uppercase" style="font-size: 0.65rem;">{{ .User.Role }}</span>
+                </div>
+                <a href="/logout" class="btn btn-sm btn-outline-danger px-3 py-1">
+                    Sair
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- CONTEÚDO PRINCIPAL (LARGURA TOTAL) -->
+<main class="container-fluid px-4 py-3">
+    <!-- ÁREA DO CONTEÚDO -->
+            <div class="p-1">
+                {{if .ErrorMessage}}
+                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    {{.ErrorMessage}}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {{end}}
+
+                <div class="row g-4">
+                    <!-- SEÇÃO DO FORMULÁRIO (OCULTO POR PADRÃO) -->
+                    <div id="form-view" class="col-lg-6 mx-auto fade-in-custom {{if .ErrorMessage}}d-block{{else}}d-none{{end}}">
+                        <div class="card-custom p-4 shadow-sm">
+                            <h5 id="form-title" class="text-white fw-bold mb-3">🎧 Cadastrar Novo Estilo Musical</h5>
+                            
+                            <form id="style-form" action="/music-styles/create" method="POST">
+                                <input type="hidden" name="id" id="style-id" value="">
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label>Nome do Estilo *</label>
+                                        <input type="text" name="name" id="name" class="form-control" placeholder="Ex: Pop Rock, Hotmix Best-of, Sertanejo, MPB" value="{{index .Form "name"}}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Tipo de Fonte *</label>
+                                        <select name="source_type" id="source-type" class="form-select text-white" style="background-color: var(--field-background-color); border: 1px solid rgba(255, 255, 255, 0.15);" onchange="toggleSourceType(this.value)">
+                                            <option value="LOCAL" {{if or (eq (index .Form "source_type") "LOCAL") (not (index .Form "source_type"))}}selected{{end}}>📁 Acervo Musical (Arquivos Locais MP3)</option>
+                                            <option value="STREAM" {{if eq (index .Form "source_type") "STREAM"}}selected{{end}}>📡 Streaming Ao Vivo (Web Rádio Online)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Descrição (Opcional)</label>
+                                    <input type="text" name="description" id="description" class="form-control" placeholder="Ex: Playlist suave para período matutino ou Canal de Streaming 24h" value="{{index .Form "description"}}">
+                                </div>
+
+                                <div id="local-media-wrapper" class="mb-3 {{if eq (index .Form "source_type") "STREAM"}}d-none{{end}}">
+                                    <label>Diretório de Mídias (Acervo MP3)</label>
+                                    <select name="base_directory" id="base-directory" class="form-select text-white" style="background-color: var(--field-background-color); border: 1px solid rgba(255, 255, 255, 0.15);">
+                                        <option value="">-- Selecione um Diretório --</option>
+                                        {{$currentDir := index .Form "base_directory"}}
+                                        {{range .AvailableDirectories}}
+                                            <option value="midias/musicas/{{.}}" {{if eq $currentDir (print "midias/musicas/" .)}}selected{{end}}>midias/musicas/{{.}}</option>
+                                        {{end}}
+                                    </select>
+                                    <small class="text-white-50 mt-1 d-block">Diretórios lidos a partir de <code>midias/musicas/</code></small>
+                                </div>
+
+                                <div id="stream-media-wrapper" class="mb-3 {{if ne (index .Form "source_type") "STREAM"}}d-none{{end}}">
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label>Estação / Provedor Pré-configurado</label>
+                                            <select id="stream-preset" class="form-select text-white" style="background-color: var(--field-background-color); border: 1px solid rgba(255, 255, 255, 0.15);" onchange="applyStreamPreset(this.value)">
+                                                <option value="">-- Selecionar Canal Hotmix --</option>
+                                                <option value="https://streaming.hotmixradio.com/hotmixpro-best-of-pre" data-name="Hotmix Best-of">Best-of</option>
+                                                <option value="https://streaming.hotmixradio.com/hotmixpro-just-lounge-pre" data-name="Hotmix Just Lounge">Just Lounge</option>
+                                                <option value="https://streaming.hotmixradio.com/hotmixpro-shopping-vibes-pre" data-name="Hotmix Shopping Vibes">Shopping Vibes</option>
+                                                <option value="https://streaming.hotmixradio.com/hotmixpro-cozy-coffee-shop-pre" data-name="Hotmix Cozy & Coffee">Cozy & Coffee</option>
+                                                <option value="https://streaming.hotmixradio.com/hotmixpro-gentle-luxury-pre" data-name="Hotmix Gentle Luxury">Gentle Luxury</option>
+                                                <option value="https://streaming.hotmixradio.com/hotmixpro-cocktail-and-dinner-pre" data-name="Hotmix Cocktail & Dinner">Cocktail & Dinner</option>
+                                                <option value="https://streaming.hotmixradio.com/hotmixpro-cool-and-calm-pre" data-name="Hotmix Cool & Calm">Cool & Calm</option>
+                                                <option value="https://streaming.hotmixradio.com/hotmixpro-on-the-rocks-pre" data-name="Hotmix On the Rocks">On the Rocks</option>
+                                                <option value="https://streaming.hotmixradio.com/hotmixpro-spa-garden-pre" data-name="Hotmix Spa Garden">Spa Garden</option>
+                                                <option value="https://streaming.hotmixradio.com/hotmixpro-workout-pre" data-name="Hotmix Workout">Workout</option>
+                                                <option value="CUSTOM">Outro (URL Personalizada)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>URL do Stream (Icecast / HLS / Shoutcast) *</label>
+                                            <input type="url" name="stream_url" id="stream-url" class="form-control" placeholder="https://streaming.exemplo.com/live" value="{{index .Form "stream_url"}}">
+                                        </div>
+                                    </div>
+                                    <small class="text-info mt-1 d-block"><i class="bi bi-info-circle me-1"></i> A transmissão é contínua e receberá inserções comerciais por ducking suave nos horários da grade.</small>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" id="submit-btn" class="btn btn-primary w-100 fw-bold" style="background-color: var(--primary-color); border: none;">💾 Gravar Estilo</button>
+                                    <button type="button" id="cancel-btn" class="btn btn-outline-secondary w-50 fw-bold" onclick="cancelEdit()">Cancelar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO DA LISTA/TABELA (LARGURA TOTAL) -->
+                    <div id="list-view" class="col-12 fade-in-custom {{if .ErrorMessage}}d-none{{else}}d-block{{end}}">
+                        <div class="card-custom p-4 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                <h5 class="text-white fw-bold m-0">📋 Estilos Musicais Cadastrados</h5>
+                                <div class="d-flex gap-2 align-items-center flex-wrap">
+                                    <div style="width: 200px;">
+                                        <input type="text" id="search-input" class="form-control form-control-sm" placeholder="🔍 Filtrar por estilo..." onkeyup="filterTable()">
+                                    </div>
+                                    <div style="width: 260px;">
+                                        <input type="text" id="global-search-tracks" class="form-control form-control-sm" placeholder="🎵 Buscar música em todos os estilos..." onkeyup="globalSearchTracks()">
+                                    </div>
+                                    <button type="button" id="btn-batch-sync" class="btn btn-sm btn-outline-success fw-bold px-3 d-none" onclick="startBatchSync()">🔄 Sincronizar Selecionados</button>
+                                    <button type="button" class="btn btn-sm btn-primary fw-bold px-3" style="background-color: var(--primary-color); border: none;" onclick="showCreateForm()">➕ Novo Estilo</button>
+                                </div>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-dark table-striped table-dark-custom m-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 30px;" class="align-middle text-center"><input type="checkbox" id="select-all-styles" class="form-check-input" onchange="toggleSelectAllStyles(this)"></th>
+                                            <th>Nome do Estilo</th>
+                                            <th>Tipo / Fonte</th>
+                                            <th>Descrição / Detalhes</th>
+                                            <th>Última Atualização</th>
+                                            <th style="width: 120px;">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{range .Styles}}
+                                        <tr class="style-row">
+                                            <td class="text-center align-middle"><input type="checkbox" class="form-check-input style-select-checkbox" value="{{.ID}}" onchange="updateBatchSyncBtn()"></td>
+                                            <td class="td-name">
+                                                <strong class="text-white">{{.Name}}</strong>
+                                                <br>
+                                                {{if eq .SourceType "STREAM"}}
+                                                    <span class="badge py-1 px-2 mt-1" style="background: rgba(2, 132, 199, 0.25); color: #38bdf8; border: 1px solid rgba(2, 132, 199, 0.4); font-size: 0.72rem;">
+                                                        📡 Transmissão Contínua Ao Vivo
+                                                    </span>
+                                                {{else}}
+                                                    <button type="button" id="badge-btn-{{.ID}}" class="btn btn-sm btn-outline-info py-0 px-2 mt-1" style="font-size: 0.75rem;" onclick="toggleTracks('{{.ID}}')">
+                                                        🎵 Músicas: {{.TracksCount}} ({{formatTotalDuration .TotalDurationSeconds}})
+                                                    </button>
+                                                {{end}}
+                                            </td>
+                                            <td class="td-source align-middle">
+                                                {{if eq .SourceType "STREAM"}}
+                                                    <span class="badge bg-info text-dark fw-bold px-2 py-1"><i class="bi bi-broadcast me-1"></i> Streaming Online</span>
+                                                {{else}}
+                                                    <span class="badge bg-secondary text-white fw-bold px-2 py-1"><i class="bi bi-folder2-open me-1"></i> Acervo MP3 Local</span>
+                                                {{end}}
+                                            </td>
+                                            <td class="td-desc text-white-50">
+                                                {{if .Description}}<div>{{.Description}}</div>{{end}}
+                                                {{if eq .SourceType "STREAM"}}
+                                                    <small class="text-info text-truncate d-block" style="max-width: 320px;" title="{{.StreamURL}}"><i class="bi bi-link-45deg me-1"></i><code>{{.StreamURL}}</code></small>
+                                                {{else}}
+                                                    <small class="text-white-50 d-block"><i class="bi bi-hdd-network me-1"></i><code>{{.BaseDirectory}}</code></small>
+                                                {{end}}
+                                            </td>
+                                            <td class="td-updated text-white-50 align-middle">{{formatDateTime .UpdatedAt}}</td>
+                                            <td class="align-middle">
+                                                <div class="d-flex gap-1">
+                                                    <button type="button" class="btn btn-sm btn-outline-warning" 
+                                                        onclick="editStyle({
+                                                            id: '{{.ID}}',
+                                                            name: '{{.Name}}',
+                                                            description: '{{.Description}}',
+                                                            base_directory: '{{.BaseDirectory}}',
+                                                            source_type: '{{.SourceType}}',
+                                                            stream_url: '{{.StreamURL}}'
+                                                        })">✏️</button>
+                                                    <a href="/music-styles/delete?id={{.ID}}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja realmente excluir este Estilo? Mídias cadastradas com este estilo precisarão ser redefinidas.')">🗑️</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {{if ne .SourceType "STREAM"}}
+                                        <tr id="tracks-{{.ID}}" class="d-none tracks-row" style="background-color: rgba(0, 0, 0, 0.25);">
+                                            <td colspan="6" class="p-3">
+                                                 <div class="d-flex justify-content-between align-items-center mb-2">
+                                                         <h6 class="text-primary fw-bold m-0">🎵 Arquivos no Diretório: <code>{{.BaseDirectory}}</code></h6>
+                                                         <div class="d-flex gap-2 align-items-center">
+                                                             {{if .BaseDirectory}}
+                                                             <button type="button" id="btn-delete-selected-{{.ID}}" class="btn btn-sm btn-danger py-1 px-3 fw-bold d-none" onclick="deleteSelectedTracks('{{.ID}}')">
+                                                                 🗑️ Excluir Selecionadas (<span id="delete-count-{{.ID}}">0</span>)
+                                                             </button>
+                                                             <button type="button" id="btn-reprocess-selected-{{.ID}}" class="btn btn-sm btn-warning text-dark py-1 px-3 fw-bold d-none" onclick="reprocessSelectedTracks('{{.ID}}')">
+                                                                 🔄 Reprocessar Selecionadas (<span id="reprocess-count-{{.ID}}">0</span>)
+                                                             </button>
+                                                             <button type="button" id="btn-reprocess-stop-{{.ID}}" class="btn btn-sm btn-danger text-white py-1 px-3 fw-bold d-none" onclick="stopReprocessTracks('{{.ID}}')">
+                                                                 🛑 Cancelar Reprocessamento
+                                                             </button>
+                                                             <button type="button" class="btn btn-sm btn-outline-success py-1 px-3 fw-bold btn-sync-{{.ID}}" {{if eq .SyncStatus "scanning"}}disabled{{end}} onclick="startSync('{{.ID}}', {{.TracksCount}})">
+                                                                 🔄 Sincronizar Agora
+                                                             </button>
+                                                             {{end}}
+                                                             <span class="badge bg-secondary">{{.TracksCount}} música(s)</span>
+                                                         </div>
+                                                     </div>
+
+                                                     <!-- Dynamic Client-side Search and Loudness Grade Filter -->
+                                                     <div class="d-flex gap-3 mb-2">
+                                                         <div class="flex-grow-1">
+                                                             <input type="text" id="search-tracks-{{.ID}}" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Filtrar músicas por nome, título, artista ou álbum..." onkeyup="filterTracks('{{.ID}}')">
+                                                         </div>
+                                                         <div style="width: 180px;">
+                                                             <select id="filter-score-{{.ID}}" class="form-select form-select-sm bg-dark text-white border-secondary" onchange="filterTracks('{{.ID}}')">
+                                                                 <option value="">Todas Notas</option>
+                                                                 <option value="Nota A">Nota A</option>
+                                                                 <option value="Nota B">Nota B</option>
+                                                                 <option value="Nota C">Nota C</option>
+                                                                 <option value="Nota D">Nota D</option>
+                                                             </select>
+                                                         </div>
+                                                     </div>
+
+                                                     <!-- Progress Bar Container -->
+                                                     <div id="sync-progress-{{.ID}}" class="d-none my-3 p-3 border border-secondary rounded" style="background-color: rgba(255,255,255,0.02);">
+                                                         <div class="d-flex align-items-center gap-3">
+                                                             <div class="flex-grow-1">
+                                                                 <div class="progress bg-secondary" style="height: 20px;">
+                                                                     <div id="sync-bar-{{.ID}}" class="progress-bar progress-bar-striped progress-bar-animated bg-success fw-bold" role="progressbar" style="width: 0%;">0%</div>
+                                                                 </div>
+                                                             </div>
+                                                             <button type="button" class="btn btn-sm btn-danger fw-bold" onclick="stopSync('{{.ID}}')">🛑 Parar</button>
+                                                         </div>
+                                                         <div class="d-flex justify-content-between mt-2 small">
+                                                             <span class="fw-bold text-info" id="sync-text-{{.ID}}">Iniciando...</span>
+                                                             <span class="text-white-50 text-truncate" style="max-width: 70%;" id="sync-file-{{.ID}}"></span>
+                                                         </div>
+                                                     </div>
+
+                                                     <!-- Track List Table Wrapper -->
+                                                     <div id="tracks-table-container-{{.ID}}">
+                                                         {{template "tracks_table_partial.html" .}}
+                                                     </div>
+                                                 </div>
+                                            </td>
+                                        </tr>
+                                        {{end}}
+                                        {{else}}
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted p-4">Nenhum Estilo cadastrado até o momento.</td>
+                                        </tr>
+                                        {{end}}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- Painel de Paginação -->
+                            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2 text-white-50 small" id="pagination-controls-wrapper">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span>Linhas por página:</span>
+                                    <select id="pagination-limit-select" class="form-select form-select-sm bg-dark text-white border-secondary" style="width: auto; min-width: 80px;" onchange="changePaginationLimit(this.value)">
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                        <option value="50" selected>50</option>
+                                        <option value="100">100</option>
+                                        <option value="ALL">Todas</option>
+                                    </select>
+                                    <span id="pagination-info-text">Mostrando 0-0 de 0 linhas</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-1">
+                                    <button type="button" id="btn-page-first" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(1)">«</button>
+                                    <button type="button" id="btn-page-prev" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(currentPage - 1)">‹</button>
+                                    <span id="pagination-page-indicator" class="mx-2">Página 1 de 1</span>
+                                    <button type="button" id="btn-page-next" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(currentPage + 1)">›</button>
+                                    <button type="button" id="btn-page-last" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(totalPages)">»</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+<!-- Modal Sincronização -->
+<div class="modal fade" id="syncModal" tabindex="-1" aria-labelledby="syncModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary shadow-lg">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="syncModalLabel">🔄 Sincronizar Estilo Musical</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Este estilo já possui músicas cadastradas no banco de dados. Escolha como proceder:</p>
+                <p class="text-warning small"><i class="bi bi-exclamation-triangle"></i> <strong>Atenção:</strong> "Reprocessar Tudo" apagará os registros atuais desta pasta no banco, lerá todas as tags das músicas novamente e recalculará as notas de volume (LUFS/LRA) e pontos de transição (Cue In/Out).</p>
+            </div>
+            <div class="modal-footer border-secondary justify-content-between">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-warning text-dark fw-bold" onclick="executeSync(true)">Reprocessar Tudo</button>
+                    <button type="button" class="btn btn-sm btn-success fw-bold" onclick="executeSync(false)">Sincronizar Novos</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sincronização em Lote -->
+<div class="modal fade" id="batchSyncModal" tabindex="-1" aria-labelledby="batchSyncModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary shadow-lg">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="batchSyncModalLabel">🔄 Sincronizar em Lote</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Você selecionou <span id="batch-sync-count" class="fw-bold text-primary">0</span> estilo(s) para sincronização. Escolha como proceder:</p>
+                <p class="text-warning small"><i class="bi bi-exclamation-triangle"></i> <strong>Atenção:</strong> "Reprocessar Tudo" apagará os registros atuais dos estilos selecionados no banco, lerá todas as tags das músicas novamente e recalculará as notas de volume (LUFS/LRA), pontos de transição (Cue In/Out) e Risco de Ruído (IRR).</p>
+            </div>
+            <div class="modal-footer border-secondary justify-content-between">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-warning text-dark fw-bold" onclick="executeBatchSync(true)">Reprocessar Tudo</button>
+                    <button type="button" class="btn btn-sm btn-success fw-bold" onclick="executeBatchSync(false)">Sincronizar Novos</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editor de Cue Points (Waveform) -->
+<div class="modal fade" id="cueEditorModal" tabindex="-1" aria-labelledby="cueEditorModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-dark text-white border-secondary shadow-lg">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="cueEditorModalLabel">🎛️ Editor de Cue Points (Ajuste Manual)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="closeCueEditor()"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <h5 id="cue-editor-title" class="text-white fw-bold m-0 text-truncate">Nome da Música</h5>
+                    <span id="cue-editor-artist" class="text-white-50 small">Artista</span>
+                </div>
+                
+                <!-- Wavesurfer Container -->
+                <div id="waveform-container" class="position-relative bg-black border border-secondary rounded p-3 mb-3" style="min-height: 180px;">
+                    <!-- Loading indicator -->
+                    <div id="waveform-loading" class="position-absolute top-50 start-50 translate-middle d-flex align-items-center gap-2">
+                        <div class="spinner-border spinner-border-sm text-info" role="status"></div>
+                        <span class="text-info small fw-bold">Carregando gráfico da música...</span>
+                    </div>
+                    <div id="waveform-canvas"></div>
+                    <div id="timeline-canvas" class="mt-2"></div>
+                </div>
+
+                <div class="row align-items-center gap-3 gap-md-0">
+                    <div class="col-md-5 d-flex align-items-center gap-2">
+                        <button type="button" id="btn-editor-play" class="btn btn-sm btn-outline-info fw-bold px-3" onclick="toggleEditorPlayPause()">▶️ Play</button>
+                        <span id="editor-time-current" style="font-size: 0.85rem; font-family: monospace;">00:00.00</span>
+                        <span id="editor-secs-current" class="text-info" style="font-size: 0.85rem; font-family: monospace; font-weight: bold;">(0.00s)</span>
+                        <span class="text-muted">/</span>
+                        <span id="editor-time-total" style="font-size: 0.85rem; font-family: monospace;">00:00.00</span>
+                        <span id="editor-secs-total" class="text-muted" style="font-size: 0.85rem; font-family: monospace;">(0.00s)</span>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-center justify-content-center gap-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="small text-white-50 fw-bold">Cue In (s):</label>
+                            <input type="number" id="input-cue-in" class="form-control form-control-sm bg-dark text-warning border-secondary fw-bold text-center" style="width: 90px;" step="0.01" min="0" onchange="updateRegionFromInputs()">
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="small text-white-50 fw-bold">Cue Out (s):</label>
+                            <input type="number" id="input-cue-out" class="form-control form-control-sm bg-dark text-warning border-secondary fw-bold text-center" style="width: 90px;" step="0.01" min="0" onchange="updateRegionFromInputs()">
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-end d-flex align-items-center justify-content-end gap-2">
+                        <button type="button" id="btn-reset-cue" class="btn btn-sm btn-outline-danger fw-bold d-none" onclick="resetCueToAuto()">Resetar (Auto)</button>
+                        <button type="button" class="btn btn-sm btn-success fw-bold px-4" onclick="saveCueChanges()">💾 Salvar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Floating Premium Audio Player -->
+<div id="premium-audio-player" class="d-none" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 700px; background: rgba(22, 25, 37, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); z-index: 1050; padding: 12px 20px; color: #fff; transition: all 0.3s ease;">
+    <audio id="main-audio-element"></audio>
+    <div class="d-flex align-items-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3 text-truncate" style="max-width: 40%;">
+            <div class="play-btn-circle" style="background-color: var(--primary-color); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;" onclick="togglePlayPause()">
+                <span id="player-play-icon" style="font-size: 1.1rem; user-select: none;">⏸️</span>
+            </div>
+            <div class="text-truncate">
+                <div id="player-track-title" class="fw-bold text-white text-truncate" style="font-size: 0.9rem;">Nome da Música</div>
+                <div id="player-track-artist" class="text-white-50 text-truncate" style="font-size: 0.75rem;">Artista</div>
+            </div>
+        </div>
+        
+        <div class="flex-grow-1 mx-3 d-flex align-items-center gap-2">
+            <span id="player-time-current" style="font-size: 0.75rem; min-width: 35px; text-align: right;">00:00</span>
+            <input type="range" id="player-progress" class="form-range" value="0" min="0" max="100" style="height: 4px; cursor: pointer;" oninput="seekAudio()">
+            <span id="player-time-total" style="font-size: 0.75rem; min-width: 35px;">00:00</span>
+        </div>
+        
+        <div class="d-flex align-items-center gap-2" style="min-width: 120px;">
+            <span style="font-size: 0.9rem;">🔊</span>
+            <input type="range" id="player-volume" class="form-range" value="80" min="0" max="100" style="height: 4px; width: 80px; cursor: pointer;" oninput="setPlayerVolume()">
+            <button type="button" class="btn-close btn-close-white" style="font-size: 0.8rem; margin-left: 10px;" onclick="closeAudioPlayer()"></button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/wavesurfer.js@7"></script>
+<script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.min.js"></script>
+<script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/timeline.min.js"></script>
+
+<script>
+    let activeSyncs = new Set();
+
+    let wavesurfer = null;
+    let wsRegions = null;
+    let activeEditorTrackId = null;
+    let activeEditorDuration = 0;
+    let cueEditorModalObj = null;
+    let currentlyPlayingTrackId = null;
+
+    function cleanupCueEditor() {
+        if (wavesurfer) {
+            try {
+                wavesurfer.pause();
+                wavesurfer.destroy();
+            } catch (e) {
+                console.error("Error destroying wavesurfer:", e);
+            }
+            wavesurfer = null;
+        }
+        const btnPlay = document.getElementById('btn-editor-play');
+        if (btnPlay) {
+            btnPlay.innerText = "▶️ Play";
+        }
+    }
+
+    function handleCueEditorKeyDown(e) {
+        if (e.code === 'Space' || e.key === ' ') {
+            const activeEl = document.activeElement;
+            if (activeEl) {
+                const tag = activeEl.tagName;
+                if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON') {
+                    return;
+                }
+            }
+            e.preventDefault();
+            toggleEditorPlayPause();
+        }
+    }
+
+    function openCueEditor(trackId, title, artist, cueIn, cueOut, duration, isManual) {
+        // Stop current playing music if any
+        closeAudioPlayer();
+
+        activeEditorTrackId = trackId;
+        activeEditorDuration = duration;
+
+        document.getElementById('cue-editor-title').innerText = title || "Desconhecido";
+        document.getElementById('cue-editor-artist').innerText = artist || "Sem Artista";
+        document.getElementById('input-cue-in').value = cueIn.toFixed(2);
+        document.getElementById('input-cue-out').value = cueOut.toFixed(2);
+
+        const resetBtn = document.getElementById('btn-reset-cue');
+        if (isManual) {
+            resetBtn.classList.remove('d-none');
+        } else {
+            resetBtn.classList.add('d-none');
+        }
+
+        // Show loading indicator
+        document.getElementById('waveform-loading').classList.remove('d-none');
+        document.getElementById('waveform-canvas').innerHTML = "";
+        document.getElementById('timeline-canvas').innerHTML = "";
+
+        if (!cueEditorModalObj) {
+            const modalEl = document.getElementById('cueEditorModal');
+            cueEditorModalObj = new bootstrap.Modal(modalEl);
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                cleanupCueEditor();
+            });
+            modalEl.addEventListener('shown.bs.modal', function () {
+                const btnPlay = document.getElementById('btn-editor-play');
+                if (btnPlay) {
+                    btnPlay.focus();
+                }
+            });
+            modalEl.addEventListener('keydown', handleCueEditorKeyDown);
+        }
+
+        // Reset play button and time labels before showing
+        cleanupCueEditor();
+        document.getElementById('editor-time-current').innerText = "00:00.00";
+        document.getElementById('editor-secs-current').innerText = "(0.00s)";
+        document.getElementById('editor-time-total').innerText = "00:00.00";
+        document.getElementById('editor-secs-total').innerText = "(0.00s)";
+
+        cueEditorModalObj.show();
+
+        // Initialize Wavesurfer
+        setTimeout(() => {
+            initWavesurfer(trackId, cueIn, cueOut);
+        }, 300);
+    }
+
+    function initWavesurfer(trackId, cueIn, cueOut) {
+        if (wavesurfer) {
+            try {
+                wavesurfer.destroy();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        wavesurfer = WaveSurfer.create({
+            container: '#waveform-canvas',
+            waveColor: '#4f5b66',
+            progressColor: '#4364f7',
+            cursorColor: '#ffcc00',
+            cursorWidth: 2,
+            height: 120,
+            barWidth: 2,
+            barGap: 1,
+            responsive: true,
+            url: `/music-styles/play?id=${trackId}`
+        });
+
+        // Add timeline plugin
+        wavesurfer.registerPlugin(
+            WaveSurfer.Timeline.create({
+                container: '#timeline-canvas',
+                primaryLabelColor: '#8a9ba8',
+                secondaryLabelColor: '#4f5b66',
+                primaryFontColor: '#8a9ba8',
+                secondaryFontColor: '#4f5b66'
+            })
+        );
+
+        // Add regions plugin
+        wsRegions = wavesurfer.registerPlugin(WaveSurfer.Regions.create());
+
+        wavesurfer.on('ready', () => {
+            document.getElementById('waveform-loading').classList.add('d-none');
+            const duration = wavesurfer.getDuration();
+            document.getElementById('editor-time-total').innerText = formatTimeMs(duration);
+            document.getElementById('editor-secs-total').innerText = `(${duration.toFixed(2)}s)`;
+            
+            // Create a draggable/resizable region for Cue In and Cue Out
+            wsRegions.addRegion({
+                id: 'cue-region',
+                start: cueIn,
+                end: cueOut > 0 ? cueOut : duration,
+                color: 'rgba(0, 210, 255, 0.15)',
+                drag: true,
+                resize: true
+            });
+        });
+
+        // When a region is updated (dragged or resized), update the text inputs
+        wsRegions.on('region-updated', (region) => {
+            if (region.id === 'cue-region') {
+                document.getElementById('input-cue-in').value = region.start.toFixed(2);
+                document.getElementById('input-cue-out').value = region.end.toFixed(2);
+            }
+        });
+
+        wavesurfer.on('timeupdate', () => {
+            const currentTime = wavesurfer.getCurrentTime();
+            document.getElementById('editor-time-current').innerText = formatTimeMs(currentTime);
+            document.getElementById('editor-secs-current').innerText = `(${currentTime.toFixed(2)}s)`;
+        });
+
+        wavesurfer.on('play', () => {
+            document.getElementById('btn-editor-play').innerText = "⏸️ Pause";
+        });
+
+        wavesurfer.on('pause', () => {
+            document.getElementById('btn-editor-play').innerText = "▶️ Play";
+        });
+    }
+
+    function toggleEditorPlayPause() {
+        if (wavesurfer) {
+            wavesurfer.playPause();
+        }
+    }
+
+    function updateRegionFromInputs() {
+        if (!wsRegions) return;
+        const region = wsRegions.getRegions().find(r => r.id === 'cue-region');
+        if (region) {
+            let cueIn = parseFloat(document.getElementById('input-cue-in').value) || 0;
+            let cueOut = parseFloat(document.getElementById('input-cue-out').value) || activeEditorDuration;
+            
+            if (cueIn < 0) cueIn = 0;
+            if (cueOut > activeEditorDuration) cueOut = activeEditorDuration;
+            if (cueIn >= cueOut) {
+                cueIn = region.start;
+                cueOut = region.end;
+                document.getElementById('input-cue-in').value = cueIn.toFixed(2);
+                document.getElementById('input-cue-out').value = cueOut.toFixed(2);
+            }
+            
+            region.update({
+                start: cueIn,
+                end: cueOut
+            });
+        }
+    }
+
+    function saveCueChanges() {
+        const cueIn = parseFloat(document.getElementById('input-cue-in').value) || 0;
+        const cueOut = parseFloat(document.getElementById('input-cue-out').value) || 0;
+
+        fetch('/music-styles/save-cue', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                track_id: activeEditorTrackId,
+                cue_in: cueIn,
+                cue_out: cueOut
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message || 'Cue points salvos com sucesso!');
+                closeCueEditor();
+                // Reload the track lists dynamically
+                const containers = document.querySelectorAll('[id^="tracks-table-container-"]');
+                containers.forEach(container => {
+                    const styleId = container.id.replace('tracks-table-container-', '');
+                    if (container.querySelector(`#track-row-${activeEditorTrackId}`)) {
+                        updateTracksTable(styleId);
+                    }
+                });
+            } else {
+                alert('Erro ao salvar: ' + (data.error || 'Desconhecido'));
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Erro ao processar requisição.');
+        });
+    }
+
+    function resetCueToAuto() {
+        if (!confirm('Deseja realmente resetar os Cue Points para o modo automático?')) return;
+
+        fetch('/music-styles/reset-cue', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                track_id: activeEditorTrackId
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message || 'Cue points resetados para o modo automático!');
+                closeCueEditor();
+                // Reload the track lists dynamically
+                const containers = document.querySelectorAll('[id^="tracks-table-container-"]');
+                containers.forEach(container => {
+                    const styleId = container.id.replace('tracks-table-container-', '');
+                    if (container.querySelector(`#track-row-${activeEditorTrackId}`)) {
+                        updateTracksTable(styleId);
+                    }
+                });
+            } else {
+                alert('Erro ao resetar: ' + (data.error || 'Desconhecido'));
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Erro ao processar requisição.');
+        });
+    }
+
+    function closeCueEditor() {
+        cleanupCueEditor();
+        if (cueEditorModalObj) {
+            cueEditorModalObj.hide();
+        }
+    }
+
+    function formatTimeMs(seconds) {
+        if (isNaN(seconds)) return "00:00.00";
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        const ms = Math.floor((seconds % 1) * 100);
+        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+    }
+
+    function toggleSourceType(type) {
+        const localWrapper = document.getElementById('local-media-wrapper');
+        const streamWrapper = document.getElementById('stream-media-wrapper');
+        const baseDirSelect = document.getElementById('base-directory');
+        const streamUrlInput = document.getElementById('stream-url');
+
+        if (type === 'STREAM') {
+            if (localWrapper) localWrapper.classList.add('d-none');
+            if (streamWrapper) streamWrapper.classList.remove('d-none');
+            if (streamUrlInput) streamUrlInput.setAttribute('required', 'required');
+            if (baseDirSelect) baseDirSelect.removeAttribute('required');
+        } else {
+            if (localWrapper) localWrapper.classList.remove('d-none');
+            if (streamWrapper) streamWrapper.classList.add('d-none');
+            if (streamUrlInput) streamUrlInput.removeAttribute('required');
+        }
+    }
+
+    function applyStreamPreset(url) {
+        const streamUrlInput = document.getElementById('stream-url');
+        const nameInput = document.getElementById('name');
+        const presetSelect = document.getElementById('stream-preset');
+
+        if (url && url !== 'CUSTOM') {
+            if (streamUrlInput) streamUrlInput.value = url;
+            if (presetSelect && presetSelect.selectedIndex >= 0) {
+                const selectedOpt = presetSelect.options[presetSelect.selectedIndex];
+                const presetName = selectedOpt.getAttribute('data-name');
+                if (presetName && nameInput && !nameInput.value) {
+                    nameInput.value = presetName;
+                }
+            }
+        }
+    }
+
+    function showCreateForm() {
+        try {
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+            setVal('style-id', "");
+            const form = document.getElementById('style-form');
+            if (form) {
+                form.action = "/music-styles/create";
+                form.reset();
+            }
+            const title = document.getElementById('form-title');
+            if (title) title.innerText = "🎧 Cadastrar Novo Estilo Musical";
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) submitBtn.innerText = "💾 Gravar Estilo";
+            
+            toggleSourceType('LOCAL');
+
+            const listView = document.getElementById('list-view');
+            if (listView) {
+                listView.classList.remove('d-block');
+                listView.classList.add('d-none');
+            }
+            const formView = document.getElementById('form-view');
+            if (formView) {
+                formView.classList.remove('d-none');
+                formView.classList.add('d-block');
+                formView.scrollIntoView({ behavior: 'smooth' });
+            }
+        } catch (e) {
+            console.error("Erro em showCreateForm:", e);
+        }
+    }
+
+    function editStyle(style) {
+        try {
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = (val !== undefined && val !== null) ? val : ""; };
+            
+            setVal('style-id', style.id);
+            const form = document.getElementById('style-form');
+            if (form) form.action = "/music-styles/update";
+            const title = document.getElementById('form-title');
+            if (title) title.innerText = "✏️ Editar Estilo";
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) submitBtn.innerText = "💾 Salvar Alterações";
+
+            setVal('name', style.name);
+            setVal('description', style.description);
+            setVal('base-directory', style.base_directory);
+            
+            const srcType = (style.source_type || "LOCAL").toUpperCase();
+            setVal('source-type', srcType);
+            setVal('stream-url', style.stream_url);
+            
+            toggleSourceType(srcType);
+            
+            const listView = document.getElementById('list-view');
+            if (listView) {
+                listView.classList.remove('d-block');
+                listView.classList.add('d-none');
+            }
+            const formView = document.getElementById('form-view');
+            if (formView) {
+                formView.classList.remove('d-none');
+                formView.classList.add('d-block');
+                formView.scrollIntoView({ behavior: 'smooth' });
+            }
+        } catch (e) {
+            console.error("Erro em editStyle:", e);
+        }
+    }
+
+    function cancelEdit() {
+        try {
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+            setVal('style-id', "");
+            const form = document.getElementById('style-form');
+            if (form) {
+                form.action = "/music-styles/create";
+                form.reset();
+            }
+            const title = document.getElementById('form-title');
+            if (title) title.innerText = "🎧 Cadastrar Novo Estilo Musical";
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) submitBtn.innerText = "💾 Gravar Estilo";
+            
+            toggleSourceType('LOCAL');
+
+            const formView = document.getElementById('form-view');
+            if (formView) {
+                formView.classList.remove('d-block');
+                formView.classList.add('d-none');
+            }
+            const listView = document.getElementById('list-view');
+            if (listView) {
+                listView.classList.remove('d-none');
+                listView.classList.add('d-block');
+            }
+        } catch (e) {
+            console.error("Erro em cancelEdit:", e);
+        }
+    }
+
+    let currentPage = 1;
+    let totalPages = 1;
+    let itemsPerPage = 50;
+
+    function initPagination() {
+        const savedLimit = localStorage.getItem('imc_table_limit');
+        if (savedLimit) {
+            itemsPerPage = savedLimit === 'ALL' ? 'ALL' : parseInt(savedLimit) || 50;
+        } else {
+            itemsPerPage = 50;
+        }
+        const limitSelect = document.getElementById('pagination-limit-select');
+        if (limitSelect) {
+            limitSelect.value = itemsPerPage;
+        }
+        updatePagination();
+    }
+
+    function changePaginationLimit(val) {
+        itemsPerPage = val === 'ALL' ? 'ALL' : parseInt(val) || 50;
+        localStorage.setItem('imc_table_limit', val);
+        currentPage = 1;
+        updatePagination();
+        
+        // Also update tracks pagination limit inputs across expanded styles
+        const selectAllLimit = document.querySelectorAll('[id^="pagination-limit-select-"]');
+        selectAllLimit.forEach(sel => {
+            sel.value = val;
+            const styleId = sel.id.replace('pagination-limit-select-', '');
+            if (tracksPageState[styleId]) {
+                tracksPageState[styleId].itemsPerPage = itemsPerPage;
+                tracksPageState[styleId].currentPage = 1;
+                updateTracksPagination(styleId);
+            }
+        });
+    }
+
+    function goToPage(page) {
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        updatePagination();
+    }
+
+    function updatePagination() {
+        const rows = Array.from(document.querySelectorAll('.style-row'));
+        const visibleRows = rows.filter(row => !row.classList.contains('d-none'));
+        const totalItems = visibleRows.length;
+
+        if (itemsPerPage === 'ALL') {
+            totalPages = 1;
+            currentPage = 1;
+            visibleRows.forEach(row => row.classList.remove('pg-hidden'));
+            
+            const infoText = document.getElementById('pagination-info-text');
+            if (infoText) infoText.innerText = `Mostrando 1-${totalItems} de ${totalItems} linhas`;
+            const pageIndicator = document.getElementById('pagination-page-indicator');
+            if (pageIndicator) pageIndicator.innerText = `Página 1 de 1`;
+            
+            togglePaginationButtonsDisabled(true, true, true, true);
+            return;
+        }
+
+        totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+
+        visibleRows.forEach((row, idx) => {
+            if (idx >= startIndex && idx < endIndex) {
+                row.classList.remove('pg-hidden');
+            } else {
+                row.classList.add('pg-hidden');
+            }
+        });
+
+        const infoText = document.getElementById('pagination-info-text');
+        if (infoText) {
+            infoText.innerText = totalItems === 0 ? "Mostrando 0-0 de 0 linhas" : `Mostrando ${startIndex + 1}-${endIndex} de ${totalItems} linhas`;
+        }
+
+        const pageIndicator = document.getElementById('pagination-page-indicator');
+        if (pageIndicator) {
+            pageIndicator.innerText = `Página ${currentPage} de ${totalPages}`;
+        }
+
+        togglePaginationButtonsDisabled(
+            currentPage === 1, 
+            currentPage === 1, 
+            currentPage === totalPages, 
+            currentPage === totalPages
+        );
+    }
+
+    function togglePaginationButtonsDisabled(first, prev, next, last) {
+        const btnFirst = document.getElementById('btn-page-first');
+        const btnPrev = document.getElementById('btn-page-prev');
+        const btnNext = document.getElementById('btn-page-next');
+        const btnLast = document.getElementById('btn-page-last');
+        if (btnFirst) btnFirst.disabled = first;
+        if (btnPrev) btnPrev.disabled = prev;
+        if (btnNext) btnNext.disabled = next;
+        if (btnLast) btnLast.disabled = last;
+    }
+
+    let tracksPageState = {};
+
+    function initTracksPagination(styleId) {
+        if (!tracksPageState[styleId]) {
+            let limit = 50;
+            const savedLimit = localStorage.getItem('imc_table_limit');
+            if (savedLimit) {
+                limit = savedLimit === 'ALL' ? 'ALL' : parseInt(savedLimit) || 50;
+            }
+            tracksPageState[styleId] = {
+                currentPage: 1,
+                totalPages: 1,
+                itemsPerPage: limit
+            };
+        }
+        const limitSelect = document.getElementById('pagination-limit-select-' + styleId);
+        if (limitSelect) {
+            limitSelect.value = tracksPageState[styleId].itemsPerPage;
+        }
+        updateTracksPagination(styleId);
+    }
+
+    function changeTracksPaginationLimit(styleId, val) {
+        if (!tracksPageState[styleId]) return;
+        const limit = val === 'ALL' ? 'ALL' : parseInt(val) || 50;
+        tracksPageState[styleId].itemsPerPage = limit;
+        localStorage.setItem('imc_table_limit', val);
+        
+        // Sync the main page pagination select
+        const mainLimitSelect = document.getElementById('pagination-limit-select');
+        if (mainLimitSelect) {
+            mainLimitSelect.value = val;
+        }
+        if (typeof itemsPerPage !== 'undefined') {
+            itemsPerPage = limit;
+        }
+        
+        // Sync other track limit selects on the page
+        const selectAllLimit = document.querySelectorAll('[id^="pagination-limit-select-"]');
+        selectAllLimit.forEach(sel => {
+            sel.value = val;
+            const otherStyleId = sel.id.replace('pagination-limit-select-', '');
+            if (tracksPageState[otherStyleId]) {
+                tracksPageState[otherStyleId].itemsPerPage = limit;
+                tracksPageState[otherStyleId].currentPage = 1;
+                updateTracksPagination(otherStyleId);
+            }
+        });
+
+        tracksPageState[styleId].currentPage = 1;
+        updateTracksPagination(styleId);
+    }
+
+    function goToTracksPage(styleId, page) {
+        if (!tracksPageState[styleId]) return;
+        const state = tracksPageState[styleId];
+        if (page < 1 || page > state.totalPages) return;
+        state.currentPage = page;
+        updateTracksPagination(styleId);
+    }
+
+    function getTracksCurrentPage(styleId) {
+        return tracksPageState[styleId] ? tracksPageState[styleId].currentPage : 1;
+    }
+
+    function getTracksTotalPages(styleId) {
+        return tracksPageState[styleId] ? tracksPageState[styleId].totalPages : 1;
+    }
+
+    function updateTracksPagination(styleId) {
+        const state = tracksPageState[styleId];
+        if (!state) return;
+
+        const container = document.getElementById('tracks-table-container-' + styleId);
+        if (!container) return;
+        
+        const rows = Array.from(container.querySelectorAll('.track-data-row'));
+        const visibleRows = rows.filter(row => !row.classList.contains('d-none'));
+        const totalItems = visibleRows.length;
+
+        if (state.itemsPerPage === 'ALL') {
+            state.totalPages = 1;
+            state.currentPage = 1;
+            visibleRows.forEach(row => row.classList.remove('pg-hidden'));
+            
+            const infoText = document.getElementById('pagination-info-text-' + styleId);
+            if (infoText) infoText.innerText = `Mostrando 1-${totalItems} de ${totalItems} linhas`;
+            const pageIndicator = document.getElementById('pagination-page-indicator-' + styleId);
+            if (pageIndicator) pageIndicator.innerText = `Página 1 de 1`;
+            
+            toggleTracksPaginationButtonsDisabled(styleId, true, true, true, true);
+            return;
+        }
+
+        state.totalPages = Math.ceil(totalItems / state.itemsPerPage) || 1;
+        if (state.currentPage > state.totalPages) state.currentPage = state.totalPages;
+        if (state.currentPage < 1) state.currentPage = 1;
+
+        const startIndex = (state.currentPage - 1) * state.itemsPerPage;
+        const endIndex = Math.min(startIndex + state.itemsPerPage, totalItems);
+
+        visibleRows.forEach((row, idx) => {
+            if (idx >= startIndex && idx < endIndex) {
+                row.classList.remove('pg-hidden');
+            } else {
+                row.classList.add('pg-hidden');
+            }
+        });
+
+        const infoText = document.getElementById('pagination-info-text-' + styleId);
+        if (infoText) {
+            infoText.innerText = totalItems === 0 ? "Mostrando 0-0 de 0 linhas" : `Mostrando ${startIndex + 1}-${endIndex} de ${totalItems} linhas`;
+        }
+
+        const pageIndicator = document.getElementById('pagination-page-indicator-' + styleId);
+        if (pageIndicator) {
+            pageIndicator.innerText = `Página ${state.currentPage} de ${state.totalPages}`;
+        }
+
+        toggleTracksPaginationButtonsDisabled(
+            styleId,
+            state.currentPage === 1, 
+            state.currentPage === 1, 
+            state.currentPage === state.totalPages, 
+            state.currentPage === state.totalPages
+        );
+    }
+
+    function toggleTracksPaginationButtonsDisabled(styleId, first, prev, next, last) {
+        const btnFirst = document.getElementById('btn-page-first-' + styleId);
+        const btnPrev = document.getElementById('btn-page-prev-' + styleId);
+        const btnNext = document.getElementById('btn-page-next-' + styleId);
+        const btnLast = document.getElementById('btn-page-last-' + styleId);
+        if (btnFirst) btnFirst.disabled = first;
+        if (btnPrev) btnPrev.disabled = prev;
+        if (btnNext) btnNext.disabled = next;
+        if (btnLast) btnLast.disabled = last;
+    }
+
+    function filterTable() {
+        // Clear global search when local search is used to avoid conflict
+        const globalSearch = document.getElementById('global-search-tracks');
+        if (globalSearch) globalSearch.value = '';
+        
+        const query = document.getElementById('search-input').value.toLowerCase();
+        const rows = document.querySelectorAll('.style-row');
+        
+        rows.forEach(row => {
+            const name = row.querySelector('.td-name').innerText.toLowerCase();
+            const desc = row.querySelector('.td-desc').innerText.toLowerCase();
+            
+            if (name.includes(query) || desc.includes(query)) {
+                row.classList.remove('d-none');
+            } else {
+                row.classList.add('d-none');
+            }
+        });
+        currentPage = 1;
+        updatePagination();
+    }
+
+    function globalSearchTracks() {
+        // Clear style filter when global search is used to avoid conflict
+        const styleSearch = document.getElementById('search-input');
+        if (styleSearch) styleSearch.value = '';
+        
+        const query = document.getElementById('global-search-tracks').value.toLowerCase().trim();
+        const styleRows = document.querySelectorAll('.style-row');
+        
+        styleRows.forEach(styleRow => {
+            const badgeBtn = styleRow.querySelector('button[id^="badge-btn-"]');
+            if (!badgeBtn) return;
+            const styleId = badgeBtn.id.replace('badge-btn-', '');
+            const tracksRow = document.getElementById(`tracks-${styleId}`);
+            if (!tracksRow) return;
+            
+            const trackRows = tracksRow.querySelectorAll('.track-data-row');
+            let matchCount = 0;
+            
+            trackRows.forEach(row => {
+                const filename = (row.getAttribute('data-filename') || '').toLowerCase();
+                const title = (row.getAttribute('data-title') || '').toLowerCase();
+                const artist = (row.getAttribute('data-artist') || '').toLowerCase();
+                const album = (row.getAttribute('data-album') || '').toLowerCase();
+                
+                const matches = filename.includes(query) || title.includes(query) || artist.includes(query) || album.includes(query);
+                if (matches || query === '') {
+                    row.classList.remove('d-none');
+                    if (query !== '') matchCount++;
+                } else {
+                    row.classList.add('d-none');
+                }
+            });
+            
+            if (query !== '') {
+                if (matchCount > 0) {
+                    styleRow.classList.remove('d-none');
+                    tracksRow.classList.remove('d-none');
+                    tracksRow.style.display = '';
+                } else {
+                    styleRow.classList.add('d-none');
+                    tracksRow.classList.add('d-none');
+                }
+            } else {
+                styleRow.classList.remove('d-none');
+                tracksRow.classList.add('d-none');
+            }
+            
+            // Re-apply track pagination for this style
+            if (!tracksPageState[styleId]) {
+                initTracksPagination(styleId);
+            } else {
+                tracksPageState[styleId].currentPage = 1;
+                updateTracksPagination(styleId);
+            }
+        });
+        currentPage = 1;
+        updatePagination();
+    }
+
+    function getSavedSort(styleId) {
+        try {
+            const val = localStorage.getItem('imc_track_sort_' + styleId);
+            if (val) {
+                return JSON.parse(val);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        return null;
+    }
+
+    function saveSort(styleId, colIndex, dataType, dir) {
+        try {
+            localStorage.setItem('imc_track_sort_' + styleId, JSON.stringify({ colIndex, dataType, dir }));
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    let trackSortDirections = {}; // Key: styleId + '-' + colIndex, value: 'asc' | 'desc'
+    let activeSorts = {}; // Key: styleId, value: { colIndex: number, dataType: string, dir: 'asc' | 'desc' }
+
+    function sortTracks(styleId, colIndex, dataType, forceDir) {
+        const container = document.getElementById('tracks-table-container-' + styleId);
+        if (!container) return;
+        const table = container.querySelector('table');
+        if (!table) return;
+        const tbody = table.querySelector('tbody');
+        if (!tbody) return;
+        const rows = Array.from(tbody.querySelectorAll('.track-data-row'));
+        
+        const key = styleId + '-' + colIndex;
+        let nextDir = 'asc';
+        if (forceDir) {
+            nextDir = forceDir;
+        } else {
+            const currentDir = trackSortDirections[key] || 'desc';
+            nextDir = currentDir === 'asc' ? 'desc' : 'asc';
+        }
+        trackSortDirections[key] = nextDir;
+        activeSorts[styleId] = { colIndex: colIndex, dataType: dataType, dir: nextDir };
+        saveSort(styleId, colIndex, dataType, nextDir);
+        
+        const headers = table.querySelectorAll('thead th');
+        headers.forEach((th, idx) => {
+            if (idx === colIndex) {
+                th.setAttribute('data-sort-dir', nextDir);
+                th.style.color = 'var(--primary-color)';
+                th.innerHTML = th.innerHTML.replace(/ [▲▼]/g, '') + (nextDir === 'asc' ? ' ▲' : ' ▼');
+            } else {
+                th.removeAttribute('data-sort-dir');
+                if (idx >= 2) {
+                    th.style.color = '';
+                    th.innerHTML = th.innerHTML.replace(/ [▲▼]/g, '');
+                }
+            }
+        });
+
+        rows.sort((a, b) => {
+            let cellA = a.cells[colIndex].innerText.trim();
+            let cellB = b.cells[colIndex].innerText.trim();
+            
+            if (dataType === 'number') {
+                let numA = parseFloat(cellA.replace(/[^\d.-]/g, '')) || 0;
+                let numB = parseFloat(cellB.replace(/[^\d.-]/g, '')) || 0;
+                return nextDir === 'asc' ? numA - numB : numB - numA;
+            } else if (dataType === 'size') {
+                let numA = parseSizeToBytes(cellA);
+                let numB = parseSizeToBytes(cellB);
+                return nextDir === 'asc' ? numA - numB : numB - numA;
+            } else if (dataType === 'duration') {
+                let numA = parseDurationToSeconds(cellA);
+                let numB = parseDurationToSeconds(cellB);
+                return nextDir === 'asc' ? numA - numB : numB - numA;
+            } else if (dataType === 'date') {
+                let numA = parseDateToTimestamp(cellA);
+                let numB = parseDateToTimestamp(cellB);
+                return nextDir === 'asc' ? numA - numB : numB - numA;
+            } else {
+                return nextDir === 'asc' ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+            }
+        });
+        
+        rows.forEach(row => tbody.appendChild(row));
+    }
+
+    function parseSizeToBytes(str) {
+        if (!str || str === '--') return 0;
+        let parts = str.split(' ');
+        let val = parseFloat(parts[0]) || 0;
+        let unit = (parts[1] || '').toUpperCase();
+        if (unit.startsWith('GB')) return val * 1024 * 1024 * 1024;
+        if (unit.startsWith('MB')) return val * 1024 * 1024;
+        if (unit.startsWith('KB')) return val * 1024;
+        return val;
+    }
+
+    function parseDurationToSeconds(str) {
+        if (!str || str === '--') return 0;
+        let parts = str.split(':').map(p => parseInt(p) || 0);
+        if (parts.length === 3) {
+            return parts[0] * 3600 + parts[1] * 60 + parts[2];
+        } else if (parts.length === 2) {
+            return parts[0] * 60 + parts[1];
+        }
+        return parseInt(str) || 0;
+    }
+
+    function parseDateToTimestamp(str) {
+        if (!str || str === '--') return 0;
+        let parts = str.split(' ');
+        let dateParts = parts[0].split('/');
+        let timeParts = (parts[1] || '00:00:00.000').split(':');
+        let hrs = parseInt(timeParts[0]) || 0;
+        let mins = parseInt(timeParts[1]) || 0;
+        let secs = 0;
+        let ms = 0;
+        if (timeParts[2]) {
+            let secParts = timeParts[2].split('.');
+            secs = parseInt(secParts[0]) || 0;
+            ms = parseInt(secParts[1]) || 0;
+        }
+        let d = new Date(dateParts[2], dateParts[1] - 1, dateParts[0], hrs, mins, secs, ms);
+        return d.getTime() || 0;
+    }
+
+    function toggleTracks(styleId) {
+        const row = document.getElementById(`tracks-${styleId}`);
+        if (row.classList.contains('d-none')) {
+            row.classList.remove('d-none');
+            // Hide tracks if styles are filtered
+            row.style.display = "";
+        } else {
+            row.classList.add('d-none');
+        }
+    }
+
+    function toggleSelectAllStyles(headerCheckbox) {
+        const checkboxes = document.querySelectorAll('.style-select-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = headerCheckbox.checked;
+        });
+        updateBatchSyncBtn();
+    }
+
+    function updateBatchSyncBtn() {
+        const checkedBoxes = document.querySelectorAll('.style-select-checkbox:checked');
+        const btn = document.getElementById('btn-batch-sync');
+        if (btn) {
+            if (checkedBoxes.length > 0) {
+                btn.classList.remove('d-none');
+            } else {
+                btn.classList.add('d-none');
+            }
+        }
+    }
+
+    let batchSyncModalObj = null;
+
+    function startBatchSync() {
+        const checkedBoxes = document.querySelectorAll('.style-select-checkbox:checked');
+        const ids = Array.from(checkedBoxes).map(cb => cb.value);
+        if (ids.length === 0) return;
+
+        const countSpan = document.getElementById('batch-sync-count');
+        if (countSpan) countSpan.innerText = ids.length;
+
+        if (!batchSyncModalObj) {
+            batchSyncModalObj = new bootstrap.Modal(document.getElementById('batchSyncModal'));
+        }
+        batchSyncModalObj.show();
+    }
+
+    function executeBatchSync(reprocess) {
+        if (batchSyncModalObj) {
+            batchSyncModalObj.hide();
+        }
+
+        const checkedBoxes = document.querySelectorAll('.style-select-checkbox:checked');
+        const ids = Array.from(checkedBoxes).map(cb => cb.value);
+        if (ids.length === 0) return;
+
+        ids.forEach(id => {
+            const container = document.getElementById(`sync-progress-${id}`);
+            if (container) container.classList.remove('d-none');
+            
+            const syncBtn = document.querySelector(`.btn-sync-${id}`);
+            if (syncBtn) syncBtn.disabled = true;
+
+            const bar = document.getElementById(`sync-bar-${id}`);
+            const text = document.getElementById(`sync-text-${id}`);
+            const file = document.getElementById(`sync-file-${id}`);
+            
+            if (bar) { bar.style.width = "0%"; bar.innerText = "0%"; }
+            if (text) text.innerText = "Iniciando...";
+            if (file) file.innerText = "";
+            
+            const row = document.getElementById(`tracks-${id}`);
+            if (row && row.classList.contains('d-none')) {
+                row.classList.remove('d-none');
+                row.style.display = "";
+            }
+
+            fetch(`/music-styles/sync?id=${id}&reprocess=${reprocess}`, { method: 'POST' })
+                .then(res => {
+                    if (res.ok) {
+                        activeSyncs.add(id);
+                        pollSyncStatus(id);
+                    } else {
+                        if (text) text.innerText = "Erro ao iniciar";
+                    }
+                })
+                .catch(err => {
+                    if (text) text.innerText = "Erro: " + err;
+                });
+        });
+        
+        checkedBoxes.forEach(cb => cb.checked = false);
+        const selectAll = document.getElementById('select-all-styles');
+        if (selectAll) selectAll.checked = false;
+        updateBatchSyncBtn();
+    }
+
+    let activeSyncStyleId = null;
+    let syncModalObj = null;
+
+    function startSync(styleId, tracksCount) {
+        activeSyncStyleId = styleId;
+        if (tracksCount > 0) {
+            if (!syncModalObj) {
+                syncModalObj = new bootstrap.Modal(document.getElementById('syncModal'));
+            }
+            syncModalObj.show();
+        } else {
+            executeSync(false);
+        }
+    }
+
+    function executeSync(reprocess) {
+        if (syncModalObj) {
+            syncModalObj.hide();
+        }
+        
+        const styleId = activeSyncStyleId;
+        const container = document.getElementById(`sync-progress-${styleId}`);
+        container.classList.remove('d-none');
+        
+        const syncBtn = document.querySelector(`.btn-sync-${styleId}`);
+        if (syncBtn) syncBtn.disabled = true;
+
+        const bar = document.getElementById(`sync-bar-${styleId}`);
+        const text = document.getElementById(`sync-text-${styleId}`);
+        const file = document.getElementById(`sync-file-${styleId}`);
+        
+        bar.style.width = "0%";
+        bar.innerText = "0%";
+        text.innerText = "Iniciando...";
+        file.innerText = "";
+
+        fetch(`/music-styles/sync?id=${styleId}&reprocess=${reprocess}`, { method: 'POST' })
+            .then(res => {
+                if (res.ok) {
+                    activeSyncs.add(styleId);
+                    pollSyncStatus(styleId);
+                } else if (res.status === 409) {
+                    text.innerText = "Sincronização já está em andamento";
+                } else {
+                    text.innerText = "Erro ao iniciar sincronização";
+                }
+            })
+            .catch(err => {
+                text.innerText = "Erro: " + err;
+            });
+    }
+
+    function pollSyncStatus(styleId) {
+        const interval = setInterval(() => {
+            fetch(`/music-styles/sync-status?id=${styleId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const bar = document.getElementById(`sync-bar-${styleId}`);
+                    const text = document.getElementById(`sync-text-${styleId}`);
+                    const file = document.getElementById(`sync-file-${styleId}`);
+                    
+                    if (data.status === 'scanning') {
+                        let pct = 0;
+                        if (data.total_files > 0) {
+                            pct = Math.round((data.processed_files / data.total_files) * 100);
+                        }
+                        bar.style.width = pct + "%";
+                        bar.innerText = pct + "%";
+                        text.innerText = `Processando: ${data.processed_files}/${data.total_files}`;
+                        file.innerText = data.current_file;
+                        updateTracksTable(styleId);
+                    } else if (data.status === 'completed') {
+                        clearInterval(interval);
+                        bar.style.width = "100%";
+                        bar.innerText = "100%";
+                        text.innerText = "Sincronização concluída!";
+                        file.innerText = "";
+                        updateTracksTable(styleId);
+                        activeSyncs.delete(styleId);
+                        if (activeSyncs.size === 0) {
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        }
+                    } else if (data.status === 'failed') {
+                        clearInterval(interval);
+                        text.innerText = "Erro: " + (data.error || "Desconhecido");
+                        activeSyncs.delete(styleId);
+                        if (activeSyncs.size === 0) {
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        }
+                    }
+                })
+                .catch(err => {
+                    clearInterval(interval);
+                    console.error("Polling error:", err);
+                });
+        }, 1000);
+    }
+
+    function updateTracksTable(styleId) {
+        fetch(`/music-styles/tracks-html?id=${styleId}`)
+            .then(res => {
+                if (res.ok) return res.text();
+                throw new Error("Erro ao carregar HTML das músicas");
+            })
+            .then(html => {
+                const container = document.getElementById('tracks-table-container-' + styleId);
+                if (container) {
+                    const checkedIds = Array.from(container.querySelectorAll('.track-checkbox:checked')).map(cb => cb.value);
+                    const allChecked = container.querySelector(`.select-all-tracks-${styleId}`)?.checked;
+                    
+                    container.innerHTML = html;
+                    
+                    // Update badge text dynamically!
+                    const innerTableDiv = container.querySelector('.table-responsive') || container.querySelector('p');
+                    if (innerTableDiv) {
+                        const count = innerTableDiv.getAttribute('data-tracks-count') || '0';
+                        const duration = innerTableDiv.getAttribute('data-total-duration') || '00:00:00';
+                        
+                        const badgeBtn = document.getElementById('badge-btn-' + styleId);
+                        if (badgeBtn) {
+                            badgeBtn.innerHTML = `🎵 Músicas: ${count} (${duration})`;
+                        }
+                    }
+                    
+                    checkedIds.forEach(id => {
+                        const cb = container.querySelector(`.track-checkbox[value="${id}"]`);
+                        if (cb) cb.checked = true;
+                    });
+                    const allCb = container.querySelector(`.select-all-tracks-${styleId}`);
+                    if (allCb && allChecked) allCb.checked = true;
+                    
+                    // Re-apply sorting to the updated table content
+                    const savedSort = activeSorts[styleId] || getSavedSort(styleId) || { colIndex: 2, dataType: 'string', dir: 'asc' };
+                    sortTracks(styleId, savedSort.colIndex, savedSort.dataType, savedSort.dir);
+                    
+                    // Re-apply playing row highlight if the playing track is in this updated table
+                    if (currentlyPlayingTrackId) {
+                        const activeRow = container.querySelector('#track-row-' + currentlyPlayingTrackId);
+                        if (activeRow) {
+                            activeRow.classList.add('playing-track-row');
+                        }
+                    }
+
+                    filterTracks(styleId);
+                    updateSelectedCount(styleId);
+                }
+            })
+            .catch(err => console.error("Error updating tracks table:", err));
+    }
+
+    function filterTracks(styleId) {
+        const query = document.getElementById('search-tracks-' + styleId).value.toLowerCase();
+        const scoreFilter = document.getElementById('filter-score-' + styleId).value;
+        
+        const container = document.getElementById('tracks-table-container-' + styleId);
+        if (!container) return;
+        
+        const rows = container.querySelectorAll('.track-data-row');
+        rows.forEach(row => {
+            const filename = (row.getAttribute('data-filename') || '').toLowerCase();
+            const title = (row.getAttribute('data-title') || '').toLowerCase();
+            const artist = (row.getAttribute('data-artist') || '').toLowerCase();
+            const album = (row.getAttribute('data-album') || '').toLowerCase();
+            const score = row.getAttribute('data-score') || '';
+            
+            const matchesQuery = filename.includes(query) || title.includes(query) || artist.includes(query) || album.includes(query);
+            let matchesScore = true;
+            if (scoreFilter) {
+                const grade = scoreFilter.replace('Nota ', '').trim();
+                matchesScore = (score === grade);
+            }
+            
+            if (matchesQuery && matchesScore) {
+                row.classList.remove('d-none');
+            } else {
+                row.classList.add('d-none');
+            }
+        });
+        
+        if (!tracksPageState[styleId]) {
+            initTracksPagination(styleId);
+        } else {
+            tracksPageState[styleId].currentPage = 1;
+            updateTracksPagination(styleId);
+        }
+    }
+
+    function toggleSelectAllTracks(styleId, headerCheckbox) {
+        const checkboxes = document.querySelectorAll(`.track-checkbox-${styleId}`);
+        checkboxes.forEach(cb => {
+            cb.checked = headerCheckbox.checked;
+        });
+        updateSelectedCount(styleId);
+    }
+
+    function updateSelectedCount(styleId) {
+        const checkedBoxes = document.querySelectorAll(`.track-checkbox-${styleId}:checked`);
+        const count = checkedBoxes.length;
+        
+        const deleteBtn = document.getElementById(`btn-delete-selected-${styleId}`);
+        const countSpan = document.getElementById(`delete-count-${styleId}`);
+        
+        const reprocessBtn = document.getElementById(`btn-reprocess-selected-${styleId}`);
+        const reprocessCountSpan = document.getElementById(`reprocess-count-${styleId}`);
+        
+        if (deleteBtn && countSpan) {
+            countSpan.innerText = count;
+            if (count > 0) {
+                deleteBtn.classList.remove('d-none');
+            } else {
+                deleteBtn.classList.add('d-none');
+            }
+        }
+        
+        if (reprocessBtn && reprocessCountSpan) {
+            reprocessCountSpan.innerText = count;
+            if (count > 0) {
+                reprocessBtn.classList.remove('d-none');
+            } else {
+                reprocessBtn.classList.add('d-none');
+            }
+        }
+    }
+
+    let reprocessControllers = {};
+
+    function reprocessSelectedTracks(styleId) {
+        const checkedBoxes = document.querySelectorAll(`.track-checkbox-${styleId}:checked`);
+        const ids = Array.from(checkedBoxes).map(cb => cb.value);
+        if (ids.length === 0) return;
+        
+        const btn = document.getElementById(`btn-reprocess-selected-${styleId}`);
+        const stopBtn = document.getElementById(`btn-reprocess-stop-${styleId}`);
+        const deleteBtn = document.getElementById(`btn-delete-selected-${styleId}`);
+        
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '🔄 Processando...';
+        
+        if (stopBtn) stopBtn.classList.remove('d-none');
+        if (deleteBtn) deleteBtn.classList.add('d-none');
+        
+        const controller = new AbortController();
+        reprocessControllers[styleId] = controller;
+        
+        fetch('/music-styles/reprocess-tracks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ track_ids: ids }),
+            signal: controller.signal
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message || 'Músicas reprocessadas com sucesso!');
+                checkedBoxes.forEach(cb => cb.checked = false);
+                const allCb = document.querySelector(`.select-all-tracks-${styleId}`);
+                if (allCb) allCb.checked = false;
+                updateSelectedCount(styleId);
+                updateTracksTable(styleId);
+            } else {
+                alert('Erro ao reprocessar: ' + (data.error || 'Desconhecido'));
+            }
+        })
+        .catch(err => {
+            if (err.name === 'AbortError') {
+                alert('Reprocessamento interrompido pelo usuário.');
+            } else {
+                console.error("Error reprocessing tracks:", err);
+                alert('Erro ao processar requisição.');
+            }
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            if (stopBtn) stopBtn.classList.add('d-none');
+            delete reprocessControllers[styleId];
+            updateSelectedCount(styleId);
+        });
+    }
+
+    function stopReprocessTracks(styleId) {
+        const controller = reprocessControllers[styleId];
+        if (controller) {
+            controller.abort();
+        }
+    }
+
+    function stopSync(styleId) {
+        if (confirm('Deseja realmente interromper a sincronização deste estilo?')) {
+            fetch(`/music-styles/stop-sync?id=${styleId}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // Polling will handle failed state
+                    } else {
+                        alert('Erro ao interromper a sincronização.');
+                    }
+                })
+                .catch(err => {
+                    console.error("Error stopping sync:", err);
+                    alert('Erro ao processar parada.');
+                });
+        }
+    }
+
+    function deleteSelectedTracks(styleId) {
+        const checkedBoxes = document.querySelectorAll(`.track-checkbox-${styleId}:checked`);
+        const ids = Array.from(checkedBoxes).map(cb => cb.value);
+        
+        if (ids.length === 0) return;
+        
+        if (confirm(`Deseja realmente excluir as ${ids.length} música(s) selecionada(s) do banco de dados?\n(Os arquivos físicos na pasta não serão apagados).`)) {
+            fetch('/music-styles/delete-tracks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ids: ids })
+            })
+            .then(res => {
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Erro ao excluir as músicas selecionadas.');
+                }
+            })
+            .catch(err => {
+                console.error("Error deleting tracks:", err);
+                alert('Erro ao processar exclusão.');
+            });
+        }
+    }
+
+    function playMusic(trackId, title, artist) {
+        currentlyPlayingTrackId = trackId;
+        
+        // Remove highlight from all track rows
+        document.querySelectorAll('.track-data-row').forEach(row => {
+            row.classList.remove('playing-track-row');
+        });
+        
+        // Add highlight to the active row
+        const activeRow = document.getElementById('track-row-' + trackId);
+        if (activeRow) {
+            activeRow.classList.add('playing-track-row');
+        }
+
+        const player = document.getElementById('premium-audio-player');
+        const audio = document.getElementById('main-audio-element');
+        const titleEl = document.getElementById('player-track-title');
+        const artistEl = document.getElementById('player-track-artist');
+        const playIcon = document.getElementById('player-play-icon');
+        const progressBar = document.getElementById('player-progress');
+        
+        player.classList.remove('d-none');
+        titleEl.innerText = title || "Desconhecido";
+        artistEl.innerText = artist || "Sem Artista";
+        
+        audio.src = `/music-styles/play?id=${trackId}`;
+        audio.volume = document.getElementById('player-volume').value / 100;
+        
+        audio.play()
+            .then(() => {
+                playIcon.innerText = "⏸️";
+                startProgressTracker();
+            })
+            .catch(err => {
+                console.error("Playback error:", err);
+                playIcon.innerText = "▶️";
+            });
+    }
+    
+    function togglePlayPause() {
+        const audio = document.getElementById('main-audio-element');
+        const playIcon = document.getElementById('player-play-icon');
+        if (!audio.src) return;
+        
+        if (audio.paused) {
+            audio.play();
+            playIcon.innerText = "⏸️";
+        } else {
+            audio.pause();
+            playIcon.innerText = "▶️";
+        }
+    }
+    
+    function startProgressTracker() {
+        const audio = document.getElementById('main-audio-element');
+        const progress = document.getElementById('player-progress');
+        const current = document.getElementById('player-time-current');
+        const total = document.getElementById('player-time-total');
+        
+        audio.ontimeupdate = () => {
+            if (audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                progress.value = pct;
+                current.innerText = formatTime(audio.currentTime);
+                total.innerText = formatTime(audio.duration);
+            }
+        };
+        
+        audio.onended = () => {
+            document.getElementById('player-play-icon').innerText = "▶️";
+            progress.value = 0;
+            current.innerText = "00:00";
+        };
+    }
+    
+    function seekAudio() {
+        const audio = document.getElementById('main-audio-element');
+        const progress = document.getElementById('player-progress');
+        if (!audio.src || !audio.duration) return;
+        
+        const targetTime = (progress.value / 100) * audio.duration;
+        audio.currentTime = targetTime;
+    }
+    
+    function setPlayerVolume() {
+        const audio = document.getElementById('main-audio-element');
+        const volSlider = document.getElementById('player-volume');
+        audio.volume = volSlider.value / 100;
+    }
+    
+    function closeAudioPlayer() {
+        const player = document.getElementById('premium-audio-player');
+        const audio = document.getElementById('main-audio-element');
+        audio.pause();
+        audio.src = "";
+        player.classList.add('d-none');
+        
+        currentlyPlayingTrackId = null;
+        document.querySelectorAll('.track-data-row').forEach(row => {
+            row.classList.remove('playing-track-row');
+        });
+    }
+    
+    function formatTime(seconds) {
+        if (isNaN(seconds)) return "00:00";
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initPagination();
+        
+        // Initialize sorting for all track tables on page load.
+        // If there's a saved sort choice from previous user sessions/clicks, use it;
+        // otherwise default to ascending order by "Nome do Arquivo" (colIndex 2, string).
+        const containers = document.querySelectorAll('[id^="tracks-table-container-"]');
+        containers.forEach(container => {
+            const styleId = container.id.replace('tracks-table-container-', '');
+            const savedSort = getSavedSort(styleId) || { colIndex: 2, dataType: 'string', dir: 'asc' };
+            sortTracks(styleId, savedSort.colIndex, savedSort.dataType, savedSort.dir);
+        });
+
+        {{range .Styles}}
+            {{if eq .SyncStatus "scanning"}}
+                {
+                    document.getElementById('sync-progress-{{.ID}}').classList.remove('d-none');
+                    const syncBtn = document.querySelector('.btn-sync-{{.ID}}');
+                    if (syncBtn) syncBtn.disabled = true;
+                    toggleTracks('{{.ID}}');
+                    activeSyncs.add('{{.ID}}');
+                    pollSyncStatus('{{.ID}}');
+                }
+            {{end}}
+        {{end}}
+    });
+</script>
+</body>
+</html>

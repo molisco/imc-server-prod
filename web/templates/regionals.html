@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMC-Server - Regionais</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        /* =========================================================================
+           WHITE LABEL ENGINE: Variáveis CSS Dinâmicas.
+           Se o Go enviar dados customizados, essas cores mudam o portal inteiro!
+           ========================================================================= */
+        :root {
+            --primary-color: {{ .Theme.PrimaryColor }};
+            --secondary-color: {{ .Theme.SecondaryColor }};
+            --background-color: {{ .Theme.BackgroundColor }};
+            --font-color: {{ if index .Theme "FontColor" }}{{ index .Theme "FontColor" }}{{ else }}#ffffff{{ end }};
+            --field-background-color: {{ if index .Theme "FieldBackgroundColor" }}{{ index .Theme "FieldBackgroundColor" }}{{ else }}rgba(255, 255, 255, 0.05){{ end }};
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--font-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Top Navbar Custom Styling */
+        .bg-dark-navbar {
+            background-color: var(--secondary-color) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        .navbar-dark .navbar-nav .nav-link {
+            color: #cbd5e0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.5rem 0.85rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .navbar-dark .navbar-nav .nav-link:hover,
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: var(--primary-color);
+        }
+        .dropdown-menu-dark {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 6px;
+        }
+        .dropdown-menu-dark .dropdown-item {
+            color: #cbd5e0;
+            font-size: 0.88rem;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        .dropdown-menu-dark .dropdown-item:hover,
+        .dropdown-menu-dark .dropdown-item.active {
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+        .card-custom {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        /* Form Controls integration */
+        .form-control, .form-select {
+            background-color: var(--field-background-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--font-color);
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary-color);
+            color: var(--font-color);
+            box-shadow: none;
+        }
+        .form-control::placeholder {
+            color: #888888;
+        }
+        label {
+            font-size: 0.85rem;
+            color: #cbd5e0;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        select option {
+            background-color: #ffffff;
+            color: #212529;
+        }
+
+        /* Table Integration */
+        .table-dark-custom {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .table-dark-custom th {
+            background-color: rgba(255, 255, 255, 0.03);
+            color: var(--primary-color);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+        }
+        .table-dark-custom td {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+            vertical-align: middle;
+        }
+        /* Dynamic table row highlighting on hover */
+        .table tbody tr:hover td {
+            background-color: rgba(255, 255, 255, 0.075) !important;
+            color: #ffffff !important;
+        }
+        .table tbody tr:hover {
+            outline: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+        .pg-hidden {
+            display: none !important;
+        }
+        .text-white-50 {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP NAVBAR PULL-DOWN -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark-navbar sticky-top px-3 py-2">
+    <div class="container-fluid">
+        <!-- BRAND / LOGO -->
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            <img src="{{ .Theme.LogoURL }}" alt="Logo IMC" style="max-height: 36px;">
+            <span class="fw-bold tracking-wide small text-uppercase text-light d-none d-sm-inline">IMC Server</span>
+        </a>
+
+        <!-- MOBILE TOGGLE BUTTON -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavbarNav" aria-controls="topNavbarNav" aria-expanded="false" aria-label="Alternar navegação">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- NAV ITEMS -->
+        <div class="collapse navbar-collapse" id="topNavbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-1">
+                
+                <!-- 1. HIERARQUIA & GESTÃO -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle active" href="#" id="navHierarchy" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🏢 Hierarquia & Gestão
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navHierarchy">
+                        <li><a class="dropdown-item" href="/tenants">🏢 Matrizes / Clientes</a></li>
+                        <li><a class="dropdown-item active" href="/regionals">📍 Regionais</a></li>
+                        <li><a class="dropdown-item" href="/stores">🏪 Filiais (Lojas)</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/users">👤 Usuários & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 2. MONITORAMENTO & AUDITORIA -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navMonitoring" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📊 Monitoramento & Auditoria
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMonitoring">
+                        <li><a class="dropdown-item" href="/radios/status">📻 Status das Rádios</a></li>
+                        <li><a class="dropdown-item" href="/play-history">📊 Relatórios & Histórico</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/reports/access-logs"><i class="fa-solid fa-shield-halved me-1 text-info"></i> Auditoria de Logins & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 3. ACERVO & MÍDIAS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navMedia" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🎵 Acervo & Mídias
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMedia">
+                        <li><a class="dropdown-item" href="/music-styles">🎧 Estilos Musicais</a></li>
+                        <li><a class="dropdown-item" href="/video-styles">📺 Estilos de Vídeo</a></li>
+                        <li><a class="dropdown-item" href="/streamings">📻 Streamings & Rádios Online</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/grids/audio">📅 Grades de Áudio</a></li>
+                        <li><a class="dropdown-item" href="/grids/video">📺 Grades de Vídeo</a></li>
+                    </ul>
+                </li>
+
+                <!-- 4. LOCUÇÃO & AVISOS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navWarnings" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📢 Locução & Avisos
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navWarnings">
+                        <li><a class="dropdown-item" href="/commercials">📣 Comerciais & Eventos</a></li>
+                        <li><a class="dropdown-item" href="/streamings"><i class="fa-solid fa-tower-broadcast me-2"></i> Streamings & Rádios</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/voice-packs">🏷️ Aviso de Placas</a></li>
+                        <li><a class="dropdown-item" href="/chimes">🔔 Sinais Sonoros (Chimes)</a></li>
+                        <li><a class="dropdown-item" href="/pre-formatted-warnings">📢 Avisos Pré-Formatados</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!-- RIGHT USER / LOGOUT AREA -->
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex flex-column text-end d-none d-md-block">
+                    <span class="text-white small fw-bold">{{ .User.Name }}</span>
+                    <span class="badge bg-primary text-uppercase" style="font-size: 0.65rem;">{{ .User.Role }}</span>
+                </div>
+                <a href="/logout" class="btn btn-sm btn-outline-danger px-3 py-1">
+                    Sair
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- CONTEÚDO PRINCIPAL (LARGURA TOTAL) -->
+<main class="container-fluid px-4 py-3">
+    <!-- ÁREA DO CONTEÚDO -->
+    <div class="p-1">
+        {{if .ErrorMessage}}
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+            {{.ErrorMessage}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {{end}}
+
+                <div class="row g-4">
+                    <!-- SEÇÃO DO FORMULÁRIO (OCULTO POR PADRÃO) -->
+                    <div id="form-view" class="col-lg-6 mx-auto fade-in-custom {{if .ErrorMessage}}d-block{{else}}d-none{{end}}">
+                        <div class="card-custom p-4 shadow-sm">
+                            <h5 id="form-title" class="text-white fw-bold mb-3">📍 Cadastrar Nova Regional</h5>
+                            
+                            <form id="regional-form" action="/regionals/create" method="POST">
+                                <input type="hidden" name="id" id="regional-id" value="">
+                                
+                                <div class="mb-3">
+                                    <label>Matriz / Cliente Vinculado *</label>
+                                    <select name="tenant_id" id="tenant-id" class="form-select" required>
+                                        <option value="">-- Selecione uma Empresa --</option>
+                                        {{range .Tenants}}
+                                            <option value="{{.ID}}" {{if eq (index $.Form "tenant_id") (printf "%s" .ID)}}selected{{end}}>{{.TradeName}}</option>
+                                        {{end}}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Nome da Regional *</label>
+                                    <input type="text" name="name" id="name" class="form-control" placeholder="Ex: Região Sudeste ou Regional SP" value="{{index .Form "name"}}" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Nome do Coordenador (Opcional)</label>
+                                    <input type="text" name="coordinator_name" id="coordinator-name" class="form-control" placeholder="Ex: Carlos Eduardo" value="{{index .Form "coordinator_name"}}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Telefone / WhatsApp (Opcional)</label>
+                                    <input type="text" name="phone" id="phone" class="form-control" placeholder="Ex: 11999998888" value="{{index .Form "phone"}}">
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" id="submit-btn" class="btn btn-primary w-100 fw-bold" style="background-color: var(--primary-color); border: none;">💾 Gravar Regional</button>
+                                    <button type="button" id="cancel-btn" class="btn btn-outline-secondary w-50 fw-bold" onclick="cancelEdit()">Cancelar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO DA LISTA/TABELA (LARGURA TOTAL) -->
+                    <div id="list-view" class="col-12 fade-in-custom {{if .ErrorMessage}}d-none{{else}}d-block{{end}}">
+                        <div class="card-custom p-4 shadow-sm h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                <h5 class="text-white fw-bold m-0">📋 Regionais Mapeadas</h5>
+                                <div class="d-flex gap-2 align-items-center flex-wrap">
+                                    <div style="width: 250px;">
+                                        <input type="text" id="search-input" class="form-control form-control-sm" placeholder="🔍 Pesquisar por regional, matriz, coordenador..." onkeyup="filterTable()">
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-primary fw-bold px-3" style="background-color: var(--primary-color); border: none;" onclick="showCreateForm()">➕ Nova Regional</button>
+                                </div>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-dark table-striped table-dark-custom m-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Matriz / Cliente</th>
+                                            <th>Nome da Regional</th>
+                                            <th>Coordenador</th>
+                                            <th>Contato</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{range .Regionals}}
+                                        <tr class="regional-row">
+                                            <td class="td-tenant"><strong class="text-primary" style="color: var(--primary-color) !important;">{{.TenantTradeName}}</strong></td>
+                                            <td class="td-name"><strong class="text-white">{{.Name}}</strong></td>
+                                            <td class="td-coordinator">
+                                                {{if .CoordinatorName}}
+                                                    👤 {{.CoordinatorName}}
+                                                {{else}}
+                                                    <span class="text-muted" style="font-size: 0.85rem;">Não Informado</span>
+                                                {{end}}
+                                            </td>
+                                            <td>
+                                                {{if .Phone}}
+                                                    📞 {{.Phone}}
+                                                {{else}}
+                                                    <span class="text-muted">-</span>
+                                                {{end}}
+                                            </td>
+                                            <td>
+                                                <div class="d-flex gap-1">
+                                                    <button type="button" class="btn btn-sm btn-outline-warning" 
+                                                        onclick="editRegional({
+                                                            id: '{{.ID}}',
+                                                            tenant_id: '{{.TenantID}}',
+                                                            name: '{{.Name}}',
+                                                            coordinator_name: '{{if .CoordinatorName}}{{.CoordinatorName}}{{end}}',
+                                                            phone: '{{if .Phone}}{{.Phone}}{{end}}'
+                                                        })">✏️</button>
+                                                    <a href="/regionals/delete?id={{.ID}}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja realmente excluir esta Regional? Isso apagará todas as Filiais vinculadas.')">🗑️</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {{else}}
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted p-4">Nenhuma Regional cadastrada até o momento.</td>
+                                        </tr>
+                                        {{end}}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- Painel de Paginação -->
+                            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2 text-white-50 small" id="pagination-controls-wrapper">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span>Linhas por página:</span>
+                                    <select id="pagination-limit-select" class="form-select form-select-sm bg-dark text-white border-secondary" style="width: auto; min-width: 80px;" onchange="changePaginationLimit(this.value)">
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                        <option value="50" selected>50</option>
+                                        <option value="100">100</option>
+                                        <option value="ALL">Todas</option>
+                                    </select>
+                                    <span id="pagination-info-text">Mostrando 0-0 de 0 linhas</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-1">
+                                    <button type="button" id="btn-page-first" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(1)">«</button>
+                                    <button type="button" id="btn-page-prev" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(currentPage - 1)">‹</button>
+                                    <span id="pagination-page-indicator" class="mx-2">Página 1 de 1</span>
+                                    <button type="button" id="btn-page-next" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(currentPage + 1)">›</button>
+                                    <button type="button" id="btn-page-last" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="goToPage(totalPages)">»</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+<script>
+    function showCreateForm() {
+        document.getElementById('regional-id').value = "";
+        document.getElementById('regional-form').action = "/regionals/create";
+        document.getElementById('form-title').innerText = "📍 Cadastrar Nova Regional";
+        document.getElementById('submit-btn').innerText = "💾 Gravar Regional";
+        document.getElementById('regional-form').reset();
+
+        document.getElementById('list-view').classList.remove('d-block');
+        document.getElementById('list-view').classList.add('d-none');
+        document.getElementById('form-view').classList.remove('d-none');
+        document.getElementById('form-view').classList.add('d-block');
+    }
+
+    function editRegional(regional) {
+        document.getElementById('regional-id').value = regional.id;
+        document.getElementById('regional-form').action = "/regionals/update";
+        document.getElementById('form-title').innerText = "✏️ Editar Regional";
+        document.getElementById('submit-btn').innerText = "💾 Salvar Alterações";
+
+        // Populate fields
+        document.getElementById('tenant-id').value = regional.tenant_id;
+        document.getElementById('name').value = regional.name;
+        document.getElementById('coordinator-name').value = regional.coordinator_name;
+        document.getElementById('phone').value = regional.phone;
+        
+        document.getElementById('list-view').classList.remove('d-block');
+        document.getElementById('list-view').classList.add('d-none');
+        document.getElementById('form-view').classList.remove('d-none');
+        document.getElementById('form-view').classList.add('d-block');
+
+        // Scroll to form smoothly
+        document.getElementById('regional-form').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+        document.getElementById('regional-id').value = "";
+        document.getElementById('regional-form').action = "/regionals/create";
+        document.getElementById('form-title').innerText = "📍 Cadastrar Nova Regional";
+        document.getElementById('submit-btn').innerText = "💾 Gravar Regional";
+        document.getElementById('regional-form').reset();
+
+        document.getElementById('form-view').classList.remove('d-block');
+        document.getElementById('form-view').classList.add('d-none');
+        document.getElementById('list-view').classList.remove('d-none');
+        document.getElementById('list-view').classList.add('d-block');
+    }
+
+    let currentPage = 1;
+    let totalPages = 1;
+    let itemsPerPage = 50;
+
+    function initPagination() {
+        const savedLimit = localStorage.getItem('imc_table_limit');
+        if (savedLimit) {
+            itemsPerPage = savedLimit === 'ALL' ? 'ALL' : parseInt(savedLimit) || 50;
+        } else {
+            itemsPerPage = 50;
+        }
+        const limitSelect = document.getElementById('pagination-limit-select');
+        if (limitSelect) {
+            limitSelect.value = itemsPerPage;
+        }
+        updatePagination();
+    }
+
+    function changePaginationLimit(val) {
+        itemsPerPage = val === 'ALL' ? 'ALL' : parseInt(val) || 50;
+        localStorage.setItem('imc_table_limit', val);
+        currentPage = 1;
+        updatePagination();
+    }
+
+    function goToPage(page) {
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        updatePagination();
+    }
+
+    function updatePagination() {
+        const rows = Array.from(document.querySelectorAll('.regional-row'));
+        const visibleRows = rows.filter(row => !row.classList.contains('d-none'));
+        const totalItems = visibleRows.length;
+
+        if (itemsPerPage === 'ALL') {
+            totalPages = 1;
+            currentPage = 1;
+            visibleRows.forEach(row => row.classList.remove('pg-hidden'));
+            
+            const infoText = document.getElementById('pagination-info-text');
+            if (infoText) infoText.innerText = `Mostrando 1-${totalItems} de ${totalItems} linhas`;
+            const pageIndicator = document.getElementById('pagination-page-indicator');
+            if (pageIndicator) pageIndicator.innerText = `Página 1 de 1`;
+            
+            togglePaginationButtonsDisabled(true, true, true, true);
+            return;
+        }
+
+        totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+
+        visibleRows.forEach((row, idx) => {
+            if (idx >= startIndex && idx < endIndex) {
+                row.classList.remove('pg-hidden');
+            } else {
+                row.classList.add('pg-hidden');
+            }
+        });
+
+        const infoText = document.getElementById('pagination-info-text');
+        if (infoText) {
+            infoText.innerText = totalItems === 0 ? "Mostrando 0-0 de 0 linhas" : `Mostrando ${startIndex + 1}-${endIndex} de ${totalItems} linhas`;
+        }
+
+        const pageIndicator = document.getElementById('pagination-page-indicator');
+        if (pageIndicator) {
+            pageIndicator.innerText = `Página ${currentPage} de ${totalPages}`;
+        }
+
+        togglePaginationButtonsDisabled(
+            currentPage === 1, 
+            currentPage === 1, 
+            currentPage === totalPages, 
+            currentPage === totalPages
+        );
+    }
+
+    function togglePaginationButtonsDisabled(first, prev, next, last) {
+        const btnFirst = document.getElementById('btn-page-first');
+        const btnPrev = document.getElementById('btn-page-prev');
+        const btnNext = document.getElementById('btn-page-next');
+        const btnLast = document.getElementById('btn-page-last');
+        if (btnFirst) btnFirst.disabled = first;
+        if (btnPrev) btnPrev.disabled = prev;
+        if (btnNext) btnNext.disabled = next;
+        if (btnLast) btnLast.disabled = last;
+    }
+
+    function filterTable() {
+        const query = document.getElementById('search-input').value.toLowerCase();
+        const rows = document.querySelectorAll('.regional-row');
+        
+        rows.forEach(row => {
+            const tenant = row.querySelector('.td-tenant').innerText.toLowerCase();
+            const name = row.querySelector('.td-name').innerText.toLowerCase();
+            const coordinator = row.querySelector('.td-coordinator').innerText.toLowerCase();
+            
+            if (tenant.includes(query) || name.includes(query) || coordinator.includes(query)) {
+                row.classList.remove('d-none');
+            } else {
+                row.classList.add('d-none');
+            }
+        });
+        currentPage = 1;
+        updatePagination();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initPagination();
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

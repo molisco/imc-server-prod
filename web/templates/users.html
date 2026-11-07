@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMC-Server - Controle de Usuários</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        /* =========================================================================
+           WHITE LABEL ENGINE: Variáveis CSS Dinâmicas.
+           ========================================================================= */
+        :root {
+            --primary-color: {{ .Theme.PrimaryColor }};
+            --secondary-color: {{ .Theme.SecondaryColor }};
+            --background-color: {{ .Theme.BackgroundColor }};
+            --font-color: {{ if index .Theme "FontColor" }}{{ index .Theme "FontColor" }}{{ else }}#ffffff{{ end }};
+            --field-background-color: {{ if index .Theme "FieldBackgroundColor" }}{{ index .Theme "FieldBackgroundColor" }}{{ else }}rgba(255, 255, 255, 0.05){{ end }};
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--font-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Top Navbar Custom Styling */
+        .bg-dark-navbar {
+            background-color: var(--secondary-color) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        .navbar-dark .navbar-nav .nav-link {
+            color: #cbd5e0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.5rem 0.85rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .navbar-dark .navbar-nav .nav-link:hover,
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: var(--primary-color);
+        }
+        .dropdown-menu-dark {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 6px;
+        }
+        .dropdown-menu-dark .dropdown-item {
+            color: #cbd5e0;
+            font-size: 0.88rem;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        .dropdown-menu-dark .dropdown-item:hover,
+        .dropdown-menu-dark .dropdown-item.active {
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+        .card-custom {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        /* Form Controls */
+        .form-control, .form-select {
+            background-color: var(--field-background-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--font-color);
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary-color);
+            color: var(--font-color);
+            box-shadow: none;
+        }
+        .form-control::placeholder {
+            color: #888888;
+        }
+        label {
+            font-size: 0.85rem;
+            color: #cbd5e0;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        select option {
+            background-color: #ffffff;
+            color: #212529;
+        }
+
+        /* Table Integration */
+        .table-dark-custom {
+            background-color: var(--secondary-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .table-dark-custom th {
+            background-color: rgba(255, 255, 255, 0.03);
+            color: var(--primary-color);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.88rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .table-dark-custom td {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+            vertical-align: middle;
+        }
+        .table tbody tr:hover td {
+            background-color: rgba(255, 255, 255, 0.075) !important;
+            color: #ffffff !important;
+        }
+        .table tbody tr:hover {
+            outline: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+
+        .badge-role {
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .badge-superadmin { background-color: #ef4444; color: #fff; }
+        .badge-tenantadmin { background-color: #8b5cf6; color: #fff; }
+        .badge-operator { background-color: #3b82f6; color: #fff; }
+        .badge-programmer { background-color: #10b981; color: #fff; }
+        .badge-access { background-color: #f59e0b; color: #fff; }
+    </style>
+</head>
+<body>
+
+<!-- TOP NAVBAR PULL-DOWN -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark-navbar sticky-top px-3 py-2">
+    <div class="container-fluid">
+        <!-- BRAND / LOGO -->
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            <img src="{{ .Theme.LogoURL }}" alt="Logo IMC" style="max-height: 36px;">
+            <span class="fw-bold tracking-wide small text-uppercase text-light d-none d-sm-inline">IMC Server</span>
+        </a>
+
+        <!-- MOBILE TOGGLE BUTTON -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavbarNav" aria-controls="topNavbarNav" aria-expanded="false" aria-label="Alternar navegação">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- NAV ITEMS -->
+        <div class="collapse navbar-collapse" id="topNavbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-1">
+                
+                <!-- 1. HIERARQUIA & GESTÃO -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle active" href="#" id="navHierarchy" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🏢 Hierarquia & Gestão
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navHierarchy">
+                        <li><a class="dropdown-item" href="/tenants">🏢 Matrizes / Clientes</a></li>
+                        <li><a class="dropdown-item" href="/regionals">📍 Regionais</a></li>
+                        <li><a class="dropdown-item" href="/stores">🏪 Filiais (Lojas)</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item active" href="/users">👤 Usuários & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 2. MONITORAMENTO & AUDITORIA -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navMonitoring" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📊 Monitoramento & Auditoria
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMonitoring">
+                        <li><a class="dropdown-item" href="/radios/status">📻 Status das Rádios</a></li>
+                        <li><a class="dropdown-item" href="/play-history">📊 Relatórios & Histórico</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/reports/access-logs"><i class="fa-solid fa-shield-halved me-1 text-info"></i> Auditoria de Logins & Acessos</a></li>
+                    </ul>
+                </li>
+
+                <!-- 3. ACERVO & MÍDIAS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navMedia" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        🎵 Acervo & Mídias
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navMedia">
+                        <li><a class="dropdown-item" href="/music-styles">🎧 Estilos Musicais</a></li>
+                        <li><a class="dropdown-item" href="/video-styles">📺 Estilos de Vídeo</a></li>
+                        <li><a class="dropdown-item" href="/streamings">📻 Streamings & Rádios Online</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/grids/audio">📅 Grades de Áudio</a></li>
+                        <li><a class="dropdown-item" href="/grids/video">📺 Grades de Vídeo</a></li>
+                    </ul>
+                </li>
+
+                <!-- 4. LOCUÇÃO & AVISOS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navWarnings" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📢 Locução & Avisos
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="navWarnings">
+                        <li><a class="dropdown-item" href="/commercials">📣 Comerciais & Eventos</a></li>
+                        <li><a class="dropdown-item" href="/streamings"><i class="fa-solid fa-tower-broadcast me-2"></i> Streamings & Rádios</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item" href="/voice-packs">🏷️ Aviso de Placas</a></li>
+                        <li><a class="dropdown-item" href="/chimes">🔔 Sinais Sonoros (Chimes)</a></li>
+                        <li><a class="dropdown-item" href="/pre-formatted-warnings">📢 Avisos Pré-Formatados</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!-- RIGHT USER / LOGOUT AREA -->
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex flex-column text-end d-none d-md-block">
+                    <span class="text-white small fw-bold">{{ .User.Name }}</span>
+                    <span class="badge bg-primary text-uppercase" style="font-size: 0.65rem;">{{ .User.Role }}</span>
+                </div>
+                <a href="/logout" class="btn btn-sm btn-outline-danger px-3 py-1">
+                    Sair
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- CONTEÚDO PRINCIPAL (LARGURA TOTAL) -->
+<main class="container-fluid px-4 py-3">
+    <!-- ÁREA DO CONTEÚDO -->
+    <div class="p-1">
+        {{if .ErrorMessage}}
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <strong>Erro:</strong> {{.ErrorMessage}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {{end}}
+
+                {{if .SuccessMessage}}
+                <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    <strong>Sucesso:</strong> {{.SuccessMessage}}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {{end}}
+
+                <!-- BARRA DE AÇÕES -->
+                <div class="card-custom p-3 mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 450px;">
+                        <input type="text" id="userSearchInput" class="form-control" placeholder="Buscar por nome, login, e-mail ou perfil..." onkeyup="filterUsersTable()">
+                    </div>
+                    <button type="button" class="btn btn-primary px-4 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalCreateUser">
+                        + Novo Usuário
+                    </button>
+                </div>
+
+                <!-- TABELA DE USUÁRIOS -->
+                <div class="card-custom p-0 overflow-hidden shadow-sm">
+                    <div class="table-responsive">
+                        <table class="table table-dark-custom mb-0" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th class="ps-3">Usuário / Identificação</th>
+                                    <th>Login & E-mail</th>
+                                    <th>Perfil / Permissão</th>
+                                    <th>Empresa (Tenant)</th>
+                                    <th>Cargo / Registro</th>
+                                    <th>Status</th>
+                                    <th class="text-end pe-3">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{if .Users}}
+                                    {{range .Users}}
+                                    <tr class="user-row" 
+                                        data-id="{{.ID}}"
+                                        data-tenant-id="{{if .TenantID}}{{.TenantID}}{{end}}"
+                                        data-store-id="{{if .StoreID}}{{.StoreID}}{{end}}"
+                                        data-permission-id="{{.PermissionLevelID}}"
+                                        data-name="{{.Name}}"
+                                        data-login="{{.Login}}"
+                                        data-email="{{.Email}}"
+                                        data-phone="{{.Phone}}"
+                                        data-job="{{.JobFunction}}"
+                                        data-reg="{{.RegistrationID}}"
+                                        data-sup="{{.SupervisorName}}"
+                                        data-active="{{.IsActive}}">
+                                        <td class="ps-3">
+                                            <div class="fw-bold text-white">{{.Name}}</div>
+                                            {{if .SupervisorName}}<small class="text-muted">Sup: {{.SupervisorName}}</small>{{end}}
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold text-info">{{.Login}}</div>
+                                            <small class="text-muted">{{.Email}}</small>
+                                            {{if .Phone}}<div class="small text-secondary">{{.Phone}}</div>{{end}}
+                                        </td>
+                                        <td>
+                                            {{if eq .PermissionLevelID 1}}
+                                                <span class="badge badge-admin px-2 py-1">Administrador</span>
+                                            {{else if eq .PermissionLevelID 3}}
+                                                <span class="badge badge-operator px-2 py-1">Operador</span>
+                                            {{else if eq .PermissionLevelID 5}}
+                                                <span class="badge badge-programmer px-2 py-1">Programador</span>
+                                            {{else if eq .PermissionLevelID 7}}
+                                                <span class="badge badge-access px-2 py-1">Gestor de Acesso</span>
+                                            {{else}}
+                                                <span class="badge bg-secondary px-2 py-1">{{.PermissionLevelName}}</span>
+                                            {{end}}
+                                        </td>
+                                        <td>
+                                            <div><span class="badge bg-dark border border-secondary text-light">{{.TenantName}}</span></div>
+                                            {{if .StoreID}}<small class="text-info">Loja: {{.StoreName}}</small>{{else}}<small class="text-muted">Todas as Lojas</small>{{end}}
+                                        </td>
+                                        <td>
+                                            <div>{{if .JobFunction}}{{.JobFunction}}{{else}}<span class="text-muted">-</span>{{end}}</div>
+                                            {{if .RegistrationID}}<small class="text-muted">Reg: {{.RegistrationID}}</small>{{end}}
+                                        </td>
+                                        <td>
+                                            {{if .IsActive}}
+                                                <span class="badge bg-success-subtle text-success border border-success">Ativo</span>
+                                            {{else}}
+                                                <span class="badge bg-danger-subtle text-danger border border-danger">Inativo</span>
+                                            {{end}}
+                                        </td>
+                                        <td class="text-end pe-3">
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-outline-info" onclick="openEditUserModal(this)">
+                                                    Editar
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger" onclick="openDeleteUserModal('{{.ID}}', '{{.Name}}')">
+                                                    Excluir
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {{end}}
+                                {{else}}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4">Nenhum usuário cadastrado até o momento.</td>
+                                    </tr>
+                                {{end}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+<!-- ==========================================
+     MODAL: NOVO USUÁRIO
+     ========================================== -->
+<div class="modal fade" id="modalCreateUser" tabindex="-1" aria-labelledby="modalCreateUserLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="background-color: var(--secondary-color); color: var(--font-color); border: 1px solid rgba(255,255,255,0.1);">
+            <form action="/users/create" method="POST">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="modalCreateUserLabel">✨ Cadastrar Novo Usuário</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="create_name" class="form-label">Nome Completo *</label>
+                            <input type="text" class="form-control" id="create_name" name="name" required placeholder="Ex: Carlos Eduardo">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="create_login" class="form-label">Login de Acesso *</label>
+                            <input type="text" class="form-control" id="create_login" name="login" required placeholder="Ex: carlos.eduardo">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="create_password" class="form-label">Senha Inicial *</label>
+                            <input type="password" class="form-control" id="create_password" name="password" required placeholder="******">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="create_email" class="form-label">E-mail Corporativo *</label>
+                            <input type="email" class="form-control" id="create_email" name="email" required placeholder="carlos@empresa.com.br">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="create_permission" class="form-label">Nível de Permissão (Perfil) *</label>
+                            <select class="form-select" id="create_permission" name="permission_level_id" required>
+                                <option value="">Selecione o perfil...</option>
+                                {{range .PermissionLevels}}
+                                    <option value="{{.ID}}">{{.Name}} ({{.Description}})</option>
+                                {{end}}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="create_tenant" class="form-label">Empresa / Tenant</label>
+                            <select class="form-select" id="create_tenant" name="tenant_id">
+                                <option value="">Central / Geral</option>
+                                {{range .Tenants}}
+                                    <option value="{{.ID}}">{{.TradeName}}</option>
+                                {{end}}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="create_store" class="form-label">Loja / Filial</label>
+                            <select class="form-select" id="create_store" name="store_id">
+                                <option value="">Todas as Lojas</option>
+                                {{range .Stores}}
+                                    <option value="{{.ID}}">{{.StoreName}} (Nº {{.StoreNumber}})</option>
+                                {{end}}
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="create_phone" class="form-label">Telefone / Ramal</label>
+                            <input type="text" class="form-control" id="create_phone" name="phone" placeholder="(11) 98888-7777">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="create_job_function" class="form-label">Cargo / Função</label>
+                            <input type="text" class="form-control" id="create_job_function" name="job_function" placeholder="Ex: Gerente de TI">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="create_registration_id" class="form-label">Matrícula / ID</label>
+                            <input type="text" class="form-control" id="create_registration_id" name="registration_id" placeholder="Ex: 00482">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="create_supervisor_name" class="form-label">Supervisor Imediato</label>
+                            <input type="text" class="form-control" id="create_supervisor_name" name="supervisor_name" placeholder="Ex: Marcos Silva">
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="create_is_active" name="is_active" value="true" checked>
+                                <label class="form-check-label" for="create_is_active">Usuário Ativo (Permite efetuar login no sistema)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary px-4">Salvar Usuário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================
+     MODAL: EDITAR USUÁRIO
+     ========================================== -->
+<div class="modal fade" id="modalEditUser" tabindex="-1" aria-labelledby="modalEditUserLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="background-color: var(--secondary-color); color: var(--font-color); border: 1px solid rgba(255,255,255,0.1);">
+            <form action="/users/update" method="POST">
+                <input type="hidden" id="edit_id" name="id">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="modalEditUserLabel">✏️ Editar Usuário</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="edit_name" class="form-label">Nome Completo *</label>
+                            <input type="text" class="form-control" id="edit_name" name="name" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="edit_login" class="form-label">Login de Acesso *</label>
+                            <input type="text" class="form-control" id="edit_login" name="login" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="edit_password" class="form-label">Nova Senha (opcional)</label>
+                            <input type="password" class="form-control" id="edit_password" name="password" placeholder="Deixe em branco p/ manter">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="edit_email" class="form-label">E-mail Corporativo *</label>
+                            <input type="email" class="form-control" id="edit_email" name="email" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="edit_permission" class="form-label">Nível de Permissão (Perfil) *</label>
+                            <select class="form-select" id="edit_permission" name="permission_level_id" required>
+                                {{range .PermissionLevels}}
+                                    <option value="{{.ID}}">{{.Name}} ({{.Description}})</option>
+                                {{end}}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="edit_tenant" class="form-label">Empresa / Tenant</label>
+                            <select class="form-select" id="edit_tenant" name="tenant_id">
+                                <option value="">Central / Geral</option>
+                                {{range .Tenants}}
+                                    <option value="{{.ID}}">{{.TradeName}}</option>
+                                {{end}}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="edit_store" class="form-label">Loja / Filial</label>
+                            <select class="form-select" id="edit_store" name="store_id">
+                                <option value="">Todas as Lojas</option>
+                                {{range .Stores}}
+                                    <option value="{{.ID}}">{{.StoreName}} (Nº {{.StoreNumber}})</option>
+                                {{end}}
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="edit_phone" class="form-label">Telefone / Ramal</label>
+                            <input type="text" class="form-control" id="edit_phone" name="phone">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="edit_job_function" class="form-label">Cargo / Função</label>
+                            <input type="text" class="form-control" id="edit_job_function" name="job_function">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="edit_registration_id" class="form-label">Matrícula / ID</label>
+                            <input type="text" class="form-control" id="edit_registration_id" name="registration_id">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="edit_supervisor_name" class="form-label">Supervisor Imediato</label>
+                            <input type="text" class="form-control" id="edit_supervisor_name" name="supervisor_name">
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="edit_is_active" name="is_active" value="true">
+                                <label class="form-check-label" for="edit_is_active">Usuário Ativo (Permite efetuar login no sistema)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary px-4">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================
+     MODAL: EXCLUIR USUÁRIO
+     ========================================== -->
+<div class="modal fade" id="modalDeleteUser" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: var(--secondary-color); color: var(--font-color); border: 1px solid rgba(255,255,255,0.1);">
+            <form action="/users/delete" method="POST">
+                <input type="hidden" id="delete_user_id" name="id">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-danger">⚠️ Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir o usuário <strong id="delete_user_name" class="text-white"></strong>?</p>
+                    <p class="text-muted small mb-0">Esta ação revogará permanentemente o acesso deste usuário ao sistema.</p>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger px-4">Confirmar Exclusão</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Null-safe script conforme diretrizes do AGENTS.md
+    function openEditUserModal(btn) {
+        if (!btn) return;
+        var row = btn.closest('.user-row');
+        if (!row) return;
+
+        var idEl = document.getElementById('edit_id');
+        var nameEl = document.getElementById('edit_name');
+        var loginEl = document.getElementById('edit_login');
+        var emailEl = document.getElementById('edit_email');
+        var phoneEl = document.getElementById('edit_phone');
+        var jobEl = document.getElementById('edit_job_function');
+        var regEl = document.getElementById('edit_registration_id');
+        var supEl = document.getElementById('edit_supervisor_name');
+        var permEl = document.getElementById('edit_permission');
+        var tenantEl = document.getElementById('edit_tenant');
+        var storeEl = document.getElementById('edit_store');
+        var activeEl = document.getElementById('edit_is_active');
+        var pwdEl = document.getElementById('edit_password');
+
+        if (idEl) idEl.value = row.getAttribute('data-id') || '';
+        if (nameEl) nameEl.value = row.getAttribute('data-name') || '';
+        if (loginEl) loginEl.value = row.getAttribute('data-login') || '';
+        if (emailEl) emailEl.value = row.getAttribute('data-email') || '';
+        if (phoneEl) phoneEl.value = row.getAttribute('data-phone') || '';
+        if (jobEl) jobEl.value = row.getAttribute('data-job') || '';
+        if (regEl) regEl.value = row.getAttribute('data-reg') || '';
+        if (supEl) supEl.value = row.getAttribute('data-sup') || '';
+        if (permEl) permEl.value = row.getAttribute('data-permission-id') || '';
+        if (tenantEl) tenantEl.value = row.getAttribute('data-tenant-id') || '';
+        if (storeEl) storeEl.value = row.getAttribute('data-store-id') || '';
+        if (pwdEl) pwdEl.value = '';
+
+        if (activeEl) {
+            var isActive = row.getAttribute('data-active');
+            activeEl.checked = (isActive === 'true');
+        }
+
+        var modalEl = document.getElementById('modalEditUser');
+        if (modalEl) {
+            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+    }
+
+    function openDeleteUserModal(id, name) {
+        var idEl = document.getElementById('delete_user_id');
+        var nameEl = document.getElementById('delete_user_name');
+        if (idEl) idEl.value = id || '';
+        if (nameEl) nameEl.innerText = name || 'este usuário';
+
+        var modalEl = document.getElementById('modalDeleteUser');
+        if (modalEl) {
+            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+    }
+
+    function filterUsersTable() {
+        var input = document.getElementById('userSearchInput');
+        if (!input) return;
+        var filter = input.value.toLowerCase();
+        var rows = document.querySelectorAll('#usersTable tbody tr.user-row');
+
+        rows.forEach(function(row) {
+            var text = row.innerText.toLowerCase();
+            if (text.indexOf(filter) > -1) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
+</body>
+</html>

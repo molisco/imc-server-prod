@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streamings & Rádios Online - IMC Central</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navbar */
+        .top-navbar {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.85rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 1.15rem;
+        }
+
+        .brand-icon {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+
+        .content-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 2rem;
+            flex: 1;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-cyan);
+        }
+
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+        }
+
+        .metric-val {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .metric-lbl {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .table-custom {
+            margin-bottom: 0;
+            color: var(--text-main);
+            vertical-align: middle;
+        }
+
+        .table-custom thead th {
+            background: rgba(15, 23, 42, 0.6);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 1rem 1.25rem;
+            font-weight: 600;
+        }
+
+        .table-custom tbody td {
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.25rem;
+            background: transparent;
+            font-size: 0.9rem;
+        }
+
+        .table-custom tbody tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge-genre {
+            background: rgba(6, 182, 212, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            border-radius: 20px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-inuse {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 20px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .badge-idle {
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--text-muted);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 20px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .btn-preview-play {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--accent-cyan);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .btn-preview-play:hover {
+            background: var(--accent-cyan);
+            color: #fff;
+            transform: scale(1.08);
+            box-shadow: 0 0 12px rgba(6, 182, 212, 0.5);
+        }
+
+        .btn-preview-play.playing {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: #fff;
+            box-shadow: 0 0 14px rgba(16, 185, 129, 0.6);
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+            100% { transform: scale(1); }
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 16px;
+        }
+
+        .form-control, .form-select {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 8px;
+            padding: 0.65rem 1rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #0f172a;
+            border-color: var(--accent-cyan);
+            color: var(--text-main);
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <nav class="top-navbar">
+        <a href="/" class="brand-logo">
+            <div class="brand-icon">
+                <i class="fa-solid fa-tower-broadcast"></i>
+            </div>
+            <span>IMC Central <span style="font-weight: 300; color: var(--text-muted);">| Streamings</span></span>
+        </a>
+
+        <div class="d-flex align-items-center gap-3">
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle text-light" type="button" data-bs-toggle="dropdown">
+                    <i class="fa-solid fa-compass me-1"></i> Navegação Rápida
+                </button>
+                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                    <li><a class="dropdown-item" href="/"><i class="fa-solid fa-house me-2"></i> Início</a></li>
+                    <li><a class="dropdown-item" href="/stores"><i class="fa-solid fa-store me-2"></i> Lojas & Filiais</a></li>
+                    <li><a class="dropdown-item" href="/radios/status"><i class="fa-solid fa-radio me-2"></i> Monitor de Rádios</a></li>
+                    <li><a class="dropdown-item" href="/play-history"><i class="fa-solid fa-chart-pie me-2"></i> Relatórios & Histórico Central</a></li>
+                    <li><a class="dropdown-item" href="/music-styles"><i class="fa-solid fa-headphones me-2"></i> Estilos Musicais</a></li>
+                    <li><a class="dropdown-item" href="/commercials"><i class="fa-solid fa-bullhorn me-2"></i> Comerciais & Eventos</a></li>
+                    <li><a class="dropdown-item active" href="/streamings"><i class="fa-solid fa-tower-broadcast me-2"></i> Streamings & Rádios Online</a></li>
+                    <li><a class="dropdown-item" href="/voice-packs"><i class="fa-solid fa-tag me-2"></i> Aviso de Placas</a></li>
+                    <li><a class="dropdown-item" href="/chimes"><i class="fa-solid fa-bell me-2"></i> Sinais Sonoros (Chimes)</a></li>
+                    <li><a class="dropdown-item" href="/pre-formatted-warnings"><i class="fa-solid fa-volume-high me-2"></i> Avisos Imediatos</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-info" href="/manual/server" target="_blank"><i class="fa-solid fa-book-open me-2"></i> Manual do Servidor</a></li>
+                    <li><a class="dropdown-item text-info" href="/manual/player" target="_blank"><i class="fa-solid fa-file-pdf me-2"></i> Manual do Web Player</a></li>
+                    <li><a class="dropdown-item text-info" href="/help" target="_blank"><i class="fa-solid fa-circle-question me-2"></i> Central de Ajuda</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="/logout"><i class="fa-solid fa-right-from-bracket me-2"></i> Sair</a></li>
+                </ul>
+            </div>
+
+            <a href="/help" target="_blank" class="btn btn-outline-info btn-sm d-flex align-items-center gap-1 shadow-sm" title="Central de Manuais e Ajuda">
+                <i class="fa-solid fa-circle-question"></i>
+                <span class="d-none d-md-inline">Ajuda</span>
+            </a>
+
+            <div class="d-flex align-items-center gap-2 px-3 py-1 bg-dark bg-opacity-50 rounded-pill border border-secondary">
+                <i class="fa-solid fa-user-shield text-info"></i>
+                <span class="small fw-semibold">{{ .LoggedUser }}</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <div class="content-container">
+
+        {{ if .ErrorMessage }}
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow" role="alert">
+            <i class="fa-solid fa-circle-exclamation me-2"></i> {{ .ErrorMessage }}
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+        </div>
+        {{ end }}
+
+        {{ if .SuccessMessage }}
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i> {{ .SuccessMessage }}
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+        </div>
+        {{ end }}
+
+        <!-- Cabeçalho da Página -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="fw-bold mb-1"><i class="fa-solid fa-tower-broadcast text-info me-2"></i> Streamings & Rádios Online</h2>
+                <p class="text-muted small mb-0">Gerencie o catálogo de emissoras online, URLs diretas e monitore quais lojas estão conectadas a cada streaming.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary px-3 shadow" data-bs-toggle="modal" data-bs-target="#modalCreateStreaming">
+                    <i class="fa-solid fa-plus me-1"></i> Nova Estação de Streaming
+                </button>
+            </div>
+        </div>
+
+        <!-- Cards de Métricas -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <div class="metric-icon" style="background: rgba(59, 130, 246, 0.15); color: var(--accent-blue);">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                    <div>
+                        <div class="metric-val">{{ .TotalStations }}</div>
+                        <div class="metric-lbl">Estações Cadastradas</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <div class="metric-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-green);">
+                        <i class="fa-solid fa-tower-cell"></i>
+                    </div>
+                    <div>
+                        <div class="metric-val">{{ .InUseStations }}</div>
+                        <div class="metric-lbl">Estações em Uso</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <div class="metric-icon" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
+                    <div>
+                        <div class="metric-val">{{ .TotalStoresOn }}</div>
+                        <div class="metric-lbl">Lojas em Streaming</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Streamings -->
+        <div class="table-container">
+            <div class="p-3 border-bottom border-secondary d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="input-group" style="max-width: 320px;">
+                    <span class="input-group-text bg-dark border-secondary text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" id="filterInput" class="form-control form-control-sm" placeholder="Filtrar estações ou gêneros...">
+                </div>
+                <div class="text-muted small">
+                    Mostrando <strong>{{ len .Stations }}</strong> estações
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-custom align-middle mb-0" id="streamingsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">Ouvir</th>
+                            <th>Nome da Estação</th>
+                            <th>Gênero / Categoria</th>
+                            <th>URL de Transmissão</th>
+                            <th class="text-center">Teste de Conexão</th>
+                            <th>Transmissão no Ar</th>
+                            <th class="text-center">Cadastro</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ range .Stations }}
+                        <tr>
+                            <td>
+                                <button type="button" class="btn-preview-play" title="Pré-escutar stream" onclick="toggleStreamPreview('{{ .StreamURL }}', this)">
+                                    <i class="fa-solid fa-play"></i>
+                                </button>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-white fs-6">{{ .Name }}</div>
+                                <span class="badge bg-dark border border-secondary text-white-50" style="font-size: 0.7rem;">{{ .Bitrate }}</span>
+                            </td>
+                            <td>
+                                <span class="badge-genre">{{ if .Genre }}{{ .Genre }}{{ else }}Geral{{ end }}</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="text-truncate text-muted small" style="max-width: 250px;" title="{{ .StreamURL }}">
+                                        {{ .StreamURL }}
+                                    </span>
+                                    <button class="btn btn-sm btn-outline-secondary p-1 border-0 text-info" title="Copiar URL" onclick="copyToClipboard('{{ .StreamURL }}')">
+                                        <i class="fa-regular fa-copy"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                {{ if .IsOnline }}
+                                <span class="badge bg-success bg-opacity-25 text-success border border-success" title="Servidor de streaming respondendo 200 OK">
+                                    <i class="fa-solid fa-signal me-1"></i> {{ .ConnectionStatus }}
+                                </span>
+                                {{ else }}
+                                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger" title="Falha ao contactar URL de transmissão">
+                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> {{ .ConnectionStatus }}
+                                </span>
+                                {{ end }}
+                            </td>
+                            <td>
+                                {{ if gt .StoresCount 0 }}
+                                <span class="badge-inuse" data-bs-toggle="tooltip" data-bs-html="true" title="<strong>Lojas Transmitindo:</strong><br>{{ range .AssignedStores }}• {{ . }}<br>{{ end }}">
+                                    <i class="fa-solid fa-circle-play text-success"></i> {{ .StoresCount }} {{ if eq .StoresCount 1 }}Loja (No Ar){{ else }}Lojas (No Ar){{ end }}
+                                </span>
+                                {{ else }}
+                                <span class="badge-idle">
+                                    <i class="fa-solid fa-pause me-1"></i> Aguardando Demanda
+                                </span>
+                                {{ end }}
+                            </td>
+                            <td class="text-center">
+                                {{ if .IsActive }}
+                                <span class="badge bg-primary bg-opacity-25 text-primary border border-primary">Habilitado</span>
+                                {{ else }}
+                                <span class="badge bg-secondary bg-opacity-25 text-muted border border-secondary">Desabilitado</span>
+                                {{ end }}
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex justify-content-end gap-1">
+                                    <button class="btn btn-sm btn-outline-primary" title="Editar" onclick="openEditModal('{{ .ID }}', '{{ .Name }}', '{{ .StreamURL }}', '{{ .Genre }}', '{{ .Bitrate }}', {{ .IsActive }})">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <a href="/streamings/delete?id={{ .ID }}" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir a estação {{ .Name }}?');">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {{ else }}
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="fa-solid fa-tower-broadcast fa-3x mb-3 text-secondary opacity-50"></i>
+                                <p class="mb-0">Nenhuma estação de streaming cadastrada.</p>
+                            </td>
+                        </tr>
+                        {{ end }}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal Cadastrar Streaming -->
+    <div class="modal fade" id="modalCreateStreaming" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="/streamings/create" method="POST">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title"><i class="fa-solid fa-plus-circle text-info me-2"></i> Nova Estação de Streaming</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label text-light small fw-bold">Nome da Rádio / Estação *</label>
+                            <input type="text" name="name" class="form-control" placeholder="Ex: Shopping Vibes, Pop Hits FM..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-light small fw-bold">URL Direta de Transmissão (Stream URL) *</label>
+                            <input type="url" name="stream_url" class="form-control" placeholder="https://streaming.servidor.com/live" required>
+                            <div class="form-text text-muted">Insira a URL direta (Icecast/Shoutcast/HTTPS) sem redirecionamento 302.</div>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label text-light small fw-bold">Gênero / Estilo</label>
+                                <input type="text" name="genre" class="form-control" placeholder="Ex: Lounge, Pop, Varejo...">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label text-light small fw-bold">Formato / Bitrate</label>
+                                <input type="text" name="bitrate" class="form-control" value="128 kbps MP3" placeholder="128 kbps MP3">
+                            </div>
+                        </div>
+                        <div class="form-check form-switch mt-3">
+                            <input class="form-check-input" type="checkbox" name="is_active" id="createIsActive" checked>
+                            <label class="form-check-label text-light small" for="createIsActive">Estação Ativa para seleção nas lojas</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary px-4">Salvar Estação</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Streaming -->
+    <div class="modal fade" id="modalEditStreaming" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="/streamings/update" method="POST">
+                    <input type="hidden" name="id" id="editId">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title"><i class="fa-solid fa-pen-to-square text-info me-2"></i> Editar Estação de Streaming</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label text-light small fw-bold">Nome da Rádio / Estação *</label>
+                            <input type="text" name="name" id="editName" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-light small fw-bold">URL Direta de Transmissão (Stream URL) *</label>
+                            <input type="url" name="stream_url" id="editStreamUrl" class="form-control" required>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label text-light small fw-bold">Gênero / Estilo</label>
+                                <input type="text" name="genre" id="editGenre" class="form-control">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label text-light small fw-bold">Formato / Bitrate</label>
+                                <input type="text" name="bitrate" id="editBitrate" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-check form-switch mt-3">
+                            <input class="form-check-input" type="checkbox" name="is_active" id="editIsActive">
+                            <label class="form-check-label text-light small" for="editIsActive">Estação Ativa</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary px-4">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Element Invisível para Pré-Escuta -->
+    <audio id="globalPreviewAudio" preload="none"></audio>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Inicializa Tooltips do Bootstrap
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltipList = [...tooltipTriggerList].map(el => new bootstrap.Tooltip(el));
+
+        // Filtro em tempo real na tabela
+        const filterInput = document.getElementById('filterInput');
+        if (filterInput) {
+            filterInput.addEventListener('keyup', function() {
+                const term = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#streamingsTable tbody tr');
+                rows.forEach(r => {
+                    const text = r.innerText.toLowerCase();
+                    r.style.display = text.includes(term) ? '' : 'none';
+                });
+            });
+        }
+
+        // Modal de Edição
+        function openEditModal(id, name, streamUrl, genre, bitrate, isActive) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editName').value = name;
+            document.getElementById('editStreamUrl').value = streamUrl;
+            document.getElementById('editGenre').value = genre;
+            document.getElementById('editBitrate').value = bitrate;
+            document.getElementById('editIsActive').checked = isActive;
+
+            const modal = new bootstrap.Modal(document.getElementById('modalEditStreaming'));
+            modal.show();
+        }
+
+        // Player de Pré-Escuta
+        const previewAudio = document.getElementById('globalPreviewAudio');
+        let currentPlayingBtn = null;
+
+        function toggleStreamPreview(url, btn) {
+            if (currentPlayingBtn === btn) {
+                previewAudio.pause();
+                previewAudio.src = '';
+                btn.classList.remove('playing');
+                btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+                currentPlayingBtn = null;
+                return;
+            }
+
+            if (currentPlayingBtn) {
+                currentPlayingBtn.classList.remove('playing');
+                currentPlayingBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+            }
+
+            btn.classList.add('playing');
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+            previewAudio.src = url;
+            previewAudio.play().then(() => {
+                btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                currentPlayingBtn = btn;
+            }).catch(err => {
+                console.error("Erro ao tocar stream:", err);
+                btn.classList.remove('playing');
+                btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+                currentPlayingBtn = null;
+                alert("Não foi possível reproduzir a transmissão: " + err.message);
+            });
+        }
+
+        // Copiar para o Clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("URL copiada para a área de transferência:\n" + text);
+            });
+        }
+    </script>
+</body>
+</html>

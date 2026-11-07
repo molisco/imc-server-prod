@@ -1,0 +1,2317 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ .Store.StoreName }} - Web Player Corporativo | IMC Rádio</title>
+
+    <!-- Bootstrap 5 CSS, Icons & FontAwesome 6 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #0ea5e9;
+            --primary-hover: #38bdf8;
+            --primary-glow: rgba(14, 165, 233, 0.35);
+            --secondary-color: #0b0f19;
+            --card-bg: rgba(19, 29, 49, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --field-bg: #131d31;
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: radial-gradient(circle at 50% 0%, #172554 0%, #0b0f19 75%, #050811 100%);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Classes */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .glass-nav {
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        /* Header / Navbar */
+        .brand-logo {
+            max-height: 38px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .status-pill-online {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-pill-online .dot {
+            width: 7px;
+            height: 7px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
+        }
+
+        /* Nav Pills Modern (Touch-Scrollable for Mobile) */
+        .nav-scroller-wrap {
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding-bottom: 4px;
+        }
+        .nav-scroller-wrap::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-pills-modern {
+            display: inline-flex;
+            gap: 6px;
+            padding: 4px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        .nav-pills-modern .nav-link {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 9px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .nav-pills-modern .nav-link:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-pills-modern .nav-link.active {
+            color: #ffffff;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #0284c7 100%);
+            box-shadow: 0 4px 14px var(--primary-glow);
+        }
+
+        /* Vinyl & Artwork Display */
+        .artwork-container {
+            position: relative;
+            width: 210px;
+            height: 210px;
+            margin: 0 auto 1.25rem auto;
+        }
+
+        @media (max-width: 576px) {
+            .artwork-container {
+                width: 160px;
+                height: 160px;
+                margin-bottom: 1rem;
+            }
+        }
+
+        .artwork-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            height: 90%;
+            background: radial-gradient(circle, var(--primary-glow) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            z-index: 1;
+            opacity: 0.5;
+            transition: opacity 0.4s ease;
+        }
+
+        .vinyl-cover {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #000000;
+            border: 5px solid #1e293b;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        .vinyl-grooves {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: repeating-radial-gradient(circle, transparent 0, transparent 4px, rgba(255,255,255,0.03) 5px, transparent 6px);
+            pointer-events: none;
+        }
+
+        .vinyl-center-badge {
+            width: 44%;
+            height: 44%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 3px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+        }
+
+        .vinyl-center-badge i {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+        }
+
+        .spinning {
+            animation: rotate-vinyl 14s linear infinite;
+        }
+
+        @keyframes rotate-vinyl {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Equalizer Animation */
+        .eq-bars {
+            display: inline-flex;
+            align-items: flex-end;
+            gap: 2.5px;
+            height: 14px;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+        .eq-bar {
+            width: 3px;
+            background: var(--primary-color);
+            border-radius: 1.5px;
+            height: 4px;
+            transition: height 0.15s ease;
+        }
+        .eq-playing .eq-bar:nth-child(1) { animation: eq-anim 0.8s ease-in-out infinite alternate; }
+        .eq-playing .eq-bar:nth-child(2) { animation: eq-anim 0.5s ease-in-out infinite alternate 0.2s; }
+        .eq-playing .eq-bar:nth-child(3) { animation: eq-anim 0.9s ease-in-out infinite alternate 0.4s; }
+        .eq-playing .eq-bar:nth-child(4) { animation: eq-anim 0.6s ease-in-out infinite alternate 0.1s; }
+
+        @keyframes eq-anim {
+            0% { height: 3px; }
+            100% { height: 14px; }
+        }
+
+        /* Typography & Track Info */
+        .track-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+            margin-bottom: 3px;
+            word-break: break-word;
+        }
+        .track-artist {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            max-width: 440px;
+            margin: 1rem auto;
+        }
+        .progress-custom {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-bar-glow {
+            background: linear-gradient(90deg, var(--primary-color) 0%, #38bdf8 100%);
+            box-shadow: 0 0 10px var(--primary-glow);
+            transition: width 0.3s ease;
+        }
+
+        /* Controls */
+        .player-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.25rem;
+            margin: 1.25rem 0 1rem 0;
+        }
+
+        .btn-play-big {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #0284c7 100%);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 8px 24px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .btn-play-big:hover {
+            transform: scale(1.06);
+            box-shadow: 0 10px 28px rgba(14, 165, 233, 0.55);
+        }
+        .btn-play-big:active {
+            transform: scale(0.96);
+        }
+
+        .btn-control-secondary {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+        }
+        .btn-control-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+
+        /* Volume Slider */
+        .volume-box {
+            max-width: 260px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-range::-webkit-slider-thumb {
+            background: var(--primary-color);
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        /* Quick Style Override Panel */
+        .override-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 1rem;
+            max-width: 460px;
+            margin: 1.25rem auto 0 auto;
+            text-align: left;
+        }
+
+        /* Duration Preset Chips */
+        .duration-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .duration-chip {
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .duration-chip:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+        .duration-chip.active {
+            background: var(--primary-color);
+            color: #ffffff;
+            border-color: var(--primary-color);
+        }
+
+        /* Tables & Responsive Cards */
+        .table-dark-modern {
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text-main);
+            margin-bottom: 0;
+        }
+        .table-dark-modern th {
+            background: rgba(0, 0, 0, 0.35);
+            color: var(--text-muted);
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--card-border);
+            padding: 10px 12px;
+            white-space: nowrap;
+        }
+        .table-dark-modern td {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 11px 12px;
+            font-size: 0.86rem;
+            vertical-align: middle;
+        }
+        .table-dark-modern tbody tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Highlights */
+        .current-highlight-row {
+            background: rgba(14, 165, 233, 0.12) !important;
+            border-left: 3px solid var(--primary-color);
+        }
+        .slot-current-highlight {
+            background-color: var(--primary-color) !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        /* Terminal Console */
+        .terminal-box {
+            background: #050811;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            height: 480px;
+            overflow-y: auto;
+            color: #38bdf8;
+        }
+        .log-line-info { color: #38bdf8; }
+        .log-line-warn { color: #f59e0b; }
+        .log-line-err { color: #ef4444; font-weight: bold; }
+
+        /* Offline Top Toast Alert */
+        #offline-alert-bar {
+            display: none;
+            background: #ef4444;
+            color: #ffffff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 6px 12px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 99999;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Action Toast */
+        #player-action-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            padding: 12px 20px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #ffffff;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+            font-weight: 600;
+            font-size: 0.88rem;
+            display: none;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (max-width: 576px) {
+            #player-action-toast {
+                left: 16px;
+                right: 16px;
+                bottom: 16px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- OFFLINE DISCONNECTION ALERT -->
+<div id="offline-alert-bar">
+    <i class="fa-solid fa-wifi-slash me-2"></i> Conexão com a internet interrompida. O áudio foi pausado para economizar dados e preservar o servidor.
+</div>
+
+<!-- TOP HEADER -->
+<header class="glass-nav sticky-top px-3 py-2 px-md-4">
+    <div class="container-fluid d-flex align-items-center justify-content-between">
+        <!-- Logo & Store Info -->
+        <div class="d-flex align-items-center gap-2 gap-md-3">
+            <a href="/" class="d-flex align-items-center text-decoration-none">
+                <img src="{{ .Theme.LogoURL }}" alt="Logo" class="brand-logo">
+            </a>
+            <div class="d-flex flex-column">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-bold text-white fs-6 mb-0">{{ .Store.StoreName }}</span>
+                    {{ if .Store.StoreNumber }}<span class="badge bg-secondary" style="font-size: 0.65rem;">#{{ .Store.StoreNumber }}</span>{{ end }}
+                </div>
+                <small class="text-white-50" style="font-size: 0.72rem;"><i class="fa-solid fa-building me-1"></i>{{ .Tenant.TradeName }}</small>
+            </div>
+        </div>
+
+        <!-- Live Status & User Profile -->
+        <div class="d-flex align-items-center gap-2 gap-md-3">
+            <div id="badge-live-status" class="status-pill-online d-none d-sm-inline-flex">
+                <span class="dot"></span>
+                <span>ONLINE</span>
+            </div>
+            <a href="/logout" onclick="stopAudioStream()" class="btn btn-outline-danger btn-sm px-2 px-md-3" title="Encerrar sessão e sair">
+                <i class="fa-solid fa-right-from-bracket me-md-1"></i><span class="d-none d-md-inline">Sair</span>
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- MAIN CONTAINER -->
+<main class="container-fluid px-3 px-md-4 py-3 flex-grow-1">
+
+    <!-- NAV PILLS (TOUCH SCROLLABLE) -->
+    <div class="nav-scroller-wrap mb-3 text-center">
+        <ul class="nav nav-pills-modern" id="playerTab" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="tab-live-btn" data-bs-toggle="tab" data-bs-target="#tab-live" type="button" role="tab">
+                    <i class="fa-solid fa-radio"></i> Player
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="tab-plate-btn" data-bs-toggle="tab" data-bs-target="#tab-plate" type="button" role="tab">
+                    <i class="fa-solid fa-car-side"></i> Placas
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="tab-warning-btn" data-bs-toggle="tab" data-bs-target="#tab-warning" type="button" role="tab">
+                    <i class="fa-solid fa-bullhorn"></i> Avisos
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="tab-history-btn" data-bs-toggle="tab" data-bs-target="#tab-history" type="button" role="tab">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Histórico
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="tab-commercials-btn" data-bs-toggle="tab" data-bs-target="#tab-commercials" type="button" role="tab">
+                    <i class="fa-solid fa-rectangle-ad"></i> Comerciais
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="tab-blocks-btn" data-bs-toggle="tab" data-bs-target="#tab-blocks" type="button" role="tab">
+                    <i class="fa-solid fa-calendar-week"></i> Grade
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="tab-events-btn" data-bs-toggle="tab" data-bs-target="#tab-events" type="button" role="tab">
+                    <i class="fa-solid fa-calendar-day"></i> Eventos
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="tab-rotation-btn" data-bs-toggle="tab" data-bs-target="#tab-rotation" type="button" role="tab">
+                    <i class="fa-solid fa-compact-disc"></i> Acervo
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="tab-logs-btn" data-bs-toggle="tab" data-bs-target="#tab-logs" type="button" role="tab">
+                    <i class="fa-solid fa-terminal"></i> Logs
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <!-- TAB CONTENTS -->
+    <div class="tab-content glass-card p-3 p-md-4" id="playerTabContent">
+
+        <!-- ========================================================================= -->
+        <!-- ABA 1: PLAYER PRINCIPAL & SOBREPOSIÇÃO -->
+        <!-- ========================================================================= -->
+        <div class="tab-pane fade show active text-center" id="tab-live" role="tabpanel">
+            <div class="mx-auto" style="max-width: 560px;">
+
+                {{if .IsSuspended}}
+                <div class="alert alert-danger border-danger shadow-lg py-3 px-4 mb-4 text-center rounded-3">
+                    <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                        <i class="fa-solid fa-triangle-exclamation fs-4 text-danger"></i>
+                        <h5 class="fw-bold m-0 text-white">Rádio Temporariamente Suspensa</h5>
+                    </div>
+                    <p class="small text-white-50 mb-0">{{if .SuspendedReason}}{{.SuspendedReason}}{{else}}O serviço de sonorização desta unidade encontra-se inativo. Para reativação imediata, favor contatar o suporte financeiro/comercial.{{end}}</p>
+                </div>
+                {{end}}
+
+                <!-- Arte do Vinil Animado -->
+                <div class="artwork-container">
+                    <div class="artwork-glow" id="artwork-glow"></div>
+                    <div class="vinyl-cover" id="vinyl-disc">
+                        <div class="vinyl-grooves"></div>
+                        <div class="vinyl-center-badge">
+                            <i class="fa-solid fa-music" id="vinyl-center-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tipo de Mídia / Estilo Badge -->
+                <div class="mb-2">
+                    <span id="badge-track-type" class="badge bg-primary bg-opacity-25 text-info border border-primary border-opacity-50 px-3 py-1" style="font-size: 0.78rem;">
+                        <span class="eq-bars" id="eq-container">
+                            <span class="eq-bar"></span>
+                            <span class="eq-bar"></span>
+                            <span class="eq-bar"></span>
+                            <span class="eq-bar"></span>
+                        </span>
+                        <span id="label-track-type">{{ if .InitialType }}{{ .InitialType }}{{ else }}Programação Geral{{ end }}</span>
+                    </span>
+                </div>
+
+                <!-- Título e Artista -->
+                <h3 class="track-title" id="track-title">{{ if .InitialTitle }}{{ .InitialTitle }}{{ else }}Conectando à rádio...{{ end }}</h3>
+                <div class="track-artist" id="track-artist">{{ if .InitialArtist }}{{ .InitialArtist }}{{ else }}IMC Rádio Playout{{ end }}</div>
+
+                <!-- Streaming Box (Se for streaming ativo) -->
+                <div id="streaming-box" class="p-2 rounded mb-3 mx-auto text-center" style="max-width: 380px; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); {{ if or (not .IsStreaming) .IsStandby }}display: none;{{ end }}">
+                    <span class="badge bg-info text-dark fw-bold mb-1"><i class="fa-solid fa-tower-broadcast me-1"></i> STREAMING AO VIVO</span>
+                    <div class="fw-bold text-white small" id="streaming-name-display">{{ if .StreamName }}{{ .StreamName }}{{ else }}Transmissão Web{{ end }}</div>
+                </div>
+
+                <!-- Barra de Progresso & Tempos -->
+                <div class="progress-container" id="progress-box">
+                    <div class="progress progress-custom">
+                        <div class="progress-bar {{ if .IsStreaming }}progress-bar-striped progress-bar-animated bg-info{{ else }}progress-bar-glow{{ end }}" id="track-progress-bar" role="progressbar" style="width: {{ .InitialProgress }}%;"></div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-2 px-1 font-monospace" style="font-size: 0.78rem;">
+                        <span class="text-white-50" id="time-elapsed">{{ if .IsStreaming }}<span class="badge bg-danger text-white"><i class="fa-solid fa-tower-broadcast me-1"></i>AO VIVO</span>{{ else }}{{ .InitialElapsed }}{{ end }}</span>
+                        <span class="badge bg-dark border border-secondary text-info" id="time-remaining-badge">
+                            <i class="fa-regular fa-clock me-1 text-warning"></i><span id="time-remaining">{{ if .IsStreaming }}<i class="fa-solid fa-infinity me-1 text-info"></i>Contínuo{{ else }}{{ .InitialRemaining }}{{ end }}</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Controles: Pular, Play/Pause -->
+                <div class="player-controls">
+                    <button type="button" class="btn-control-secondary" id="btn-skip-track" onclick="skipCurrentTrack()" title="Pular faixa atual" {{ if .IsStreaming }}style="display: none;"{{ end }}>
+                        <i class="fa-solid fa-forward-step"></i>
+                    </button>
+                    <button type="button" class="btn-play-big" id="btn-play-toggle" onclick="toggleStreamPlay()" title="Tocar / Pausar">
+                        <i class="fa-solid fa-play" id="icon-play"></i>
+                    </button>
+                    <button type="button" class="btn-control-secondary" onclick="toggleMute()" id="btn-mute" title="Mutar / Desmutar">
+                        <i class="fa-solid fa-volume-high" id="icon-volume"></i>
+                    </button>
+                </div>
+
+                <!-- Volume Slider -->
+                <div class="volume-box mb-4">
+                    <i class="fa-solid fa-volume-low text-white-50" style="font-size: 0.8rem;"></i>
+                    <input type="range" class="form-range" id="volume-slider" min="0" max="100" value="80" oninput="changeVolume(this.value)">
+                    <i class="fa-solid fa-volume-high text-white-50" style="font-size: 0.8rem;"></i>
+                </div>
+
+                <!-- CARD DE TROCA RÁPIDA DE ESTILO (SOBREPOSIÇÃO MANUAL) -->
+                <div class="override-card">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small fw-bold text-white"><i class="fa-solid fa-sliders text-warning me-1"></i> Troca Rápida de Estilo</span>
+                        <span id="override-status-pill" class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50" style="font-size: 0.7rem;">
+                            <i class="fa-solid fa-calendar-check me-1"></i> Grade Semanal Ativa
+                        </span>
+                    </div>
+
+                    <!-- Banner Ativo -->
+                    <div id="override-active-banner" class="alert alert-warning py-2 px-3 mb-2 small d-none justify-content-between align-items-center border-warning shadow-sm">
+                        <div>
+                            <div class="fw-bold text-dark"><i class="fa-solid fa-hourglass-half text-danger me-1"></i> <span id="override-style-name">—</span></div>
+                            <div class="text-dark-emphasis" style="font-size: 0.72rem;">Sobreposição manual ativa • Restam <strong id="override-time-left" class="text-danger">--</strong> min</div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-danger py-1 px-2 fw-bold text-nowrap ms-2" onclick="cancelManualOverride()" title="Voltar à grade">
+                            <i class="fa-solid fa-rotate-left me-1"></i> Voltar à Grade
+                        </button>
+                    </div>
+
+                    <!-- Form de Troca -->
+                    <div class="mb-2">
+                        <label class="text-white-50 small mb-1" style="font-size: 0.72rem;">Selecione o Estilo / Rádio:</label>
+                        <select id="select-override-style" class="form-select form-select-sm bg-dark text-white border-secondary">
+                            <option value="">-- Carregando estilos disponíveis... --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-white-50 small mb-1 d-block" style="font-size: 0.72rem;">Duração da Sobreposição:</label>
+                        <div class="duration-chips">
+                            <div class="duration-chip" onclick="setOverrideDuration(30, this)">30 min</div>
+                            <div class="duration-chip" onclick="setOverrideDuration(60, this)">1 hora</div>
+                            <div class="duration-chip active" onclick="setOverrideDuration(120, this)">2 horas</div>
+                            <div class="duration-chip" onclick="setOverrideDuration(180, this)">3 horas</div>
+                            <div class="duration-chip" onclick="setOverrideDuration(240, this)">4 horas</div>
+                            <div class="duration-chip" onclick="setOverrideDuration(360, this)">6 horas</div>
+                        </div>
+                        <input type="hidden" id="select-override-duration" value="120">
+                    </div>
+
+                    <button type="button" class="btn btn-sm btn-primary w-100 fw-semibold" id="btn-apply-override" onclick="applyManualOverride()">
+                        <i class="fa-solid fa-circle-play me-1"></i> Aplicar Sobreposição Temporária
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- ABA 2: AVISO DE PLACA DE VEÍCULO -->
+        <!-- ========================================================================= -->
+        <div class="tab-pane fade" id="tab-plate" role="tabpanel">
+            <div class="mx-auto" style="max-width: 500px;">
+                <div class="text-center mb-4">
+                    <h5 class="fw-bold text-white mb-1">🚨 Chamada de Veículo no Estacionamento</h5>
+                    <p class="small text-white-50">Gera a locução instantânea de placa sintetizada por IA e injeta na transmissão.</p>
+                </div>
+
+                <div class="mb-3 text-center">
+                    <label class="small text-white-50 mb-2 d-block">Digite a Placa do Veículo (Padrão ou Mercosul)</label>
+                    <input type="text" id="input-plate" class="form-control form-control-lg bg-dark text-white text-center font-monospace fw-bold border-secondary text-uppercase" placeholder="ABC-1234" maxlength="8" style="font-size: 1.6rem; letter-spacing: 3px;" autofocus>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label class="small text-white-50 mb-1">Locutor / Pacote de Voz</label>
+                        <select id="select-voice-pack" class="form-select form-select-sm bg-dark text-white border-secondary">
+                            <option value="default">Padrão do Sistema</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="small text-white-50 mb-1">Sinal Sonoro (Chime)</label>
+                        <select id="select-plate-chime" class="form-select form-select-sm bg-dark text-white border-secondary">
+                            <option value="">Sem Gongo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="button" class="btn btn-primary btn-lg fw-bold" id="btn-trigger-plate" onclick="triggerVehicleWarning()">
+                        <i class="fa-solid fa-bullhorn me-2"></i> Disparar Chamada no Ar
+                    </button>
+                </div>
+
+                <div id="plate-feedback" class="mt-3 text-center small" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- ABA 3: AVISOS IMEDIATOS (PRÉ-FORMATADOS) -->
+        <!-- ========================================================================= -->
+        <div class="tab-pane fade" id="tab-warning" role="tabpanel">
+            <div class="mx-auto" style="max-width: 500px;">
+                <div class="text-center mb-4">
+                    <h5 class="fw-bold text-white mb-1">📣 Avisos & Comunicados Imediatos</h5>
+                    <p class="small text-white-50">Selecione uma mensagem pré-gravada para tocar imediatamente com ducking suave.</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small text-white-50 mb-1">Mensagem Pré-Gravada / Alerta</label>
+                    <select id="select-pre-warning" class="form-select form-select-sm bg-dark text-white border-secondary">
+                        <option value="">Carregando mensagens disponíveis...</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small text-white-50 mb-1">Sinal Sonoro (Gongo / Chime)</label>
+                    <select id="select-warning-chime" class="form-select form-select-sm bg-dark text-white border-secondary">
+                        <option value="">Sem Gongo</option>
+                    </select>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="button" class="btn btn-warning btn-lg fw-bold text-dark" id="btn-trigger-warning" onclick="triggerPreFormattedWarning()">
+                        <i class="fa-solid fa-tower-broadcast me-2"></i> Injetar Comunicado no Ar
+                    </button>
+                </div>
+
+                <div id="warning-feedback" class="mt-3 text-center small" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- ABA 4: HISTÓRICO RECENTE (PLAY HISTORY) -->
+        <!-- ========================================================================= -->
+        <div class="tab-pane fade" id="tab-history" role="tabpanel">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <h6 class="fw-bold text-white m-0"><i class="fa-solid fa-clock-rotate-left text-info me-2"></i> Últimas Execuções na Rádio</h6>
+                    <span class="badge bg-secondary" id="history-count-badge">0 itens</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-sm btn-outline-primary" id="btn-sync-history" onclick="forceSyncStore(this)" title="Sincronizar com o servidor central">
+                        <i class="fa-solid fa-rotate me-1"></i> Sincronizar
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="loadDiagnosticsData()">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive" style="max-height: 540px; overflow-y: auto;">
+                <table class="table table-dark-modern align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 85px;">Hora</th>
+                            <th style="width: 110px;">Tipo</th>
+                            <th>Faixa / Título</th>
+                            <th>Artista</th>
+                            <th style="width: 150px;">Estilo / Playlist</th>
+                            <th style="width: 80px;" class="text-center">Duração</th>
+                            <th style="width: 90px;" class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                        <tr>
+                            <td colspan="7" class="text-center text-white-50 py-4">Carregando histórico de execuções...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- ABA 5: COMERCIAIS DO DIA -->
+        <!-- ========================================================================= -->
+        <div class="tab-pane fade" id="tab-commercials" role="tabpanel">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <h6 class="fw-bold text-white m-0"><i class="fa-solid fa-rectangle-ad text-warning me-2"></i> Grade de Comerciais</h6>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-info date-btn-today active" onclick="setDiagnosticsDate('today')">Hoje</button>
+                        <button type="button" class="btn btn-outline-info date-btn-tomorrow" onclick="setDiagnosticsDate('tomorrow')">Amanhã</button>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-sm btn-outline-info fw-bold" onclick="scrollToCurrentTimeCommercials()" title="Posicionar na linha do horário atual">
+                        <i class="fa-solid fa-location-dot me-1 text-warning"></i> Momento Atual
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" id="btn-redistribute-comm" onclick="redistributeCommercials(this)">
+                        <i class="fa-solid fa-shuffle me-1"></i> Redistribuir
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" id="btn-sync-comm" onclick="forceSyncStore(this)">
+                        <i class="fa-solid fa-rotate me-1"></i> Sincronizar
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="loadDiagnosticsData()">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive" style="max-height: 540px; overflow-y: auto;">
+                <table class="table table-dark-modern align-middle">
+                    <thead>
+                        <tr>
+                            <th>Comercial / Aviso</th>
+                            <th style="width: 120px;">Tipo</th>
+                            <th style="width: 70px;" class="text-center">Meta</th>
+                            <th style="width: 70px;" class="text-center">Tocadas</th>
+                            <th style="width: 70px;" class="text-center">Restam</th>
+                            <th>Horários Programados</th>
+                        </tr>
+                    </thead>
+                    <tbody id="commercials-table-body">
+                        <tr>
+                            <td colspan="6" class="text-center text-white-50 py-4">Carregando grade de veiculações...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- ABA 6: ESTRUTURA DE BLOCOS -->
+        <!-- ========================================================================= -->
+        <div class="tab-pane fade" id="tab-blocks" role="tabpanel">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <h6 class="fw-bold text-white m-0"><i class="fa-solid fa-calendar-week text-primary me-2"></i> Estrutura de Blocos</h6>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-info date-btn-today active" onclick="setDiagnosticsDate('today')">Hoje</button>
+                        <button type="button" class="btn btn-outline-info date-btn-tomorrow" onclick="setDiagnosticsDate('tomorrow')">Amanhã</button>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-sm btn-outline-info fw-bold" onclick="scrollToCurrentTimeBlocks()">
+                        <i class="fa-solid fa-location-dot me-1 text-warning"></i> Momento Atual
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" id="btn-sync-blocks" onclick="forceSyncStore(this)">
+                        <i class="fa-solid fa-rotate me-1"></i> Sincronizar
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="loadDiagnosticsData()">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive" style="max-height: 540px; overflow-y: auto;">
+                <table class="table table-dark-modern align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;" class="text-center"># Bloco</th>
+                            <th style="width: 110px;">Horário</th>
+                            <th style="width: 100px;">Tipo</th>
+                            <th>Composição do Bloco</th>
+                            <th style="width: 60px;" class="text-center">Qtd</th>
+                            <th style="width: 80px;" class="text-center">Duração</th>
+                            <th style="width: 80px;" class="text-center">Limite</th>
+                            <th style="width: 85px;" class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="blocks-table-body">
+                        <tr>
+                            <td colspan="8" class="text-center text-white-50 py-4">Carregando estrutura de blocos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- ABA 7: EVENTOS DO DIA (HORÁRIO MARCADO) -->
+        <!-- ========================================================================= -->
+        <div class="tab-pane fade" id="tab-events" role="tabpanel">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <h6 class="fw-bold text-white m-0"><i class="fa-solid fa-calendar-day text-warning me-2"></i> Eventos com Horário Marcado</h6>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-info date-btn-today active" onclick="setDiagnosticsDate('today')">Hoje</button>
+                        <button type="button" class="btn btn-outline-info date-btn-tomorrow" onclick="setDiagnosticsDate('tomorrow')">Amanhã</button>
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-outline-secondary" onclick="loadDiagnosticsData()">
+                    <i class="fa-solid fa-rotate me-1"></i> Atualizar
+                </button>
+            </div>
+
+            <div class="table-responsive" style="max-height: 540px; overflow-y: auto;">
+                <table class="table table-dark-modern align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">Horário</th>
+                            <th>Nome do Evento</th>
+                            <th style="width: 240px;">Forma de Execução</th>
+                            <th style="width: 120px;" class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="events-table-body">
+                        <tr>
+                            <td colspan="4" class="text-center text-white-50 py-4">Carregando eventos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- ABA 8: ROTAÇÃO DE MÚSICAS (ACERVO) -->
+        <!-- ========================================================================= -->
+        <div class="tab-pane fade" id="tab-rotation" role="tabpanel">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <h6 class="fw-bold text-white m-0"><i class="fa-solid fa-compact-disc text-info me-2"></i> Acervo & Rotação Musical</h6>
+                    <span class="badge bg-secondary" id="rotation-count-badge">0 faixas</span>
+                </div>
+                <input type="text" id="rotation-search-input" class="form-control form-control-sm bg-dark text-white border-secondary" style="max-width: 220px;" placeholder="🔍 Filtrar música ou artista..." onkeyup="filterMusicRotation()">
+            </div>
+
+            <div id="streaming-rotation-alert" class="alert alert-info bg-dark border-info text-info small d-flex align-items-center gap-2 py-2 mb-3" style="display: none;">
+                <i class="fa-solid fa-circle-info fs-5"></i>
+                <div>
+                    <strong>Transmissão Streaming Ao Vivo Ativa:</strong> A rotação e contagem de execuções de faixas aplicam-se quando a rádio opera com acervo musical local (MP3).
+                </div>
+            </div>
+
+            <div class="table-responsive" style="max-height: 540px; overflow-y: auto;">
+                <table class="table table-dark-modern align-middle">
+                    <thead>
+                        <tr>
+                            <th>Faixa / Título</th>
+                            <th>Artista</th>
+                            <th style="width: 140px;">Estilo / Playlist</th>
+                            <th style="width: 80px;" class="text-center">Duração</th>
+                            <th style="width: 80px;" class="text-center">Execuções</th>
+                            <th style="width: 120px;" class="text-center">Última Vez</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rotation-table-body">
+                        <tr>
+                            <td colspan="6" class="text-center text-white-50 py-4">Carregando catálogo de músicas...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- ABA 9: LOGS DO SISTEMA -->
+        <!-- ========================================================================= -->
+        <div class="tab-pane fade" id="tab-logs" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-white mb-0"><i class="fa-solid fa-terminal text-info me-2"></i> Logs Operacionais</h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-info" onclick="loadSystemLogs()">
+                        <i class="fa-solid fa-rotate me-1"></i> Atualizar
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="clearLogsView()">
+                        <i class="fa-solid fa-trash me-1"></i> Limpar
+                    </button>
+                </div>
+            </div>
+
+            <div class="terminal-box" id="system-logs-console">
+                <div class="text-white-50 text-center py-4">Carregando logs do sistema...</div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<!-- ELEMENTO DE ÁUDIO HTML5 (CONTROLADO EXCLUSIVAMENTE POR JS) -->
+<audio id="live-audio-player" preload="none"></audio>
+
+<!-- TOAST FLUTUANTE -->
+<div id="player-action-toast"></div>
+
+<!-- Bootstrap 5 Bundle JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const storeId = "{{ .Store.ID }}";
+    const streamUrl = "{{ .StreamURL }}";
+
+    let audioPlayer = document.getElementById('live-audio-player');
+    let isPlaying = false;
+    let isConnecting = false;
+    let userIntentPlay = false;
+    let reconnectTimer = null;
+    let lastVolume = 0.8;
+    let selectedDiagDate = 'today';
+    let rawRotationData = [];
+    let lastCheckedTime = 0;
+    let stalledCount = 0;
+    let lastReconnectTime = 0;
+    window.cachedMusicSlots = [];
+
+    const playBtn = document.getElementById('btn-play-toggle');
+    const playIcon = document.getElementById('icon-play');
+    const vinylDisc = document.getElementById('vinyl-disc');
+    const artworkGlow = document.getElementById('artwork-glow');
+    const eqContainer = document.getElementById('eq-container');
+    const volumeSlider = document.getElementById('volume-slider');
+    const iconVolume = document.getElementById('icon-volume');
+
+    // =========================================================================
+    // ENCERRAMENTO E LIMPEZA RIGOROSA DE SOCKETS (Zero conexões fantasmas)
+    // =========================================================================
+    function stopAudioStream() {
+        if (audioPlayer) {
+            audioPlayer.pause();
+            audioPlayer.removeAttribute('src');
+            audioPlayer.load();
+        }
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+        }
+    }
+
+    // Eventos de saída / encerramento do navegador
+    window.addEventListener('beforeunload', stopAudioStream);
+    window.addEventListener('pagehide', stopAudioStream);
+
+    // Eventos de Conexão de Rede (Online / Offline)
+    window.addEventListener('offline', function() {
+        console.warn("[Network] Perda de conexão com a internet detectada!");
+        document.getElementById('offline-alert-bar').style.display = 'block';
+        stopAudioStream();
+        setPlayerPausedUI();
+    });
+
+    window.addEventListener('online', function() {
+        console.log("[Network] Conexão com a internet restaurada!");
+        document.getElementById('offline-alert-bar').style.display = 'none';
+        showToast('🟢 Conexão com a internet restaurada.');
+        if (userIntentPlay) {
+            setTimeout(reconnectLiveStream, 1500);
+        }
+    });
+
+    // Monitor de visibilidade da aba
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            if (reconnectTimer && !isPlaying) {
+                clearTimeout(reconnectTimer);
+            }
+        } else if (userIntentPlay && audioPlayer) {
+            if (audioPlayer.paused || audioPlayer.readyState < 2) {
+                console.log("[Audio] Retorno à aba ativa: restaurando stream...");
+                reconnectLiveStream();
+            }
+        }
+    });
+
+    // =========================================================================
+    // UI FEEDBACK & ESTADOS DO PLAYER
+    // =========================================================================
+    function setPlayerConnectingUI() {
+        isConnecting = true;
+        if (playBtn) {
+            playBtn.disabled = true;
+            playBtn.style.opacity = '0.75';
+            playBtn.style.cursor = 'wait';
+        }
+        if (playIcon) {
+            playIcon.className = 'fa-solid fa-spinner fa-spin';
+            playIcon.style.marginLeft = '';
+        }
+    }
+
+    function setPlayerPlayingUI() {
+        isConnecting = false;
+        isPlaying = true;
+        if (playBtn) {
+            playBtn.disabled = false;
+            playBtn.style.opacity = '1';
+            playBtn.style.cursor = 'pointer';
+            playBtn.title = 'Pausar Rádio';
+        }
+        if (playIcon) {
+            playIcon.className = 'fa-solid fa-pause';
+            playIcon.style.marginLeft = '';
+        }
+        if (vinylDisc) vinylDisc.classList.add('spinning');
+        if (artworkGlow) artworkGlow.style.opacity = '1';
+        if (eqContainer) eqContainer.classList.add('eq-playing');
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'playing';
+        }
+    }
+
+    function setPlayerPausedUI() {
+        isConnecting = false;
+        isPlaying = false;
+        if (playBtn) {
+            playBtn.disabled = false;
+            playBtn.style.opacity = '1';
+            playBtn.style.cursor = 'pointer';
+            playBtn.title = 'Tocar Rádio';
+        }
+        if (playIcon) {
+            playIcon.className = 'fa-solid fa-play';
+            playIcon.style.marginLeft = '3px';
+        }
+        if (vinylDisc) vinylDisc.classList.remove('spinning');
+        if (artworkGlow) artworkGlow.style.opacity = '0.4';
+        if (eqContainer) eqContainer.classList.remove('eq-playing');
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'paused';
+        }
+    }
+
+    // =========================================================================
+    // EVENTOS NATIVOS DO HTML5 AUDIO
+    // =========================================================================
+    if (audioPlayer) {
+        audioPlayer.addEventListener('playing', function() {
+            setPlayerPlayingUI();
+        });
+
+        audioPlayer.addEventListener('canplay', function() {
+            if (userIntentPlay && !audioPlayer.paused) {
+                setPlayerPlayingUI();
+            }
+        });
+
+        audioPlayer.addEventListener('timeupdate', function() {
+            if (userIntentPlay && !audioPlayer.paused && audioPlayer.currentTime > 0) {
+                if (!isPlaying || isConnecting) {
+                    setPlayerPlayingUI();
+                }
+            }
+        });
+
+        audioPlayer.addEventListener('waiting', function() {
+            if (userIntentPlay) {
+                setPlayerConnectingUI();
+            }
+        });
+
+        audioPlayer.addEventListener('error', function(e) {
+            console.warn("[Audio] Erro no stream de áudio:", e);
+            if (userIntentPlay && navigator.onLine) {
+                setTimeout(reconnectLiveStream, 2500);
+            } else {
+                setPlayerPausedUI();
+            }
+        });
+    }
+
+    // =========================================================================
+    // CONTROLES DE REPRODUÇÃO (Play / Pause / Reconexão Suave)
+    // =========================================================================
+    function toggleStreamPlay(forcePlay) {
+        if (!audioPlayer) return;
+        if (isConnecting && forcePlay !== true) return;
+
+        if (!userIntentPlay || forcePlay === true) {
+            userIntentPlay = true;
+            setPlayerConnectingUI();
+            stopAudioStream();
+            const liveUrl = streamUrl + (streamUrl.includes('?') ? '&' : '?') + 'r=' + Date.now();
+            audioPlayer.src = liveUrl;
+            audioPlayer.load();
+            const p = audioPlayer.play();
+            if (p !== undefined) {
+                p.then(() => {
+                    setPlayerPlayingUI();
+                }).catch(err => {
+                    console.log("[Audio] Autoplay bloqueado ou falha ao iniciar:", err);
+                    if (err.name === 'NotAllowedError') {
+                        userIntentPlay = false;
+                        stopAudioStream();
+                        setPlayerPausedUI();
+                    } else if (userIntentPlay && navigator.onLine) {
+                        setTimeout(reconnectLiveStream, 2000);
+                    }
+                });
+            }
+        } else {
+            userIntentPlay = false;
+            isPlaying = false;
+            isConnecting = false;
+            stopAudioStream();
+            setPlayerPausedUI();
+        }
+    }
+
+    function reconnectLiveStream() {
+        if (!userIntentPlay || !audioPlayer || !navigator.onLine) return;
+        const now = Date.now();
+        if (now - lastReconnectTime < 3000) return;
+        lastReconnectTime = now;
+
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+
+        reconnectTimer = setTimeout(function() {
+            if (!userIntentPlay || !navigator.onLine) return;
+            console.log("[Audio] Reconectando ao stream ao vivo...");
+            setPlayerConnectingUI();
+            stopAudioStream();
+            const liveUrl = streamUrl + (streamUrl.includes('?') ? '&' : '?') + 'r=' + Date.now();
+            audioPlayer.src = liveUrl;
+            audioPlayer.load();
+            const p = audioPlayer.play();
+            if (p !== undefined) {
+                p.then(function() {
+                    setPlayerPlayingUI();
+                }).catch(function(err) {
+                    console.warn("[Audio] Falha ao reconectar:", err);
+                    if (err.name === 'NotAllowedError') {
+                        userIntentPlay = false;
+                        stopAudioStream();
+                        setPlayerPausedUI();
+                    } else if (userIntentPlay && navigator.onLine) {
+                        setTimeout(reconnectLiveStream, 3500);
+                    }
+                });
+            }
+        }, 300);
+    }
+
+    // 24/7 Watchdog Anti-Congelamento
+    setInterval(function() {
+        if (userIntentPlay && audioPlayer && navigator.onLine) {
+            if (audioPlayer.paused && !isConnecting) {
+                reconnectLiveStream();
+                return;
+            }
+
+            if (isPlaying && !isConnecting) {
+                if (audioPlayer.currentTime === lastCheckedTime && audioPlayer.currentTime > 0) {
+                    stalledCount++;
+                    if (stalledCount >= 3) {
+                        stalledCount = 0;
+                        console.warn("[Watchdog] Congelamento detectado. Restaurando stream...");
+                        reconnectLiveStream();
+                    }
+                } else {
+                    stalledCount = 0;
+                    lastCheckedTime = audioPlayer.currentTime;
+                }
+            }
+        }
+    }, 3000);
+
+    // =========================================================================
+    // CONTROLES DE VOLUME
+    // =========================================================================
+    function changeVolume(val) {
+        const vol = parseFloat(val) / 100;
+        audioPlayer.volume = vol;
+        if (vol > 0) lastVolume = vol;
+
+        if (vol === 0) {
+            iconVolume.className = 'fa-solid fa-volume-xmark text-danger';
+        } else if (vol < 0.5) {
+            iconVolume.className = 'fa-solid fa-volume-low text-white-50';
+        } else {
+            iconVolume.className = 'fa-solid fa-volume-high text-white-50';
+        }
+    }
+
+    function toggleMute() {
+        if (audioPlayer.volume > 0) {
+            audioPlayer.volume = 0;
+            volumeSlider.value = 0;
+            iconVolume.className = 'fa-solid fa-volume-xmark text-danger';
+        } else {
+            audioPlayer.volume = lastVolume;
+            volumeSlider.value = lastVolume * 100;
+            iconVolume.className = 'fa-solid fa-volume-high text-white-50';
+        }
+    }
+
+    // Pular Faixa Atual
+    function skipCurrentTrack() {
+        if (!confirm('Deseja pular a faixa atual na transmissão da rádio?')) return;
+        fetch('/api/player/' + storeId + '/skip', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                showToast('⏭️ Faixa pulada com sucesso!');
+                setTimeout(fetchNowPlaying, 800);
+            })
+            .catch(() => {
+                showToast('❌ Erro ao pular faixa');
+            });
+    }
+
+    // =========================================================================
+    // NOW PLAYING POLLING & SOBREPOSIÇÃO DE ESTILOS
+    // =========================================================================
+    function fetchNowPlaying() {
+        fetch('/api/player/' + storeId + '/now-playing')
+            .then(async res => {
+                if (!res.ok) return null;
+                return res.json().catch(() => null);
+            })
+            .then(data => {
+                if (!data) return;
+
+                try {
+                    renderManualOverrideUI(data);
+
+                    // Online/Offline status
+                    const liveBadge = document.getElementById('badge-live-status');
+                    if (liveBadge) {
+                        if (data.online) {
+                            liveBadge.className = 'status-pill-online d-none d-sm-inline-flex';
+                            liveBadge.innerHTML = '<span class="dot"></span><span>ONLINE</span>';
+                        } else {
+                            liveBadge.className = 'badge bg-danger d-none d-sm-inline-flex';
+                            liveBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i>OFFLINE';
+                        }
+                    }
+
+                    // Streaming Box
+                    const strBox = document.getElementById('streaming-box');
+                    const strName = document.getElementById('streaming-name-display');
+                    const skipBtn = document.getElementById('btn-skip-track');
+
+                    if (data.is_standby) {
+                        if (strBox) strBox.style.display = 'none';
+                        if (skipBtn) skipBtn.style.display = 'none';
+                    } else if (data.is_streaming) {
+                        if (strBox) strBox.style.display = 'block';
+                        if (strName) strName.innerText = data.stream_name || 'Transmissão Web';
+                        if (skipBtn) skipBtn.style.display = 'none';
+                    } else {
+                        if (strBox) strBox.style.display = 'none';
+                        if (skipBtn) skipBtn.style.display = 'inline-flex';
+                    }
+
+                    // Track Info
+                    const titleEl = document.getElementById('track-title');
+                    const artistEl = document.getElementById('track-artist');
+                    const typeEl = document.getElementById('label-track-type');
+
+                    if (data.is_standby) {
+                        if (titleEl) titleEl.innerText = '🌙 Standby (Fora do Horário)';
+                        if (artistEl) artistEl.innerText = data.next_open_time ? ('Retorna às ' + data.next_open_time) : 'Aguardando horário de abertura';
+                        if (typeEl) typeEl.innerText = 'STANDBY';
+                    } else {
+                        if (titleEl) titleEl.innerText = data.title || 'Programação Normal';
+                        if (artistEl) artistEl.innerText = data.artist || 'IMC Rádio';
+                        if (typeEl) typeEl.innerText = data.media_type || data.type || 'Programação Geral';
+                    }
+
+                    // Progress Bar & Tempos
+                    const pBar = document.getElementById('track-progress-bar');
+                    const tElapsed = document.getElementById('time-elapsed');
+                    const tRemaining = document.getElementById('time-remaining');
+
+                    if (data.is_standby) {
+                        if (pBar) {
+                            pBar.className = 'progress-bar progress-bar-glow';
+                            pBar.style.width = '0%';
+                        }
+                        if (tElapsed) tElapsed.innerText = '--:--';
+                        if (tRemaining) tRemaining.innerText = '--:--';
+                    } else if (data.is_streaming) {
+                        if (pBar) {
+                            pBar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-info';
+                            pBar.style.width = '100%';
+                        }
+                        if (tElapsed) tElapsed.innerHTML = '<span class="badge bg-danger text-white"><i class="fa-solid fa-tower-broadcast me-1"></i>AO VIVO</span>';
+                        if (tRemaining) tRemaining.innerHTML = '<i class="fa-solid fa-infinity me-1 text-info"></i>Contínuo';
+                    } else {
+                        if (pBar) {
+                            pBar.className = 'progress-bar progress-bar-glow';
+                            const prog = data.progress_percent !== undefined ? data.progress_percent : data.progress;
+                            if (prog !== undefined) pBar.style.width = prog + '%';
+                        }
+                        const elap = data.formatted_elapsed || data.elapsed;
+                        if (tElapsed && elap) tElapsed.innerText = elap;
+                        const rem = data.formatted_remaining || data.remaining;
+                        if (tRemaining && rem) tRemaining.innerText = rem;
+                    }
+                } catch (e) {
+                    console.warn('Erro ao renderizar dados do Now Playing:', e);
+                }
+            })
+            .catch(err => {
+                console.warn('Falha no polling de Now Playing:', err);
+            });
+    }
+
+    function setOverrideDuration(min, chipEl) {
+        document.getElementById('select-override-duration').value = min;
+        document.querySelectorAll('.duration-chip').forEach(c => c.classList.remove('active'));
+        if (chipEl) chipEl.classList.add('active');
+    }
+
+    function renderManualOverrideUI(data) {
+        if (!data) return;
+
+        // 1. Atualizar lista de estilos permitidos
+        const selectStyle = document.getElementById('select-override-style');
+        if (selectStyle && Array.isArray(data.allowed_manual_styles) && data.allowed_manual_styles.length > 0) {
+            const currentVal = selectStyle.value;
+            selectStyle.innerHTML = '<option value="">-- Escolha o Estilo / Rádio --</option>';
+            data.allowed_manual_styles.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                const icon = s.type === 'streaming' ? '📡 ' : '🎵 ';
+                opt.textContent = icon + s.name;
+                selectStyle.appendChild(opt);
+            });
+            if (currentVal) selectStyle.value = currentVal;
+        }
+
+        // 2. Atualizar status visual do card e do banner
+        const banner = document.getElementById('override-active-banner');
+        const statusPill = document.getElementById('override-status-pill');
+        const nameSpan = document.getElementById('override-style-name');
+        const timeSpan = document.getElementById('override-time-left');
+
+        const ov = data.manual_override;
+        if (ov !== undefined && ov !== null && (ov.is_active || ov.active)) {
+            if (banner) {
+                banner.classList.remove('d-none');
+                banner.classList.add('d-flex');
+            }
+            if (statusPill) {
+                statusPill.className = 'badge bg-warning text-dark border border-warning fw-bold';
+                statusPill.innerHTML = '<i class="fa-solid fa-clock-rotate-left me-1"></i> Sobreposição Ativa';
+            }
+            if (nameSpan) nameSpan.textContent = ov.target_name || ov.style_name || 'Estilo Selecionado';
+            if (timeSpan) timeSpan.textContent = (ov.minutes_left !== undefined ? ov.minutes_left : '0');
+        } else {
+            if (banner) {
+                banner.classList.remove('d-flex');
+                banner.classList.add('d-none');
+            }
+            if (statusPill) {
+                statusPill.className = 'badge bg-success bg-opacity-25 text-success border border-success border-opacity-50';
+                statusPill.innerHTML = '<i class="fa-solid fa-calendar-check me-1"></i> Grade Semanal Ativa';
+            }
+        }
+    }
+
+    function applyManualOverride() {
+        const selectStyle = document.getElementById('select-override-style');
+        const targetId = selectStyle ? selectStyle.value : '';
+        const durationMin = parseInt(document.getElementById('select-override-duration').value, 10) || 120;
+
+        if (!targetId) {
+            alert('Por favor, selecione um estilo musical ou streaming na lista.');
+            return;
+        }
+
+        const btn = document.getElementById('btn-apply-override');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Aplicando...';
+        }
+
+        fetch('/api/player/' + storeId + '/manual-override', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ target_id: targetId, duration_minutes: durationMin })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-circle-play me-1"></i> Aplicar Sobreposição Temporária';
+            }
+            if (data.status === 'success' || data.status === 'ok') {
+                showToast('✅ ' + (data.message || 'Sobreposição aplicada com sucesso!'));
+                fetchNowPlaying();
+                loadDiagnosticsData();
+            } else {
+                alert('Erro ao aplicar: ' + (data.message || data.error || 'Erro desconhecido'));
+            }
+        })
+        .catch(err => {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-circle-play me-1"></i> Aplicar Sobreposição Temporária';
+            }
+            alert('Falha na comunicação: ' + err.message);
+        });
+    }
+
+    function cancelManualOverride() {
+        if (!confirm('Deseja realmente cancelar a sobreposição e voltar à grade horária semanal padrão?')) return;
+
+        fetch('/api/player/' + storeId + '/manual-override/cancel', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                showToast('✅ ' + (data.message || 'Grade semanal restaurada!'));
+                fetchNowPlaying();
+                loadDiagnosticsData();
+            })
+            .catch(err => {
+                alert('Falha na comunicação: ' + err.message);
+            });
+    }
+
+    // =========================================================================
+    // AVISOS DE PLACAS & PACOTES DE VOZ
+    // =========================================================================
+    function loadVoicePacksAndChimes() {
+        fetch('/api/player/' + storeId + '/voice-packs')
+            .then(async res => {
+                if (!res.ok) return [];
+                return res.json().catch(() => []);
+            })
+            .then(packs => {
+                const sel = document.getElementById('select-voice-pack');
+                if (!sel) return;
+                sel.innerHTML = '';
+                if (Array.isArray(packs) && packs.length > 0) {
+                    packs.forEach(p => {
+                        const opt = document.createElement('option');
+                        const val = (typeof p === 'object' ? (p.name || p.id) : p);
+                        const label = (typeof p === 'object' ? (p.name || p.id) : p);
+                        opt.value = val;
+                        opt.innerText = label;
+                        sel.appendChild(opt);
+                    });
+                } else {
+                    sel.innerHTML = '<option value="default">Padrão do Sistema</option>';
+                }
+            }).catch(() => {});
+
+        fetch('/api/player/' + storeId + '/chimes')
+            .then(async res => {
+                if (!res.ok) return [];
+                return res.json().catch(() => []);
+            })
+            .then(chimes => {
+                ['select-plate-chime', 'select-warning-chime'].forEach(id => {
+                    const sel = document.getElementById(id);
+                    if (!sel) return;
+                    sel.innerHTML = '<option value="">Sem Gongo</option>';
+                    if (Array.isArray(chimes)) {
+                        chimes.forEach(c => {
+                            const opt = document.createElement('option');
+                            const val = (typeof c === 'object' ? (c.file_name || c.name || c.id) : c);
+                            const label = (typeof c === 'object' ? (c.name || c.file_name) : c);
+                            opt.value = val;
+                            opt.innerText = label;
+                            sel.appendChild(opt);
+                        });
+                    }
+                });
+            }).catch(() => {});
+    }
+
+    function triggerVehicleWarning() {
+        const input = document.getElementById('input-plate');
+        const plate = (input ? input.value : '').trim().toUpperCase();
+        const voicePack = document.getElementById('select-voice-pack').value;
+        const chimeFile = document.getElementById('select-plate-chime').value;
+        const feedback = document.getElementById('plate-feedback');
+
+        if (!plate || plate.length < 5) {
+            alert('Por favor, digite uma placa válida.');
+            if (input) input.focus();
+            return;
+        }
+
+        const btn = document.getElementById('btn-trigger-plate');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Sintetizando Áudio...';
+
+        fetch('/api/player/' + storeId + '/trigger-vehicle-warning', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plate: plate, voice_pack: voicePack, chime_file: chimeFile })
+        })
+        .then(async res => {
+            const data = await res.json().catch(() => ({ status: 'error', message: 'HTTP ' + res.status }));
+            return data;
+        })
+        .then(data => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-bullhorn me-2"></i> Disparar Chamada no Ar';
+            if (data.status === 'success') {
+                if (input) input.value = '';
+                feedback.className = 'mt-3 text-center small text-success fw-bold';
+                feedback.innerText = '✅ ' + (data.message || 'Chamada enviada para a transmissão com sucesso!');
+                feedback.style.display = 'block';
+                showToast('🚨 Chamada de placa enviada para a rádio!');
+                setTimeout(loadDiagnosticsData, 800);
+            } else {
+                feedback.className = 'mt-3 text-center small text-danger';
+                feedback.innerText = '❌ Erro: ' + (data.message || 'Falha ao processar.');
+                feedback.style.display = 'block';
+            }
+        })
+        .catch(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-bullhorn me-2"></i> Disparar Chamada no Ar';
+            feedback.className = 'mt-3 text-center small text-danger';
+            feedback.innerText = '❌ Falha de comunicação ao disparar chamada.';
+            feedback.style.display = 'block';
+        });
+    }
+
+    // =========================================================================
+    // AVISOS PRÉ-FORMATADOS
+    // =========================================================================
+    function loadPreFormattedWarnings() {
+        loadVoicePacksAndChimes();
+        fetch('/api/player/' + storeId + '/pre-formatted-warnings')
+            .then(async res => {
+                if (!res.ok) return [];
+                return res.json().catch(() => []);
+            })
+            .then(warnings => {
+                const sel = document.getElementById('select-pre-warning');
+                if (!sel) return;
+                sel.innerHTML = '';
+                if (Array.isArray(warnings) && warnings.length > 0) {
+                    warnings.forEach(w => {
+                        const opt = document.createElement('option');
+                        const val = (typeof w === 'object' ? (w.file_name || w.name || w.id) : w);
+                        const label = (typeof w === 'object' ? (w.name || w.file_name) : w);
+                        opt.value = val;
+                        opt.innerText = label;
+                        sel.appendChild(opt);
+                    });
+                } else {
+                    sel.innerHTML = '<option value="">Nenhum aviso cadastrado</option>';
+                }
+            }).catch(() => {});
+    }
+
+    function triggerPreFormattedWarning() {
+        const sel = document.getElementById('select-pre-warning');
+        const warningFile = sel ? sel.value : '';
+        const chimeFile = document.getElementById('select-warning-chime').value;
+        const feedback = document.getElementById('warning-feedback');
+
+        if (!warningFile) {
+            alert('Por favor, selecione uma mensagem pré-gravada.');
+            return;
+        }
+
+        const btn = document.getElementById('btn-trigger-warning');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Injetando...';
+
+        fetch('/api/player/' + storeId + '/trigger-pre-formatted-warning', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ warning_file: warningFile, chime_file: chimeFile })
+        })
+        .then(async res => {
+            const data = await res.json().catch(() => ({ status: 'error', message: 'HTTP ' + res.status }));
+            return data;
+        })
+        .then(data => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-tower-broadcast me-2"></i> Injetar Comunicado no Ar';
+            feedback.className = 'mt-3 text-center small text-success fw-bold';
+            feedback.innerText = '✅ ' + (data.message || 'Comunicado injetado com sucesso!');
+            feedback.style.display = 'block';
+            showToast('📢 Comunicado enviado para a rádio!');
+            setTimeout(loadDiagnosticsData, 800);
+        })
+        .catch(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-tower-broadcast me-2"></i> Injetar Comunicado no Ar';
+            feedback.className = 'mt-3 text-center small text-danger';
+            feedback.innerText = '❌ Falha ao disparar comunicado.';
+            feedback.style.display = 'block';
+        });
+    }
+
+    // =========================================================================
+    // CARREGAMENTO DE DIAGNÓSTICOS (Histórico, Comerciais, Blocos, Eventos, Acervo)
+    // =========================================================================
+    function setDiagnosticsDate(date) {
+        selectedDiagDate = date;
+        document.querySelectorAll('.date-btn-today').forEach(b => {
+            if (date === 'today') b.classList.add('active'); else b.classList.remove('active');
+        });
+        document.querySelectorAll('.date-btn-tomorrow').forEach(b => {
+            if (date === 'tomorrow') b.classList.add('active'); else b.classList.remove('active');
+        });
+        loadDiagnosticsData(date);
+    }
+
+    function getTypeBadge(type, name) {
+        const t = (type || '').toLowerCase();
+        if (t === 'commercial' || t === 'comercial') {
+            return '<span class="badge" style="background-color: #0ea5e9; color: #fff;"><i class="fa-solid fa-bullhorn me-1"></i>Comercial</span>';
+        } else if (t === 'offer' || t === 'oferta') {
+            return '<span class="badge bg-warning text-dark"><i class="fa-solid fa-tag me-1"></i>Oferta</span>';
+        } else if (t === 'institutional' || t === 'institucional') {
+            return '<span class="badge bg-primary"><i class="fa-solid fa-building me-1"></i>Institucional</span>';
+        } else if (t === 'event' || t === 'evento') {
+            return '<span class="badge bg-danger"><i class="fa-solid fa-calendar-day me-1"></i>Evento</span>';
+        } else if (t === 'opening' || t === 'closing') {
+            return '<span class="badge bg-info text-dark"><i class="fa-solid fa-bell me-1"></i>Vinheta</span>';
+        } else if (t === 'right_time' || t === 'hora_certa') {
+            return '<span class="badge bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i>Hora Certa</span>';
+        } else if (t === 'temperature' || t === 'temperatura') {
+            return '<span class="badge bg-info text-dark"><i class="fa-solid fa-temperature-half me-1"></i>Temperatura</span>';
+        } else if (t === 'streaming') {
+            return '<span class="badge bg-info text-dark"><i class="fa-solid fa-tower-broadcast me-1"></i>Streaming</span>';
+        } else if (t === 'manual_override' || t === 'sobreposicao') {
+            return '<span class="badge bg-warning text-dark border border-warning"><i class="fa-solid fa-sliders me-1"></i>Troca Manual</span>';
+        } else if (t === 'manual_override_cancel' || t === 'grade_restaurada') {
+            return '<span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50"><i class="fa-solid fa-rotate-left me-1"></i>Grade Restaurada</span>';
+        }
+        return '<span class="badge bg-secondary"><i class="fa-solid fa-music me-1"></i>Música</span>';
+    }
+
+    function loadDiagnosticsData(forceDate) {
+        const dateToFetch = forceDate || selectedDiagDate || 'today';
+        fetch('/api/player/' + storeId + '/diagnostics?date=' + dateToFetch)
+            .then(async res => {
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => null);
+                    throw new Error((errData && errData.error) || 'HTTP ' + res.status);
+                }
+                return res.json().catch(() => null);
+            })
+            .then(data => {
+                if (!data) return;
+
+                renderManualOverrideUI(data);
+
+                // 1. Tabela de Histórico Recente
+                try {
+                    const histBody = document.getElementById('history-table-body');
+                    const countBadge = document.getElementById('history-count-badge');
+                    if (histBody) {
+                        let histList = Array.isArray(data.play_history) ? data.play_history : [];
+                        if (countBadge) countBadge.textContent = histList.length + ' itens';
+
+                        if (histList.length === 0) {
+                            histBody.innerHTML = '<tr><td colspan="7" class="text-center text-white-50 py-4"><i class="fa-solid fa-inbox me-2"></i>Nenhum registro de reprodução ainda.</td></tr>';
+                        } else {
+                            histList.sort((a, b) => (b.played_at || '').localeCompare(a.played_at || ''));
+                            
+                            const fragment = document.createDocumentFragment();
+                            histList.forEach(h => {
+                                const tr = document.createElement('tr');
+                                const itemType = h.track_type || h.media_type || 'music';
+                                const typeBadge = getTypeBadge(itemType, h.display_name);
+                                const statusBadge = h.play_status === 'executada' 
+                                    ? '<span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Tocada</span>' 
+                                    : '<span class="badge bg-secondary">Na Fila</span>';
+                                
+                                const durM = Math.floor((h.duration_seconds || 0) / 60);
+                                const durS = ('0' + ((h.duration_seconds || 0) % 60)).slice(-2);
+                                const durFormatted = durM + ':' + durS;
+
+                                let displayTime = h.played_at || '--:--';
+                                if (displayTime.length > 10 && displayTime.includes(' ')) {
+                                    displayTime = displayTime.split(' ')[1];
+                                }
+
+                                let artistCell = h.artist || '—';
+                                if (itemType === 'institutional' || itemType === 'commercial' || itemType === 'offer') {
+                                    artistCell = `<span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50">${h.artist || 'Comercial'}</span>`;
+                                } else if (itemType === 'streaming') {
+                                    artistCell = `<span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50">Ao Vivo</span>`;
+                                } else if (itemType === 'manual_override') {
+                                    artistCell = `<span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50">Operador</span>`;
+                                } else if (itemType === 'manual_override_cancel') {
+                                    artistCell = `<span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50">Automático</span>`;
+                                }
+
+                                let styleCell = '<span class="text-white-50">—</span>';
+                                if (h.style_name && h.style_name.trim() !== '') {
+                                    if (h.style_name.includes('Sem Programação')) {
+                                        styleCell = `<span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50">${h.style_name}</span>`;
+                                    } else {
+                                        styleCell = `<span class="badge bg-secondary">${h.style_name}</span>`;
+                                    }
+                                }
+
+                                tr.innerHTML = `
+                                    <td class="text-white-50 font-monospace">${displayTime}</td>
+                                    <td>${typeBadge}</td>
+                                    <td class="fw-bold text-white text-break">${h.display_name || 'Sem título'}</td>
+                                    <td>${artistCell}</td>
+                                    <td>${styleCell}</td>
+                                    <td class="text-center font-monospace">${durFormatted}</td>
+                                    <td class="text-center">${statusBadge}</td>
+                                `;
+                                fragment.appendChild(tr);
+                            });
+                            histBody.innerHTML = '';
+                            histBody.appendChild(fragment);
+                        }
+                    }
+                } catch (errHist) {
+                    console.error('Erro ao renderizar histórico:', errHist);
+                }
+
+                // 2. Tabela de Comerciais
+                try {
+                    const commBody = document.getElementById('commercials-table-body');
+                    if (commBody) {
+                        const commList = Array.isArray(data.comm_slots) ? data.comm_slots : [];
+                        if (commList.length === 0) {
+                            commBody.innerHTML = '<tr><td colspan="6" class="text-center text-white-50 py-4"><i class="fa-solid fa-inbox me-2"></i>Nenhum comercial ativo configurado para ' + (dateToFetch === 'tomorrow' ? 'amanhã' : 'hoje') + '.</td></tr>';
+                        } else {
+                            commBody.innerHTML = '';
+                            commList.forEach(c => {
+                                const tr = document.createElement('tr');
+                                tr.className = 'commercial-row';
+                                
+                                const slotsTags = Array.isArray(c.slots) && c.slots.length > 0
+                                    ? c.slots.map(s => {
+                                        const p = s.split(':');
+                                        const sMins = parseInt(p[0], 10) * 60 + parseInt(p[1] || '0', 10);
+                                        return `<span class="badge bg-dark border border-secondary text-info me-1 comm-slot-badge" data-slot-mins="${sMins}" data-slot-str="${s}">${s}</span>`;
+                                    }).join('')
+                                    : '<span class="text-white-50">—</span>';
+
+                                tr.innerHTML = `
+                                    <td class="fw-bold text-white">${c.name || 'Sem nome'}</td>
+                                    <td><span class="badge bg-secondary">${c.type || 'Comercial'}</span></td>
+                                    <td class="text-center text-info fw-bold">${c.insertions_target || 0}</td>
+                                    <td class="text-center text-success fw-bold">${c.played_count || 0}</td>
+                                    <td class="text-center text-warning fw-bold">${c.remaining_count || 0}</td>
+                                    <td>${slotsTags}</td>
+                                `;
+                                commBody.appendChild(tr);
+                            });
+                        }
+                    }
+                } catch (errComm) {
+                    console.error('Erro ao renderizar comerciais:', errComm);
+                }
+
+                // 3. Tabela de Estrutura de Blocos
+                try {
+                    const blocksBody = document.getElementById('blocks-table-body');
+                    if (blocksBody) {
+                        const blockList = Array.isArray(data.block_structures) ? data.block_structures : [];
+                        if (blockList.length === 0) {
+                            blocksBody.innerHTML = '<tr><td colspan="8" class="text-center text-white-50 py-4"><i class="fa-solid fa-inbox me-2"></i>Nenhum bloco gerado para ' + (dateToFetch === 'tomorrow' ? 'amanhã' : 'hoje') + '.</td></tr>';
+                        } else {
+                            blocksBody.innerHTML = '';
+                            blockList.forEach(b => {
+                                const tr = document.createElement('tr');
+                                tr.className = 'block-row';
+                                
+                                const timeParts = (b.block_time || '00:00').split(':');
+                                const blockMins = parseInt(timeParts[0], 10) * 60 + parseInt(timeParts[1] || '0', 10);
+                                tr.setAttribute('data-time-mins', blockMins);
+                                tr.setAttribute('data-time-str', b.block_time || '--:--');
+
+                                const isComm = b.block_type === 'commercial' || (b.structure && !b.structure.startsWith('Estilo Musical:'));
+                                const typeBadge = isComm 
+                                    ? '<span class="badge bg-warning text-dark">📢 Comercial</span>'
+                                    : '<span class="badge bg-primary">🎵 Musical</span>';
+
+                                const durM = Math.floor(b.total_duration / 60);
+                                const durS = ('0' + (b.total_duration % 60)).slice(-2);
+                                const durFormatted = durM + ':' + durS;
+
+                                const limM = Math.floor(b.limit_duration / 60);
+                                const limS = ('0' + (b.limit_duration % 60)).slice(-2);
+                                const limFormatted = limM + ':' + limS;
+
+                                let statusBadge = '<span class="badge bg-success">🟢 OK</span>';
+                                if (b.exceeds_limit) {
+                                    const diff = b.total_duration - b.limit_duration;
+                                    statusBadge = `<span class="badge bg-danger" title="Excede o limite por ${diff}s">🔴 +${diff}s</span>`;
+                                }
+
+                                tr.innerHTML = `
+                                    <td class="text-center fw-bold text-white-50">${b.block_number}</td>
+                                    <td class="text-info font-monospace fw-bold">${b.block_time || '--:--'}</td>
+                                    <td>${typeBadge}</td>
+                                    <td class="small text-white">${b.structure || '—'}</td>
+                                    <td class="text-center fw-bold">${b.total_quantity || 0}</td>
+                                    <td class="text-center font-monospace">${durFormatted}</td>
+                                    <td class="text-center font-monospace text-white-50">${limFormatted}</td>
+                                    <td class="text-center">${statusBadge}</td>
+                                `;
+                                blocksBody.appendChild(tr);
+                            });
+                        }
+                    }
+                } catch (errBlocks) {
+                    console.error('Erro ao renderizar blocos:', errBlocks);
+                }
+
+                // 4. Tabela de Eventos
+                try {
+                    const eventsBody = document.getElementById('events-table-body');
+                    if (eventsBody) {
+                        const evList = Array.isArray(data.events) ? data.events : [];
+                        if (evList.length === 0) {
+                            eventsBody.innerHTML = '<tr><td colspan="4" class="text-center text-white-50 py-4"><i class="fa-solid fa-calendar-xmark me-2"></i>Nenhum evento programado para ' + (dateToFetch === 'tomorrow' ? 'amanhã' : 'hoje') + '.</td></tr>';
+                        } else {
+                            eventsBody.innerHTML = '';
+                            evList.forEach(ev => {
+                                const tr = document.createElement('tr');
+                                const isHard = (ev.mode || '').toUpperCase() === 'HARD' || (ev.mode || '').toUpperCase() === 'DIRECT';
+                                const modeBadge = isHard
+                                    ? '<span class="badge bg-danger bg-opacity-75 border border-danger"><i class="fa-solid fa-bolt me-1"></i>⚡ Interrupção Imediata (Direto)</span>'
+                                    : '<span class="badge bg-info bg-opacity-75 border border-info text-dark"><i class="fa-solid fa-hourglass-half me-1"></i>⏳ Aguardar Fim da Música</span>';
+                                
+                                const isReady = (ev.status || '').toUpperCase() === 'PRONTO' || (ev.status || '').toUpperCase() === 'READY';
+                                const statusBadge = isReady
+                                    ? '<span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i>Pronto para Tocar</span>'
+                                    : '<span class="badge bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i>Pendente</span>';
+
+                                tr.innerHTML = `
+                                    <td class="text-info font-monospace fw-bold fs-6">${ev.start_time || '--:--'}</td>
+                                    <td class="fw-bold text-white">${ev.name || 'Sem nome'}</td>
+                                    <td>${modeBadge}</td>
+                                    <td class="text-center">${statusBadge}</td>
+                                `;
+                                eventsBody.appendChild(tr);
+                            });
+                        }
+                    }
+                } catch (errEvents) {
+                    console.error('Erro ao renderizar eventos:', errEvents);
+                }
+
+                // 5. Tabela de Rotação de Músicas
+                try {
+                    const stAlert = document.getElementById('streaming-rotation-alert');
+                    const isStreamActive = Boolean(data.external_stream_url && data.external_stream_url !== "" && data.external_stream_url !== "none");
+                    if (stAlert) {
+                        stAlert.style.display = isStreamActive ? 'flex' : 'none';
+                    }
+                    window.cachedMusicSlots = Array.isArray(data.music_slots) ? data.music_slots : [];
+                    renderMusicRotationTable(window.cachedMusicSlots);
+                } catch (errRot) {
+                    console.error('Erro ao renderizar rotação musical:', errRot);
+                }
+            })
+            .catch(errFetch => {
+                console.error('Erro na requisição de diagnósticos:', errFetch);
+            });
+    }
+
+    function renderMusicRotationTable(list) {
+        const rotationBody = document.getElementById('rotation-table-body');
+        const countBadge = document.getElementById('rotation-count-badge');
+        if (!rotationBody) return;
+
+        if (countBadge) countBadge.textContent = (list ? list.length : 0) + ' faixas';
+
+        if (!list || list.length === 0) {
+            rotationBody.innerHTML = '<tr><td colspan="6" class="text-center text-white-50 py-4"><i class="fa-solid fa-music me-2"></i>Nenhuma faixa encontrada no catálogo local.</td></tr>';
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        list.forEach(m => {
+            const tr = document.createElement('tr');
+            const durM = Math.floor((m.duration || 0) / 60);
+            const durS = ('0' + ((m.duration || 0) % 60)).slice(-2);
+            const durFormatted = durM + ':' + durS;
+
+            tr.innerHTML = `
+                <td class="fw-bold text-white text-break">${m.name || 'Sem título'}</td>
+                <td class="text-white-50">${m.artist || '—'}</td>
+                <td><span class="badge bg-secondary">${m.style_name || 'Geral'}</span></td>
+                <td class="text-center font-monospace">${durFormatted}</td>
+                <td class="text-center fw-bold text-info">${m.play_count || 0}</td>
+                <td class="text-center text-white-50 small font-monospace">${m.last_played || 'Nunca'}</td>
+            `;
+            fragment.appendChild(tr);
+        });
+        rotationBody.innerHTML = '';
+        rotationBody.appendChild(fragment);
+    }
+
+    function filterMusicRotation() {
+        const term = (document.getElementById('rotation-search-input')?.value || '').toLowerCase().trim();
+        if (!term) {
+            renderMusicRotationTable(window.cachedMusicSlots);
+            return;
+        }
+        const filtered = window.cachedMusicSlots.filter(m => 
+            (m.name || '').toLowerCase().includes(term) ||
+            (m.artist || '').toLowerCase().includes(term) ||
+            (m.style_name || '').toLowerCase().includes(term)
+        );
+        renderMusicRotationTable(filtered);
+    }
+
+    function scrollToCurrentTimeBlocks() {
+        const rows = document.querySelectorAll('#blocks-table-body tr.block-row');
+        if (!rows || rows.length === 0) {
+            showToast('⚠️ Grade de blocos ainda não carregada');
+            return;
+        }
+
+        const now = new Date();
+        const curMins = now.getHours() * 60 + now.getMinutes();
+
+        let closestRow = null;
+        let minDiff = 999999;
+
+        rows.forEach(r => {
+            const rowMins = parseInt(r.getAttribute('data-time-mins'), 10);
+            if (rowMins <= curMins) {
+                const diff = curMins - rowMins;
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestRow = r;
+                }
+            }
+        });
+
+        if (!closestRow && rows.length > 0) closestRow = rows[0];
+
+        if (closestRow) {
+            document.querySelectorAll('#blocks-table-body tr').forEach(r => r.classList.remove('current-highlight-row'));
+            closestRow.classList.add('current-highlight-row');
+            closestRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const timeStr = closestRow.getAttribute('data-time-str');
+            showToast('📍 Posicionado no Bloco atual: ' + timeStr);
+        }
+    }
+
+    function scrollToCurrentTimeCommercials() {
+        const badges = document.querySelectorAll('#commercials-table-body .comm-slot-badge');
+        if (!badges || badges.length === 0) {
+            showToast('⚠️ Grade de comerciais ainda não carregada');
+            return;
+        }
+
+        const now = new Date();
+        const curMins = now.getHours() * 60 + now.getMinutes();
+
+        let closestBadge = null;
+        let minDiff = 999999;
+
+        badges.forEach(b => {
+            const bMins = parseInt(b.getAttribute('data-slot-mins'), 10);
+            const diff = Math.abs(bMins - curMins);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestBadge = b;
+            }
+        });
+
+        if (closestBadge) {
+            document.querySelectorAll('#commercials-table-body tr').forEach(r => r.classList.remove('current-highlight-row'));
+            document.querySelectorAll('#commercials-table-body .comm-slot-badge').forEach(b => b.classList.remove('slot-current-highlight'));
+
+            const parentRow = closestBadge.closest('tr');
+            if (parentRow) {
+                parentRow.classList.add('current-highlight-row');
+                closestBadge.classList.add('slot-current-highlight');
+                parentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const slotStr = closestBadge.getAttribute('data-slot-str');
+                showToast('📍 Posicionado no Comercial do Horário: ' + slotStr);
+            }
+        }
+    }
+
+    function forceSyncStore(btn) {
+        const origHTML = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sincronizando...';
+        }
+
+        fetch('/api/player/' + storeId + '/sync', { method: 'POST' })
+            .then(async res => {
+                const data = await res.json().catch(() => ({ error: 'HTTP ' + res.status }));
+                return { ok: res.ok, data };
+            })
+            .then(({ ok, data }) => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origHTML;
+                }
+                if (ok && (data.status === 'success' || data.message)) {
+                    showToast('✅ ' + (data.message || 'Sincronismo disparado com sucesso!'));
+                    setTimeout(loadDiagnosticsData, 1500);
+                } else {
+                    showToast('❌ ' + (data.error || data.message || 'Falha ao sincronizar'));
+                }
+            })
+            .catch(err => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origHTML;
+                }
+                showToast('❌ Falha na comunicação de sincronismo');
+            });
+    }
+
+    function redistributeCommercials(btn) {
+        if (!confirm('Deseja redistribuir os comerciais do dia nesta loja agora?')) return;
+
+        const origHTML = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Redistribuindo...';
+        }
+
+        fetch('/api/player/' + storeId + '/redistribute', { method: 'POST' })
+            .then(async res => {
+                const data = await res.json().catch(() => ({ error: 'HTTP ' + res.status }));
+                return { ok: res.ok, data };
+            })
+            .then(({ ok, data }) => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origHTML;
+                }
+                if (ok && (data.status === 'success' || data.message)) {
+                    showToast('✅ ' + (data.message || 'Comerciais redistribuídos com sucesso!'));
+                    loadDiagnosticsData();
+                    setTimeout(scrollToCurrentTimeBlocks, 1000);
+                } else {
+                    showToast('❌ ' + (data.error || data.message || 'Falha ao redistribuir'));
+                }
+            })
+            .catch(err => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origHTML;
+                }
+                showToast('❌ Falha na comunicação ao redistribuir comerciais');
+            });
+    }
+
+    // =========================================================================
+    // LOGS DO SISTEMA / TERMINAL
+    // =========================================================================
+    function loadSystemLogs() {
+        const consoleEl = document.getElementById('system-logs-console');
+        if (!consoleEl) return;
+
+        consoleEl.innerHTML = '<div class="text-white-50 text-center py-4"><span class="spinner-border spinner-border-sm me-2"></span> Carregando logs operacionais da engine...</div>';
+
+        fetch('/api/player/' + storeId + '/logs')
+            .then(async res => {
+                const data = await res.json().catch(() => null);
+                if (!res.ok) {
+                    throw new Error((data && (data.error || data.message)) || 'Status HTTP ' + res.status);
+                }
+                return data;
+            })
+            .then(data => {
+                if (!data) return;
+                consoleEl.innerHTML = '';
+                let logLines = [];
+                if (Array.isArray(data)) {
+                    logLines = data;
+                } else if (data && Array.isArray(data.logs)) {
+                    logLines = data.logs;
+                } else if (data && typeof data.message === 'string') {
+                    logLines = [data.message];
+                }
+                if (logLines.length > 0) {
+                    const fragment = document.createDocumentFragment();
+                    logLines.forEach(line => {
+                        const row = document.createElement('div');
+                        row.style.marginBottom = '2px';
+                        let str = typeof line === 'string' ? line : (line.message || JSON.stringify(line));
+                        let cls = 'log-line-info';
+                        if (str.includes('[WARN') || str.includes('WARNING')) cls = 'log-line-warn';
+                        if (str.includes('[ERR') || str.includes('ERROR') || str.includes('fail')) cls = 'log-line-err';
+
+                        const safe = str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        row.innerHTML = `<span class="${cls}">${safe}</span>`;
+                        fragment.appendChild(row);
+                    });
+                    consoleEl.appendChild(fragment);
+                    consoleEl.scrollTop = consoleEl.scrollHeight;
+                } else {
+                    consoleEl.innerHTML = '<div class="text-white-50 text-center py-4"><i class="fa-solid fa-circle-info me-1"></i> Nenhum log operacional registrado no momento.</div>';
+                }
+            })
+            .catch(err => {
+                consoleEl.innerHTML = `<div class="text-danger text-center py-4"><i class="fa-solid fa-triangle-exclamation me-2"></i>Falha ao carregar logs: ${err.message}</div>`;
+            });
+    }
+
+    function clearLogsView() {
+        const consoleEl = document.getElementById('system-logs-console');
+        if (consoleEl) consoleEl.innerHTML = '<div class="text-white-50 text-center py-4"><i class="fa-solid fa-eraser me-1"></i> Visualização limpa. Clique em "Atualizar" para recarregar.</div>';
+    }
+
+    // =========================================================================
+    // TOAST FLUTUANTE
+    // =========================================================================
+    function showToast(msg) {
+        let toast = document.getElementById('player-action-toast');
+        if (!toast) return;
+        toast.innerText = msg;
+        toast.style.display = 'block';
+        toast.style.opacity = '1';
+        clearTimeout(window.toastTimer);
+        window.toastTimer = setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => { toast.style.display = 'none'; }, 300);
+        }, 3500);
+    }
+
+    // Polling contínuo
+    setInterval(fetchNowPlaying, 3000);
+    setInterval(loadDiagnosticsData, 10000);
+
+    // Inicialização ao carregar página
+    window.addEventListener('DOMContentLoaded', () => {
+        // Evento de troca de abas com carregamento assíncrono seguro
+        document.addEventListener('shown.bs.tab', function (e) {
+            const target = e.target.getAttribute('data-bs-target');
+            if (target === '#tab-plate') {
+                loadVoicePacksAndChimes();
+            } else if (target === '#tab-warning') {
+                loadPreFormattedWarnings();
+            } else if (target === '#tab-logs') {
+                loadSystemLogs();
+            } else if (['#tab-history', '#tab-commercials', '#tab-blocks', '#tab-events', '#tab-rotation'].includes(target)) {
+                loadDiagnosticsData();
+            }
+        });
+
+        loadDiagnosticsData();
+        loadVoicePacksAndChimes();
+        loadPreFormattedWarnings();
+
+        // Autoplay controlado
+        setPlayerConnectingUI();
+        userIntentPlay = true;
+        const liveUrl = streamUrl + (streamUrl.includes('?') ? '&' : '?') + 'r=' + Date.now();
+        audioPlayer.src = liveUrl;
+        audioPlayer.load();
+        const p = audioPlayer.play();
+        if (p !== undefined) {
+            p.then(() => {
+                setPlayerPlayingUI();
+            }).catch(() => {
+                userIntentPlay = false;
+                stopAudioStream();
+                setPlayerPausedUI();
+            });
+        }
+
+        function unlockOnFirstGesture() {
+            if (!isPlaying && !userIntentPlay) {
+                toggleStreamPlay(true);
+            }
+            window.removeEventListener('click', unlockOnFirstGesture);
+            window.removeEventListener('touchstart', unlockOnFirstGesture);
+            window.removeEventListener('keydown', unlockOnFirstGesture);
+        }
+        window.addEventListener('click', unlockOnFirstGesture, { once: true });
+        window.addEventListener('touchstart', unlockOnFirstGesture, { once: true });
+        window.addEventListener('keydown', unlockOnFirstGesture, { once: true });
+    });
+</script>
+</body>
+</html>

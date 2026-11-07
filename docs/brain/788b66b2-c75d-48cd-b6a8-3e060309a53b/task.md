@@ -1,0 +1,4 @@
+- [x] Modificar `watchdog.go` para adicionar `RestartLiquidsoap()` e mapear o nome do processo.
+- [x] Modificar `scheduler.go` para implementar `RegisterIntentionalSkip()`, `IsIntentionalSkipActive()`, registrar os pulos automáticos e adicionar o watchdog em `MarkTrackAsPlaying()`.
+- [x] Modificar `web_dashboard.go` para registrar pulos manuais em `handleAPISkip()`.
+- [x] Compilar o código Go para garantir que não há erros de compilação.

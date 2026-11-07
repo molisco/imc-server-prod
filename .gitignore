@@ -1,0 +1,60 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories
+# vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Env files
+.env
+.env.*
+
+# Local IDE config
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Project specific uploads/temp files
+web/static/uploads/*
+!web/static/uploads/.gitkeep
+
+# Media directories for local music files (local scanner)
+midias/
+
+# Compiled Binaries & Logs
+server
+imc-server
+*.log
+output.html
+debug_*.go
+find_*.go
+test_*_tmpl.go
+rebuild_caddy.go
+scratch/
+
+# Python & Temporary harvest files
+__pycache__/
+*.pyc
+scripts/_temp_render.html
+scripts/_browser_render_tmp.html
+scripts/downloads_fma/
+scripts/fma_catalog.db
+
+.Trash*

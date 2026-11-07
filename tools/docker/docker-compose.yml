@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # Central Icecast Streaming Server
+  icecast:
+    image: infiniteproject/icecast:latest
+    container_name: imc-icecast
+    ports:
+      - "8000:8000"
+    environment:
+      - ICECAST_SOURCE_PASSWORD=hackme
+      - ICECAST_ADMIN_PASSWORD=adminpass
+      - ICECAST_PASSWORD=hackme
+    restart: always
+    networks:
+      - imc-network
+
+  # Rádio/Player instance for Store 01 (Loja 01)
+  radio_loja_01:
+    build: .
+    container_name: imc-radio-loja-01
+    restart: always
+    environment:
+      - SERVER_MODE=true
+      - SERVER_URL=http://192.168.15.250:8080
+      - STORE_TOKEN=token_1_1
+      - LOCAL_PORT=5001
+      - HARBOR_PORT=7001
+      - ICECAST_HOST=icecast
+      - ICECAST_PORT=8000
+      - ICECAST_PASSWORD=hackme
+      - ICECAST_MOUNT=/1
+    volumes:
+      # Mount server media files as read-only
+      - /home/neoroute/imc-server/midias:/app/midias:ro
+      # Mount separate persistent cache directory for this store
+      - ./stores/loja_01/cache:/app/cache
+    depends_on:
+      - icecast
+    networks:
+      - imc-network
+
+  # Rádio/Player instance for Store 02 (Loja 02)
+  radio_loja_02:
+    build: .
+    container_name: imc-radio-loja-02
+    restart: always
+    environment:
+      - SERVER_MODE=true
+      - SERVER_URL=http://192.168.15.250:8080
+      - STORE_TOKEN=token_1_2
+      - LOCAL_PORT=5002
+      - HARBOR_PORT=7002
+      - ICECAST_HOST=icecast
+      - ICECAST_PORT=8000
+      - ICECAST_PASSWORD=hackme
+      - ICECAST_MOUNT=/2
+    volumes:
+      - /home/neoroute/imc-server/midias:/app/midias:ro
+      - ./stores/loja_02/cache:/app/cache
+    depends_on:
+      - icecast
+    networks:
+      - imc-network
+
+networks:
+  imc-network:
+    driver: bridge
