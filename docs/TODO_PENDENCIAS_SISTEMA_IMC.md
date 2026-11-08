@@ -21,6 +21,12 @@ Este documento contém o planejamento centralizado de **funcionalidades pendente
   * Classificador Inteligente de Gênero, Subgêneros (40+ especializações) e Heurísticas Festivas/Sazonais (Oktoberfest, Carnaval, Festa Junina, Natal).
   * Interface com Medidor de Certeza do Gênero (Gauge %), Chips clicáveis de Top Subgêneros e Modal de Curadoria em Lote (`POST /api/batch-curatorship`).
   * Exportador com validação de conformidade e manifesto `catalog_manifest.json`.
+- [x] **Infraestrutura de Produção Oficial (`indoormedia.com.br` / `200.141.23.44`) & Landing Page Integrada**:
+  * Estrutura multi-subdomínio (`indoormedia.com.br`, `www`, `app`, `player`, `stream`) com SSL/HTTPS Let's Encrypt automático via Caddy.
+  * Persistência de leads da Lista VIP (`POST /api/public/leads` $\rightarrow$ tabela `prelaunch_leads`) e consulta administrativa (`GET /api/admin/leads`).
+- [x] **Blindagem de Streaming Anti-Leech (`stream_auth.go`) & Isolamento do Icecast**:
+  * Assinatura criptográfica `HMAC-SHA256` temporária por loja com renovação transparente a cada 15 minutos no Web Player.
+  * Trava de conexões simultâneas por loja (`MaxConcurrentStreamsPerStore = 2`) e bloqueio externo da porta `:8000` (`127.0.0.1:8000`).
 
 ---
 
@@ -146,6 +152,22 @@ Este documento contém o planejamento centralizado de **funcionalidades pendente
   * [ ] **Camada de Aplicação (`imc-server` / `imc-audio-local`)**: Unidade `systemd` com reinício automático em falha (`Restart=always`), health-checks de inicialização e rotinas de substituição atômica de binário via OTA com rollback automático.
 
 ---
-*Última atualização: Setembro de 2026*
+
+### 🌐 I. Cluster & Escalabilidade Multi-Servidor de Streaming (`streaming_nodes`)
+- [ ] **1. Cadastro e Governança de Nós de Streaming (`streaming_nodes`)**:
+  * [ ] Criar tabela `streaming_nodes` no PostgreSQL central (`id`, `name`, `public_domain` ex: `stream01.indoormedia.com.br`, `ip_address`, `ssh_or_agent_endpoint`, `max_stores_capacity`, `is_active`, `current_cpu_usage`, `current_ram_usage`).
+  * [ ] Tela administrativa no `app.indoormedia.com.br` para cadastrar novos servidores dedicados de streaming e monitorar ocupação (ex: `65 / 100 rádios ativas`).
+- [ ] **2. Vinculação Loja $\leftrightarrow$ Nó de Streaming (`stores.streaming_node_id`)**:
+  * [ ] Adicionar campo **Servidor de Streaming (Node)** no formulário de Cadastro/Edição de Lojas (`radio_type = 'server'`), com opção de **Alocação Automática (Load Balancing)** no servidor com menor carga.
+  * [ ] Migração automática das lojas atuais para o nó padrão `stream.indoormedia.com.br` (`200.141.23.44`).
+- [ ] **3. Orquestração Remota de Containers (`docker_orchestrator.go` Multi-Host)**:
+  * [ ] Evoluir o `StartStoreDockerContainer` e `StopStoreDockerContainer` para disparar a criação/atualização do container `imc-radio-{id}` no servidor de streaming vinculado à loja (via Docker Context SSH ou Agente Leve IMC Node).
+  * [ ] Sincronização sob demanda de mídias (`midias/`) do servidor central para os nós de streaming secundários.
+- [ ] **4. Proxy Guard Stateless & Isolamento da Porta `:8000` nos Nós Secundários**:
+  * [ ] Manter `imc-icecast` estritamente em `127.0.0.1:8000` em todos os nós (`stream01`, `stream02`, etc.).
+  * [ ] Validação local instantânea (Stateless) do token `HMAC-SHA256` (`STREAM_SECRET` compartilhado) na porta `443` (HTTPS) de cada nó de streaming sem sobrecarga no banco PostgreSQL central.
+
+---
+*Última atualização: Novembro de 2026*
 
 

@@ -158,28 +158,16 @@ http://stream.indoormedia.com.br:%d, http://app.indoormedia.com.br:%d, http://20
 
 # 1. Domínios Oficiais com HTTPS Automático (Let's Encrypt)
 indoormedia.com.br, www.indoormedia.com.br, app.indoormedia.com.br, player.indoormedia.com.br {
-    @icecast {
-        path /status* /admin* /server* /*.pls /*.m3u
-    }
-    reverse_proxy @icecast imc-icecast:8000
     reverse_proxy 200.141.23.44:8080
 }
 
-# 2. Subdomínio dedicado de Streaming Contínuo (Icecast + Proxy Go Protegido)
+# 2. Subdomínio dedicado de Streaming Contínuo (Proxy Go Protegido por Token HMAC)
 stream.indoormedia.com.br {
-    @icecast {
-        path /status* /admin* /server* /*.pls /*.m3u
-    }
-    reverse_proxy @icecast imc-icecast:8000
     reverse_proxy 200.141.23.44:8080
 }
 
 # 3. Fallback direto por IP Público (HTTP :80)
 http://200.141.23.44, :80 {
-    @icecast {
-        path /status* /admin* /server* /*.pls /*.m3u
-    }
-    reverse_proxy @icecast imc-icecast:8000
     reverse_proxy 200.141.23.44:8080
 }
 
